@@ -1,0 +1,24 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load static %}
+{% block app %}
+  <section class="app-card">
+    <div class="pg-columns">
+      <div class="pg-column-one-quarter pg-text-centered">
+        <img class="img-fluid" alt="Django" src="{% static 'images/pegasus/react-icon.png' %}" style="max-height: 160px;"/>
+      </div>
+      <div class="pg-column">
+        <h1 class="pg-title">Indexer App</h1>
+        <h2 class="pg-subtitle">
+          Let's get your pages indexed.
+        </h2>
+        <div class="content">
+          <p>
+            Add your index api details to New Api. Add google service email as owner in GSC for the web property to you want to indexed.
+            New Pages List to index your property.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% block django_app %}{% endblock %}
+{% endblock %}

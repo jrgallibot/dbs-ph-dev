@@ -1,0 +1,111 @@
+{% extends 'indexer-admin/admin/layout.html' %}
+{% load static %}
+{% block content %}
+<div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader">
+	<div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+		<div class="d-flex align-items-center flex-wrap mr-2">
+			<h5 class="text-dark font-weight-bold mt-2 mb-2 mr-5">Url Shortners</h5>
+		</div>
+	</div>
+</div>
+<div class="d-flex flex-column-fluid">
+	<div class="container">
+		<div class="card card-custom">
+			<div class="card-header flex-wrap border-0 pt-6 pb-0">
+				<div class="card-title">
+					<h3 class="card-label">Url Shortners
+					<span class="text-muted pt-2 font-size-sm d-block">List of details</span></h3>
+				</div>
+				<div class="card-toolbar">
+					<a href="#" class="btn btn-success font-weight-bolder font-size-sm" data-toggle="modal" data-target="#add_url_short"><i class="fas fa-plus"></i> Add Url</a>
+				</div>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-hover" id="api_url_shortners" width="100%">
+						<thead>
+							<tr>
+								<th class="cell">Url shortners</th>
+								<th class="cell">Visitor Data</th>
+								<th class="cell text-center">Times Followed</th>
+								<th class="cell">GSCVerify</th>
+								<th class="cell text-center">Created At</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="add_url_short" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">CREATE URL SHORTNER</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i aria-hidden="true" class="ki ki-close"></i>
+                </button>
+			</div>
+			<form id="submitForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="mb-3">
+						<label>GSCVerify <span class="asteriskField">*</span></label>
+						<select class="form-select select2" data-dropdown-parent="#add_web" name="api_email" required>
+							<option></option>
+							{% for row in index_api %}
+							<option value="{{ row.id }}">{{ row.email }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="form-group mt-3">
+						<label>Pages <span class="text-danger">*</span></label>
+						<textarea class="form-control" rows="10" name="pages" required></textarea>
+						<small>List of pages you want to index. 1 Url Per Line</small>
+					</div>
+					<div class="form-group mt-3">
+						<label>Shortened URLS  <span class="text-danger">*</span></label>
+						<textarea class="form-control" rows="10" name="pages" required></textarea>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal" id="close-api-modal">Close</button>
+					<button type="submit" class="btn btn-primary">Save changes</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#api_url_shortners').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'order': [[ 1, 'asc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': '{% url "get-url-shortner-api" %}',
+				'type': 'GET',
+				'dataType': 'JSON',
+			},
+			'columns': [
+				{'data': 'long_url'},
+				{'data': 'vistor_data', 'className': 'text-center'},
+				{'data': 'times_followed', 'className': 'text-center'},
+				{'data': 'gscverify'},
+				{'data': 'created', 'className': 'text-center'},
+				
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [4] }
+			]
+		});
+
+		
+	});
+</script>
+{% endblock %}

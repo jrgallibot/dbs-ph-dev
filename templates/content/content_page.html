@@ -1,0 +1,19 @@
+{% extends "content/base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+{% load i18n %}
+{% block content %}
+  <div class="pg-text-centered my-4">
+    <h1 class="pg-title">{{ page.title }}</h1>
+  </div>
+  <div class="app-card">
+    <div class="content">
+      {{ page.body }}
+      <ul>
+      {% for child in page.get_children %}{% with child.specific as child %}
+        <li><a href="{% pageurl child %}">{{ child.title }}</a></li>
+      {% endwith %}{% endfor %}
+      </ul>
+    </div>
+
+  </div>
+{% endblock %}

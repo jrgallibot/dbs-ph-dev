@@ -1,0 +1,22 @@
+{% extends "web/app/app_base.html" %}
+{% load static %}
+{% block app %}
+  <section class="app-card py-5">
+    <div class="row align-items-center">
+      <div class="col-md order-md-last">
+        <img class="img-fluid" src="{% static 'images/undraw/undraw_outer_space.svg' %}" alt="Fly Away!">
+      </div>
+      <div class="col-md">
+        <h3>You're Signed In!</h3>
+        <p class="lead">
+          Welcome to the Indexer App. Click Indexer Setup to get started.
+        </p>
+        <p>
+          You're logged into the "{{ team.name }}" Team.
+        </p>
+      </div>
+    </div>
+  </section>
+  <section class="app-card">
+  </section>
+{% endblock %}

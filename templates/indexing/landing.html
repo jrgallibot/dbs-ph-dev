@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Welcome to Indexer App | The only tool you need</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'img/logo-ico.ico' %}"/>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+	<link href="{% static 'indexing/css/bootstrap.min.css' %}" rel="stylesheet">
+	<link href="{% static 'indexing/css/plugins/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+	<link href="{% static 'indexing/css/plugins/datatables/datatables.min.css' %}" rel="stylesheet" type="text/css" />
+	<link href="{% static 'indexing/fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+	<link href="{% static 'indexing/fontawesomefree/css/brands.css' %}" rel="stylesheet" type="text/css">
+	<link href="{% static 'indexing/fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
+	<link href="{% static 'indexing/css/select2.min.css' %}" rel="stylesheet" type="text/css" />
+	<link href="{% static 'indexing/css/select2-bootstrap-5-theme.min.css' %}" rel="stylesheet" type="text/css" />
+	<link href="{% static 'indexing/css/plugins/toastr/build/toastr.min.css' %}" rel="stylesheet" type="text/css" />
+	<link href="{% static 'indexing/css/jquery-ui.min.css' %}" rel="stylesheet" type="text/css">
+	<link href="{% static 'indexing/css/ribbon.css' %}" rel="stylesheet" type="text/css" />
+	<link href="{% static 'indexing/css/style.css' %}" rel="stylesheet">
+	<link href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" rel="stylesheet">
+
+</head>
+	<nav class="navbar navbar-expand-lg bg-success">
+		<div class="container">
+			<ul class="nav mx-auto col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+				<li>
+					<a href="#" class="nav-link px-2 text-white">Landing Page</a>
+				</li>
+				<li>
+					<a href="#" class="nav-link px-2 text-white">Dashboard</a>
+				</li>
+				<li>
+					<a href="#" class="nav-link px-2 text-white">Profile</a>
+				</li>
+				<li>
+					<a href="#" class="nav-link px-2 text-white">Change Password</a>
+				</li>
+				<li>
+					<a href="#" class="nav-link px-2 text-white">Teams</a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+	<header class="pt-4 pb-4 border-bottom">
+		<div class="container">
+			<div class="flex-wrap align-items-center justify-content-center justify-content-lg-start">
+				<a href="/" class="align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
+					<img src="{% static 'images/favicons/android-chrome-512x512.png' %}" width="50px;" class="img-logo">&emsp;
+				</a>
+				<ul class="nav col-12 col-lg-auto mb-2 mb-md-0 float-end">
+					{% if user.is_authenticated %}
+					&emsp;
+					<li>
+						<div class="dropdown">
+							<a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle float-end" data-bs-toggle="dropdown" aria-expanded="false">
+								<img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
+								{{ request.user.username }}
+							</a>
+							<ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+								<li>
+									<a class="dropdown-item logout text-white" href="#">Sign out</a>
+								</li>
+							</ul>
+						</div>
+					</li>
+					{% else %}
+					<li>
+						<a href="#" class="nav-link px-2 link-dark">Sign In</a>
+					</li>
+					{% endif %}
+				</ul>
+			</div>
+		</div>
+	</header>
+	<div class="container">
+		<div class="row mt-5">
+			<div class="col-md-3">
+				<div class="card collapse d-md-block" id="filters">
+					<div class="card-header bg-success text-white">
+						<strong><i class="fas fa-th-large bi pe-none me-2" width="16" height="16"></i> {{project_meta.NAME}}</strong>
+					</div>
+					<div class="card-body">
+						<div class="list-group">
+							<a href="javascript:void(0);" class="list-group-item list-group-item-action" style="text-transform: uppercase;" id="dashboard"> <span class="icon"><i class="fa fa-credit-card"></i></span><span> Api List</span></a>
+						</div>
+						<div class="list-group list-group-flush">
+							<a href="javascript:void(0);" class="list-group-item list-group-item-action" style="text-transform: uppercase;" id="account"> <span class="icon"><i class="fa fa-credit-card"></i></span><span> Add New Api</span></a>
+						</div>
+						<div class="list-group list-group-flush">
+							<a href="javascript:void(0);" class="list-group-item list-group-item-action" style="text-transform: uppercase;" id="settings"> <span class="icon"><i class="fa fa-users"></i></span><span> Index Pages List</span></a>
+						</div>
+						<div class="list-group list-group-flush">
+							<a href="javascript:void(0);" class="list-group-item list-group-item-action" style="text-transform: uppercase;" id="settings"> <span class="icon"><i class="fa fa-users"></i></span><span> Index New Pages</span></a>
+						</div>
+						<div class="list-group list-group-flush">
+							<a href="javascript:void(0);" class="list-group-item list-group-item-action" style="text-transform: uppercase;" id="settings"> <span class="icon"><i class="fa fa-credit-card"></i></span><span> Sitemap</span></a>
+						</div>
+						<div class="list-group list-group-flush">
+							<a href="javascript:void(0);" class="list-group-item list-group-item-action" style="text-transform: uppercase;" id="settings"> <span class="icon"><i class="fa fa-users"></i></span><span> New Sitemap</span></a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-9">
+				<div id="div-content">
+					{% block body %}
+
+					{% endblock %}
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="text-white">
+		<br><br><br>
+		<div class="container">
+			<footer class="py-3 my-4">
+				<ul class="nav justify-content-center border-bottom pb-3 mb-3"></ul>
+				<p class="text-center text-muted">{{project_meta.NAME}} &mdash; Copyright <span id="copyright-year">2019</span></p>
+			</footer>
+		</div>
+	</div>
+	<script src="{% static 'indexing/js/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'indexing/js/popper.min.js' %}"></script>
+	<script src="{% static 'indexing/js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'indexing/js/jquery-ui.min.js' %}"></script>
+	<script src="{% static 'indexing/js/jquery.ui.touch-punch.min.js' %}"></script>
+	<script src="{% static 'indexing/js/bootstrap3-typeahead.min.js' %}"></script>
+	<script src="{% static 'indexing/js/counter.js' %}"></script>
+	<script src="{% static 'indexing/js/select2.full.min.js' %}"></script>
+	<script src="{% static 'indexing/css/plugins/sweetalert2/sweetalert2.min.js' %}"></script>
+	<script src="{% static 'indexing/css/plugins/datatables/datatables.min.js' %}"></script>
+	<script src="{% static 'indexing/css/plugins/toastr/build/toastr.min.js' %}"></script>
+	<script src="{% static 'indexing/css/plugins/summernote/summernote.min.js' %}"></script>
+	<script src="{% static 'indexing/js/jquery.twbsPagination.min.js' %}"></script>
+	<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+	<script src="https://unpkg.com/sweetalert@2.1.2/dist/sweetalert.min.js"></script>
+	<script>
+		document.getElementById('copyright-year').innerText = (new Date()).getFullYear();
+
+		{% for msg in messages %}
+			{% if 'welcome' in msg.extra_tags %}
+				$("#liveToastContainer").css('z-index', '1005');
+				new bootstrap.Toast(document.getElementById("liveToast")).show();
+			{% endif %}
+		{% endfor %}
+
+		$('.select2').select2({
+			width: '100%',
+			theme: 'bootstrap-5',
+		});
+
+		$('.logout').click(function () {
+			Swal.fire({
+				title: "Are you sure",
+				text: "You want to Sign Out?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes, I will!",
+				cancelButtonText: "No, cancel!",
+				reverseButtons: true
+			}).then((result) => {
+				if (result.value) {
+					Swal.fire({
+						title: "Information",
+						html: "You successfully logout your account !",
+						icon: "success",
+						confirmButtonColor: "#3498DB",
+						allowOutsideClick: false,
+					}).then((result) => {
+						if(result.isConfirmed){
+							window.location = '#';
+						}
+					});
+				}
+			})
+		});
+	</script>
+	{% block script %}{% endblock %}
+</body>
+</html>

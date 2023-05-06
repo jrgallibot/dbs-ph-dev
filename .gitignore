@@ -1,0 +1,22 @@
+.idea
+*.pyc
+*~
+db.sqlite3
+.sass-cache/
+celerybeat-schedule
+Home/localsettings.py
+Home/local.py
+static_root/
+node_modules/
+media/
+docs/_build
+_dist/
+.env.dev
+.env.production
+.DS_Store
+local.py
+env
+
+# uncomment these lines after setting up the front-end build pipeline in dev and production
+# static/css/
+# static/js/

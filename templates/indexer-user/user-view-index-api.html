@@ -1,0 +1,92 @@
+{% load tags %}
+<form id="updateIndexForm">
+	<div class="modal-body">
+		{% csrf_token %}
+		<div class="form-group">
+			<label>Email <span class="text-danger">*</span></label>
+			<input type="email" class="form-control" name="index_email" required value="{{api.email}}">
+		</div>
+		<div class="form-group mt-3">
+			<label>Index API <span class="text-danger">*</span></label>
+			<textarea class="form-control" rows="10" name="index_index_api" required>{% getapikey_format api.indexApi %}</textarea>
+		</div>
+		<div class="mt-3">
+			<label>API Method <span class="text-danger">*</span></label>
+			<select class="form-select select2" data-dropdown-parent="#viewModal" name="api_method" id="api_method" required>
+				<option value=""></option>
+				{% for row in method %}
+					{% if row.id == api.method_id %}
+					<option value="{{ row.id }}" selected>{{ row.type_method }}</option>
+					{% else %}
+					<option value="{{ row.id }}">{{ row.type_method }}</option>
+					{% endif %}
+				{% endfor %}
+			</select>
+		</div>
+		<div class="form-check mt-3">
+			<input class="form-check-input" type="checkbox" name="index_status" id="index_status" {% if api.status %}checked{% endif %}>
+			<label class="form-check-label" for="flexCheckDefault">
+				Status
+			</label>
+		</div>
+	</div>
+	<div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-api-modal">Close</button>
+		<button type="submit" class="btn btn-primary">Save changes</button>
+	</div>
+</form>
+{% block script %}
+<script type="text/javascript">
+	$('.select2').select2({
+		width: '100%',
+		theme: 'bootstrap-5',
+	    placeholder: 'Choose',
+	});
+
+	$('#updateIndexForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to edit your the api keys?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.post({
+                    url: "/indexer/user/index-api/update/{{pk}}",
+                    data: form,
+                    success : function (response){
+                        if(response.data == "success"){
+                            Swal.fire({
+                                title: "Good job!",
+                                html:  response.msg,
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then((result) => {
+                                if (result.isConfirmed){
+                                    $('#updateIndexForm').trigger('reset');
+                                    $('#api_keys').DataTable().ajax.reload();
+                                    $('#close-up-modal').click();
+                                }
+                            });
+                        }else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+                    },
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        });
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,132 @@
+<div class="modal-header">
+    <h5 class="modal-title"><i class="fas fa-pencil text-success me-2"></i> ROUTES</h5>
+    <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+</div>
+{% load tags %}
+<div class="modal-body">
+    <div class="card">
+        <div class="card-header">
+            <h3>Add Route</h3>
+        </div>
+        <div class="card-body">
+            <form action="/hugo-client/routes/{{ website_id }}/" method="POST" id="addRoutesForm">
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="form-group col-lg-4">
+                        <label>Route Name</label>
+                        <input type="text" name="route_name" class="form-control" required>
+                    </div>
+                    <div class="form-group col-lg-4">
+                        <label>In Navbar</label>
+                        <input type="checkbox" name="in_navbar">
+                    </div>
+                    <div class="form-group col-lg-4">
+                        <label>Has Pages</label>
+                        <input type="checkbox" name="has_pages">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-success" type="submit">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <hr>
+    <div class="table-responsive p-2">
+        <table id="routesTable" class="table table-striped fs-6" style="width:100%">
+            <thead>
+                <tr>
+                    <th>UUID</th>
+                    <th>Website Title</th>
+                    <th>Route Name</th>
+                    <th>In Navbar</th>
+                    <th>Has Pages</th>
+                    <th>Contents</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ row.id|truncatechars:10 }}</td>
+                    <td>{{ row.website }}</td>
+                    <td>{{ row.name }}</td>
+                    <td>{{ row.in_navbar }}</td>
+                    <td>{{ row.has_pages }}</td>
+                    <td>
+                        <div class="dropdown">
+                          <a class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                            Select Account
+                          </a>
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            {% for content in row.contents %}
+                              <li><a class="dropdown-item active" href="#" onClick="contentButton('{{ content.id }}', '{{ content.route }}')">{{ content.title }}</a></li>
+                            {% endfor %}
+                          </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <a class="badge badge-success text-success" href="#" onClick="routeContentsButton('{{ row.id }}', 'forward')" id="site-routes-contents-btn-{{row.id}}">Contents</a> |
+                        <a href="/hugo-client/route-delete/{{ row.id }}" class="badge badge-danger text-danger">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% block script %}
+    <script>
+        $(document).ready(function () {
+            $('#routesTable').DataTable();
+            $('#actionsModal').on('hidden.bs.modal', function (e) {
+              location.reload(true);
+            })
+            $('#addRoutesForm').on('submit', (e) => {
+                e.preventDefault();
+                Swal.fire({
+                    title: "Are you sure",
+                    text: "You want to add this route?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes",
+                    allowOutsideClick: false,
+                    showLoaderOnConfirm: true,
+                    preConfirm: function (){
+                        const formData = $('#addRoutesForm').serialize();
+                        const url = $('#addRoutesForm').attr('action');
+                        $.ajax({
+                            type: 'POST',
+                            url: url,
+                            data: formData,
+                            cache: false,
+                            success: (result) => {
+                                $('#actionsModalContent').html(result);
+                                Swal.fire({
+                                    title: "Good job!",
+                                    html:  'Route has been successfully added.',
+                                    icon: "success",
+                                    allowOutsideClick: false,
+                                }).then((result) => {
+                                    if (result.isConfirmed){
+                                        $('#addRoutesForm').trigger('reset');
+                                    }
+                                });
+                            },
+                            error: (result) => {
+                                const statusMsg = result['responseJSON']['statusMsg'];
+                                Swal.fire({
+                                    title: "Oops!",
+                                    html:  statusMsg,
+                                    icon: "error",
+                                    allowOutsideClick: false,
+                                });
+
+                            }
+                        });
+                    },
+                });
+            });
+        });
+    </script>
+    {% endblock %}
+</div>

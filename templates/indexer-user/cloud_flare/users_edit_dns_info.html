@@ -1,0 +1,111 @@
+{% load tags %}
+{% load static %}
+<div class="modal-header">
+    <h5 class="modal-title" id="back-to-routess"><i class="fas fa-long-arrow-left route-back-dns-spinner" style="cursor:pointer"></i> ROUTES</h5>
+    <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+</div>
+<form id="updatednsform">
+    {% csrf_token %}
+    <div class="modal-body">
+        <div  class="row">
+            <div class="col-sm-4">
+                <label for="id_name">Name:</label>
+                <input type="text" id="id_name" class="form-control" name="name" value="{{ dns_record.name }}" maxlength="255" required>
+            </div>
+            <div class="col-sm-4">
+                <label for="id_type">Type:</label>
+                <select id="id_type" name="type" required class="form-control select2">
+					<!-- <option></option> -->
+					<option value="A" {% if dns_record.type == 'A' %} selected{% endif %}>A</option>
+					<option value="AAAA" {% if dns_record.type == 'AAAA' %} selected{% endif %}>AAAA</option>
+					<option value="CAA" {% if dns_record.type == 'CAA' %} selected{% endif %}>CAA</option>
+					<option value="CERT" {% if dns_record.type == 'CERT' %} selected{% endif %}>CERT</option>
+					<option value="CNAME" {% if dns_record.type == 'CNAME' %} selected{% endif %}>CNAME</option>
+					<option value="DNSKEY" {% if dns_record.type == 'DNSKEY' %} selected{% endif %}>DNSKEY</option>
+					<option value="DS" {% if dns_record.type == 'DS' %} selected{% endif %}>DS</option>
+					<option value="HTTPS" {% if dns_record.type == 'HTTPS' %} selected{% endif %}>HTTPS</option>
+					<option value="LOC" {% if dns_record.type == 'LOC' %} selected{% endif %}>LOC</option>
+					<option value="MX" {% if dns_record.type == 'MX' %} selected{% endif %}>MX</option>
+					<option value="NAPTR" {% if dns_record.type == 'NAPTR' %} selected{% endif %}>NAPTR</option>
+					<option value="NS" {% if dns_record.type == 'NS' %} selected{% endif %}>NS</option>
+					<option value="PTR" {% if dns_record.type == 'PTR' %} selected{% endif %}>PTR</option>
+					<option value="SMIMEA" {% if dns_record.type == 'SMIMEA' %} selected{% endif %}>SMIMEA</option>
+					<option value="SRV" {% if dns_record.type == 'SRV' %} selected{% endif %}>SRV</option>
+					<option value="SSHFP" {% if dns_record.type == 'SSHFP' %} selected{% endif %}>SSHFP</option>
+					<option value="SVCB" {% if dns_record.type == 'SVCB' %} selected{% endif %}>SVCB</option>
+					<option value="TLSA" {% if dns_record.type == 'TLSA' %} selected{% endif %}>TLSA</option>
+					<option value="TXT" {% if dns_record.type == 'TXT' %} selected{% endif %}>TXT</option>
+					<option value="URI" {% if dns_record.type == 'URI' %} selected{% endif %}>URI</option>
+                </select>
+            </div>
+            <div class="col-sm-4">
+                <label for="id_content">Content:</label>
+                <input type="text" id="id_content" name="content" value="{{ dns_record.content }}" maxlength="255" required class="form-control">
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <div class="float-end">
+            <button type="submit" class="btn btn-primary" id="btn-up-dns">Update DNS Record</button>
+        </div>
+    </div>
+  </form>
+  {% block script %}
+  <script>
+	$('#updatednsform').on('submit', function(e){
+		$(`#btn-up-dns`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+		var form = new FormData(this);
+		Swal.fire({
+			title: "Are you sure",
+			text: "You want to update the dns ?",
+			icon: "info",
+			showCancelButton: true,
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+				return $.post({
+					url: "{% url 'edit_dns_record' record_id pk %}",
+					data: form,
+					success : function (response){
+						if(response.data == "success"){
+							Swal.fire({
+								title: "Good job!",
+								html:  response.msg,
+								icon: "success",
+								allowOutsideClick: false,
+							}).then((result) => {
+								if (result.isConfirmed){
+									$('#updatednsform').trigger('reset');
+									$('#actionsModalContent').load(`/cloudflare/edit_dns/{{pk}}`, function(response, status, jqXhr){
+										if(status == "success"){
+											$('#actionsModalContent').empty().append(response);
+										}else{
+											alert('error')
+										}
+									});
+									$(`#btn-up-dns`).html('Update DNS Record');
+                                    // var viewModal = new bootstrap.Modal(document.getElementById('viewPagesModal'), {});
+                                    // $('.view_sites_modal_content', $('#viewPagesModal')).empty();
+                                    // $('.view_sites_modal_content', $('#viewPagesModal')).load("{% url 'edit_dns' pk %}");
+								}
+							});
+						}else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+					},
+					cache       : false,
+					contentType : false,
+					processData : false,
+				});
+			},
+		});
+		e.preventDefault();
+	});
+  </script>
+  {% endblock %}

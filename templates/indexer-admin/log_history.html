@@ -1,0 +1,61 @@
+{% extends 'indexer-admin/layout.html' %}
+{% load static %}
+{% block content %}
+<style type="text/css">
+	.display-none{
+		display: none;
+	}
+</style>
+	<div class="row mt-5 align-items-center justify-content-between">
+		<div class="col-auto">
+			<h3 class="app-page-title mb-0"><i class="fas fa-history text-success me-2" style="zoom:0.85"></i> Log History</h3>
+		</div>
+	</div>
+	<br><br>
+	<div class="col-sm-12 row">
+		<div class="app-card app-card-orders-table shadow-sm mb-5">
+			<div class="app-card-body">
+				<div class="table-responsive">
+					<table class="table table-hover" id="logs_list" width="100%">
+						<thead>
+							<tr>
+								<th class="cell">User</th>
+								<th class="cell">Description</th>
+								<th class="cell">Date Time</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>	
+		</div>
+	</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#logs_list').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 1, 'asc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': '/indexer/new/api/logs?format=datatables',
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'user',
+	                'name': 'user.last_name, user.first_name',
+	                'className': 'text-center'
+	            },
+				{'data': 'descriptions', 'className': 'text-start' },
+	            {'data': 'datetime_added', 'className': 'text-start' },
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [2] }
+			]
+		});
+	});
+</script>
+{% endblock %}

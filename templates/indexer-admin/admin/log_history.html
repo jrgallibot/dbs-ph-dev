@@ -1,0 +1,65 @@
+{% extends 'indexer-admin/admin/layout.html' %}
+{% load static %}
+{% block content %}
+<div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader">
+	<div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+		<div class="d-flex align-items-center flex-wrap mr-2">
+			<h5 class="text-dark font-weight-bold mt-2 mb-2 mr-5">Log History</h5>
+		</div>
+	</div>
+</div>
+<div class="d-flex flex-column-fluid">
+	<div class="container">
+		<div class="card card-custom">
+			<div class="card-header flex-wrap border-0 pt-6 pb-0">
+				<div class="card-title">
+					<h3 class="card-label">Log History
+					<span class="text-muted pt-2 font-size-sm d-block">List of details</span></h3>
+				</div>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-hover" id="logs_list" width="100%">
+						<thead>
+							<tr>
+								<th class="cell">User</th>
+								<th class="cell">Description</th>
+								<th class="cell">Date Time</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#logs_list').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 1, 'asc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': '/indexer/new/api/logs?format=datatables',
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'user',
+	                'name': 'user.last_name, user.first_name',
+	                'className': 'text-center'
+	            },
+				{'data': 'descriptions', 'className': 'text-start' },
+	            {'data': 'datetime_added', 'className': 'text-start' },
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [2] }
+			]
+		});
+	});
+</script>
+{% endblock %}

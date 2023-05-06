@@ -1,0 +1,95 @@
+{% load tags %}
+<div class="modal-header">
+    <h5 class="modal-title" id="back-to-dns"><i class="fas fa-long-arrow-left route-backrule-spinner" style="cursor:pointer"></i> ROUTES</h5>
+    <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+</div>
+<form id="ruleform">
+    {% csrf_token %}
+    <div class="modal-body">
+        {% getpage_rule pk as rule %}
+        <input type="hidden" name="pk" value="{{rule.id}}">
+        <input type="hidden" name="rule_id" value="{{rule.rule_id}}">
+        <div  class="row">
+            <div class="form-group mb-3">
+                <label for="targets">URL Pattern <span class="text-danger">*</span></label>
+                <input type="text" name="url_pattern" class="form-control" required placeholder="Targets" value="{{rule.targets}}">
+            </div>
+            <div class="form-group mb-3">
+                <label for="actions">Actions <span class="text-danger">*</span></label>
+                <select name="action" required class="form-control select2">
+                    <option></option>
+                    <option value="forwarding_url" {% if rule.actions == 'forwarding_url' %} selected{% endif %}>Forwarding Url</option>
+                    <option value="block" {% if rule.actions == 'block' %} selected{% endif %}>Block</option>
+                    <option value="challenge" {% if rule.actions == 'challenge' %} selected{% endif %}>Challenge</option>
+                    <option value="js_challenge" {% if rule.actions == 'js_challenge' %} selected{% endif %}>JavaScript Challenge</option>
+                    <option value="pause" {% if rule.actions == 'pause' %} selected{% endif %}>Pause</option>
+                    <option value="redirect" {% if rule.actions == 'redirect' %} selected{% endif %}>Redirect</option>
+                    <option value="always_online" {% if rule.actions == 'always_online' %} selected{% endif %}>Always Online</option>
+                </select>
+            </div>
+            <div class="form-group mb-3">
+                <label for="priority">Priority <span class="text-danger">*</span></label>
+                <input type="number" name="priority" class="form-control" required placeholder="Priority" value="{{rule.priority}}">
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <div class="float-end">
+            <button type="submit" class="btn btn-primary" id="btn-rule">Save Changes</button>
+        </div>
+    </div>
+</form>
+<script>
+    $('#ruleform').on('submit', function(e){
+		$(`#btn-rule`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+		var form = new FormData(this);
+		Swal.fire({
+			title: "Are you sure",
+			text: "You want to {% if rule %}update{%else%}create{% endif %} page rule ?",
+			icon: "info",
+			showCancelButton: true,
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+				return $.post({
+					url: "{% url 'page_rule' pk %}",
+					data: form,
+					success : function (response){
+						if(response.data == "success"){
+							Swal.fire({
+								title: "Good job!",
+								html:  response.msg,
+								icon: "success",
+								allowOutsideClick: false,
+							}).then((result) => {
+								if (result.isConfirmed){
+									$('#ruleform').trigger('reset');
+									$('#actionsModalContent').load(`/cloudflare/cloud_fare_api_view_sites/{{model_id}}`, function(response, status, jqXhr){
+										if(status == "success"){
+											$('#actionsModalContent').empty().append(response);
+										}else{
+											alert('error')
+										}
+									});
+									$(`#btn-rule`).html('Save Changes');
+								}
+							});
+						}else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+					},
+					cache       : false,
+					contentType : false,
+					processData : false,
+				});
+			},
+		});
+		e.preventDefault();
+	});
+</script>

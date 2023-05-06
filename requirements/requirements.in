@@ -1,0 +1,15 @@
+Django
+django-allauth
+psycopg2-binary
+djangorestframework
+djangorestframework-api-key
+coreapi  # DRF schemas and docs
+stripe
+dj-stripe
+django-anymail[mailgun]  # email services
+celery-progress
+celery
+celery[redis]
+wagtail
+httplib2
+oauth2client

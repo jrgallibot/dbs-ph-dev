@@ -1,0 +1,433 @@
+{% extends 'indexer-admin/layout.html' %}
+{% load static %}
+{% block content %}
+<style type="text/css">
+	.display-none{
+		display: none;
+	}
+</style>
+	<div class="row mt-5 align-items-center justify-content-between">
+		<div class="col-auto">
+			<h3 class="app-page-title mb-0"><i class="fas fa-globe-asia text-success me-2" style="zoom:0.85"></i> Websites</h3>
+		</div>
+		<div class="col-auto">
+			 <div class="page-utilities">
+				<div class="row g-2 justify-content-start justify-content-md-end align-items-center">
+					<div class="col-auto">
+						<a class="btn btn-secondary" href="#" data-role="sync_pages">
+							<i class="fas fa-sync-alt"></i>
+							Sync all Pages
+						</a>						    
+						<a class="btn btn-primary" href="#" data-bs-toggle="modal" data-bs-target="#add_web">
+							<i class="fas fa-plus"></i>
+							Add Websites
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<br><br>
+	<div class="col-sm-12 row">
+		<div class="app-card app-card-orders-table shadow-sm mb-5">
+			<div class="app-card-body">
+				<div class="table-responsive">
+					<table class="table table-hover" id="api_web" width="100%">
+						<thead>
+							<tr>
+								<th class="cell">Action</th>
+								<th class="cell">Website</th>
+								<th class="cell">Created Date</th>
+								<th class="cell text-center">Submitted Count</th>
+								<th class="cell text-center">Indexed Rate</th>
+								<th class="cell text-center">Indexed Rate Checked Count</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>	
+		</div>
+	</div>
+
+	<div class="modal fade" id="add_web" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-pencil text-success me-2" style="zoom:0.85"></i> INDEX WEBSITES</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<form id="submitForm">
+					{% csrf_token %}
+					<div class="modal-body">
+						<div class="mb-3">
+							<label>Index API <span class="asteriskField">*</span></label>
+							<select class="form-select select2" data-dropdown-parent="#add_web" name="api_email" id="api_email" required>
+								<option></option>
+								{% for row in index_api %}
+								<option value="{{ row.id }}">{{ row.email }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="mb-3">
+							<label>Website <span class="asteriskField">*</span></label>
+							<input type="text" class="form-control" name="website" placeholder="Website" required>
+						</div>
+						<div class="form-group mt-3">
+							<label>Pages <span class="text-danger">*</span></label>
+							<textarea class="form-control" rows="10" name="pages" required></textarea>
+							<small>List of pages you want to index. 1 Url Per Line</small>
+						</div>
+						<div class="form-check mt-3">
+							<input class="form-check-input" type="checkbox" name="index_now" id="index_now" required>
+							<label class="form-check-label" for="flexCheckDefault">
+								Index now
+							</label>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-web-modal">Close</button>
+						<button type="submit" class="btn btn-primary">Save changes</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal" id="viewModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+		<div class="modal-dialog modal-xl">
+			<div class="modal-content">
+			  	<div class="modal-header">
+					<h5 class="modal-title"><i class="fas fa-edit text-success me-2" style="zoom:0.85"></i>VIEW INDEX WEBSITE</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" id="close-editindex-modal" aria-label="Close"></button>
+			  	</div>
+			  	<div class="view_edit_modal_content"></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal" tabindex="-1" id="viewPagesModal">
+		<div class="modal-dialog modal-xl">
+			<div class="modal-content">
+			  <div class="modal-header">
+				<h5 class="modal-title"><i class="fas fa-globe-asia text-success me-2" style="zoom:0.85"></i> VIEW PAGES INDEX</h5>
+				<button type="button" class="btn-close" onClick="closeModal('viewPagesModal')"></button>
+			  </div>
+			  <div class="modal-body">
+			  	<button class="btn btn-primary ms-3" data-bs-toggle="collapse" data-bs-target="#new-pages" aria-expanded="false" aria-controls="collapseExample" id="new-pages-button"><i class='fas fa-plus'></i> New Pages</button>
+			  	<br>
+			  	<form id="addPagesForm">
+	                {% csrf_token %}
+	                <div class="collapse px-3 py-0" id="new-pages">
+		                <input type="hidden" name="web_id" id="web_id">
+		                <div class="form-group mt-4">
+							<label>Pages <span class="text-danger">*</span></label>
+							<textarea class="form-control" rows="10" name="url" required></textarea>
+							<small>List of pages you want to index. 1 Url Per Line</small>
+						</div>
+		                <div class="form-group mt-3 float-end">
+		                    <button type="submit" class="btn btn-primary">Save changes</button>
+		                </div>
+		            </div>
+	            </form>
+	            <br><br><hr>
+				<div class="table-responsive">
+					<table class="table table-hover" id="api_pages_web" width="100%">
+						<thead>
+							<tr>
+								<th class="cell">Website</th>
+								<th class="cell">Url</th>
+								<th class="cell">Date Added</th>
+								<th class="cell">Index Date</th>
+								<th class="cell">Date Tracking</th>
+								<th class="cell text-center">Status</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			  </div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#api_web').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 2, 'desc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': '/indexer/new/api/list/websites/?format=datatables',
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+						return '<a href="javascript:void(0);" style="cursor:pointer;" data-role="edit" data-id="'+ row['id'] + '">View</a> &nbsp;|&nbsp;\
+						<a href="javascript:void(0);" data-role="if_check" data-id="'+ row['id'] + '" style="cursor:pointer;" class="text-primary">Check</a> &nbsp;|&nbsp;\
+						<a href="javascript:void(0);" data-role="view_pages" data-id="'+ row['id'] + '" style="cursor:pointer;" class="text-primary">Pages</a>'
+					}
+				},
+				{'data': 'website'},
+				{'data': 'created_at'},
+				{'data': 'times_indexed', 'className': 'text-center'},
+				{'data': 'indexedRate', 'className': 'text-center'},
+				{'data': 'times_indexedRate', 'className': 'text-center'},
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [3] }
+			]
+		});
+
+		$('#addPagesForm').on('submit', function(e){
+			var form = new FormData(this);
+			Swal.fire({
+				title: "Are you sure",
+				text: "You want to add this url?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.post({
+						url: "{% url 'add-pages' %}",
+						data: form,
+						success : function (response){
+							if(response.data == "success"){
+								Swal.fire({
+									title: "Good job!",
+									html:  response.msg,
+									icon: "success",
+									allowOutsideClick: false,
+								}).then((result) => {
+									if (result.isConfirmed){
+										$('#addPagesForm').trigger('reset');
+										$('#api_pages_web').DataTable().ajax.reload();
+									}
+								});
+							}else{
+								Swal.fire({
+									title: "Oops!",
+									html:  response.msg,
+									icon: "error",
+									allowOutsideClick: false,
+								});
+							}
+						},
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			});
+			e.preventDefault();
+		});
+
+		$('#submitForm').on('submit', function(e){
+			var form = new FormData(this);
+			Swal.fire({
+				title: "Are you sure",
+				text: "You want to add this website?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.post({
+						url: "{% url 'index-websites' %}",
+						data: form,
+						success : function (response){
+							if(response.data == "success"){
+								Swal.fire({
+									title: "Good job!",
+									html:  response.msg,
+									icon: "success",
+									allowOutsideClick: false,
+								}).then((result) => {
+									if (result.isConfirmed){
+										$('#submitForm').trigger('reset');
+										$('#api_web').DataTable().ajax.reload();
+										$('#close-web-modal').click();
+										$('#api_email').val("").trigger('change');
+									}
+								});
+							}else{
+								Swal.fire({
+									title: "Oops!",
+									html:  response.msg,
+									icon: "error",
+									allowOutsideClick: false,
+								});
+							}
+						},
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			});
+			e.preventDefault();
+		});
+	});
+	
+	$(document).on('click', 'a[data-role=edit]', function(){
+        var id = $(this).data('id');
+        var viewModal = new bootstrap.Modal(document.getElementById('viewModal'), {});
+		$('.view_edit_modal_content', $('#viewModal')).load('/dashboard/update/index/websites/' + id, function(){
+			viewModal.show();
+		});
+    });
+
+	$(document).on('click', 'a[data-role=sync_pages]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+          html: "You want to sync all pages in <b>{{count_web}} website{% if count_web > 1 %}s{% endif %}</b> who has not exist ?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  		url: "{% url 'website_add_pages_not_exist' %}",
+				data: {
+					id: id
+				},
+				type: "POST"
+		  	});
+		  }
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  html:  response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#api_web').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+    });
+
+	$(document).on('click', 'a[data-role=if_check]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+          text: "You want to verify if pages are in index ?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  		url: "{% url 'check-pages' %}",
+				data: {
+					id: id
+				},
+				type: "POST"
+		  	});
+		  }
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  html:  response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#api_web').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+    });
+
+
+    $(document).on('click', 'a[data-role=view_pages]', function(){
+        var id = $(this).data('id');
+        $('#web_id').val(id)
+        $('#api_pages_web').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 3, 'asc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': `/indexer/new/api/website/pages/detail/`+id+`?format=datatables`,
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'web',
+					'name': 'web.website',
+					'className': 'text-center'
+				},
+				{'data': 'url'},
+				{'data': 'date_added'},
+				{'data': 'indexed_date'},
+				{'data': 'date_tracking'},
+				{'data': 'index_status',
+					'render': function(data, type, row, meta) {
+						if(row['index_status'] == 1) {
+							return '<svg xmlns="http://www.w3.org/2000/svg" width="16" style="color:green" height="16" fill="currentColor" class="bi 					bi-check-circle" viewBox="0 0 16 16">\
+										  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+										  <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>\
+									</svg> Complete'
+						}else if (row['index_status'] == 0) {
+							return '<svg xmlns="http://www.w3.org/2000/svg" style="color:red" width="16" height="16" fill="currentColor" class="bi 						bi-x-circle" viewBox="0 0 16 16">\
+									  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+									  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\
+									</svg> Not Complete'
+						}else if (row['index_status'] == 2) {
+							return '<svg xmlns="http://www.w3.org/2000/svg" style="color:red" width="16" height="16" fill="currentColor" class="bi 						bi-x-circle" viewBox="0 0 16 16">\
+									  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+									  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\
+									</svg> Invalid Url'
+						}else{
+							return '<span class="badge bg-info">Pending...</span>'
+						}
+					},
+					'className': 'text-center'
+				},
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [3] }
+			]
+		});
+		$('#viewPagesModal').toggle('modal');
+    });
+
+	const closeModal = (modal) => {
+		$(`#${modal}`).toggle('modal');
+	}
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+
+{% extends "pegasus/employees/django_object_lifecycle_base.html" %}
+{% load static %}
+{% block django_app %}
+<div class="app-card">
+    <h3>Sitemap will appear after it's processed here</h3>
+<div class="table-responsive">
+<table class="table pg-table">
+    <thead>
+    <tr>
+    <th class="pg-text-left">Website</th>
+    <th class="pg-text-left">Results</th>
+    <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for indexer in object_list %}
+    <tr>
+        <td>{{ indexer.website }}</td>
+        <td><code>Click To View</code>
+            <a href="{% url 'indexer_app:sitemapupdate' indexer.id %}">
+                <div class="pg-button-secondary">
+                  <span class="icon is-small"><i class="fa fa-edit"></i></span>
+                  <span class="pg-hidden-mobile-inline">Edit</span></div>
+              </a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
+

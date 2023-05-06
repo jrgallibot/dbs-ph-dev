@@ -1,0 +1,34 @@
+
+{% extends "pegasus/employees/django_object_lifecycle_base.html" %}
+{% load static %}
+{% block django_app %}
+<div class="app-card">
+<div class="table-responsive">
+<table class="table pg-table">
+    <thead>
+    <tr>
+    <th class="pg-text-left">Indexed Pages</th>
+    <th class="pg-text-left">Updated Date</th>
+    <th class="pg-text-left">Created Date</th>
+    <th class="pg-text-left">Submitted Count</th>
+    <th class="pg-text-left">Indexed Rate</th>
+    <th class="pg-text-left">Indexed Rate Checked Count</th>
+    <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for indexer in object_list %}
+    <tr>
+        <td><a style = "color: blue;" href="{% url 'indexer_app:websiteupdate' indexer.id %}">{{ indexer.website }}</a></td>
+        <td>{{ indexer.updated_at}}</td>
+        <td>{{ indexer.created_at}}</td>
+        <td>{{ indexer.times_indexed}}</td>
+        <td>{{ indexer.indexedRate}}</td>
+        <td>{{ indexer.times_indexedRate}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
+

@@ -1,0 +1,188 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load staticfiles %}
+{% block app %}
+<style type="text/css">
+	.display-none{
+		display: none;
+	}
+	.zoom:hover {
+		z-index: inherit;
+		transform: scale(3.5);
+	}
+</style>
+<div class="row mt-5 align-items-center justify-content-between">
+    <div class="col-auto">
+        <h3 class="app-page-title mb-0"><i class="fas fa-users text-success me-2" style="zoom:0.85"></i> List of Users</h3>
+    </div>
+    <div class="col-auto">
+         <div class="page-utilities">
+            <div class="row g-2 justify-content-start justify-content-md-end align-items-center">
+                <div class="col-auto">						    
+                    <a class="btn btn-primary" href="/indexer/user/register/account/">
+                        <i class="fas fa-plus"></i>
+                        Register User
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br>
+<section class="app-card">
+    <div class="app-card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="user_table" width="100%">
+                <thead>
+                    <tr>
+                        <th class="cell">Action</th>
+						<th class="cell display-none">Action</th>
+                        <th class="cell">First Name</th>
+                        <th class="cell">Middle Name</th>
+                        <th class="cell">Last Name</th>
+                        <th class="cell">Email</th>
+                        <th class="cell">Username</th>
+                        <th class="cell">Date Created</th>
+                        <th class="cell">Last Login</th>
+                        <th class="cell text-center">Is Staff</th>
+                        <th class="cell text-center">Is Super Admin</th>
+                        <th class="cell text-center">Is Active</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+    $(document).ready(function(){
+		$('#user_table').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 7, 'desc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': `/indexer/new/api/user/api/list-of-users/?format=datatables`,
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+						if(row['client_settings']){
+							return `<a data-role="edit" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">View</a> | 
+									<a data-role="client" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">Client</a>`
+						}else{
+							return `<a data-role="edit" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">View</a> | 
+									<a data-role="generate" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">Generate Client</a>`
+						}
+						
+					}
+				},
+				{'data': 'client_settings','className': 'display-none'},
+				{'data': 'first_name'},
+                {'data': 'middle_name'},
+                {'data': 'last_name'},
+                {'data': 'email'},
+                {'data': 'username','className': 'text-center'},
+				{'data': 'date_joined'},
+                {'data': 'last_login'},
+				{'data': 'is_staff',
+					'render': function(data, type, row, meta) {
+						if(row['is_staff']) {
+							return '<svg xmlns="http://www.w3.org/2000/svg" width="16" style="color:green" height="16" fill="currentColor" class="bi 					bi-check-circle" viewBox="0 0 16 16">\
+										  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+										  <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>\
+									</svg>'
+						}else{
+							return '<svg xmlns="http://www.w3.org/2000/svg" style="color:red" width="16" height="16" fill="currentColor" class="bi 						bi-x-circle" viewBox="0 0 16 16">\
+									  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+									  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\
+									</svg>'
+						}
+					},
+					'className': 'text-center'
+				},
+                {'data': 'is_superuser',
+					'render': function(data, type, row, meta) {
+						if(row['is_superuser']) {
+							return '<svg xmlns="http://www.w3.org/2000/svg" width="16" style="color:green" height="16" fill="currentColor" class="bi 					bi-check-circle" viewBox="0 0 16 16">\
+										  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+										  <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>\
+									</svg>'
+						}else{
+							return '<svg xmlns="http://www.w3.org/2000/svg" style="color:red" width="16" height="16" fill="currentColor" class="bi 						bi-x-circle" viewBox="0 0 16 16">\
+									  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+									  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\
+									</svg>'
+						}
+					},
+					'className': 'text-center'
+				},
+                {'data': 'is_active',
+					'render': function(data, type, row, meta) {
+						if(row['is_active']) {
+							return '<svg xmlns="http://www.w3.org/2000/svg" width="16" style="color:green" height="16" fill="currentColor" class="bi 					bi-check-circle" viewBox="0 0 16 16">\
+										  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+										  <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>\
+									</svg>'
+						}else{
+							return '<svg xmlns="http://www.w3.org/2000/svg" style="color:red" width="16" height="16" fill="currentColor" class="bi 						bi-x-circle" viewBox="0 0 16 16">\
+									  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+									  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\
+									</svg>'
+						}
+					},
+					'className': 'text-center'
+				},
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [4] }
+			]
+		});
+	});
+
+	$(document).on('click', 'a[data-role=generate]', function(){
+		var id = $(this).data('id');
+		Swal.fire({
+		title: "Are you sure",
+		text: "You want to generate user client api key for pbn manager?",
+		icon: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Yes",
+		allowOutsideClick: false,
+		showLoaderOnConfirm: true,
+		preConfirm: function (){
+			return $.ajax({
+				url: "/indexer/user/generate_client_toker_user/",
+				data: {
+					id: id
+				},
+				type: "POST"
+			});
+		}
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				title: "Good job!",
+				html:  response.value.msg,
+				icon: "success",
+				confirmButtonColor: "#3498DB",
+				allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#user_table').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+	});
+</script>
+{% endblock %}

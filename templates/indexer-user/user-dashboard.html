@@ -1,0 +1,100 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load staticfiles %}
+{% block app %}
+<style type="text/css">
+	.display-none{
+		display: none;
+	}
+	.zoom:hover {
+		z-index: inherit;
+		transform: scale(3.5);
+	}
+</style>
+<div class="row mt-5 align-items-center justify-content-between">
+    <div class="col-auto">
+        <h3 class="mb-0"><i class="fas fa-tachometer text-success me-2" style="zoom:0.85"></i> Dashboard</h3>
+    </div>
+</div>
+<br><br>
+<div class="row">
+	<div class="col-lg-3">
+		<!--begin::Tiles Widget 12-->
+		<div class="card card-custom gutter-b" style="height: 150px">
+			<div class="card-body">
+				<i class="fas fa-globe fa-2x text-success"></i>
+				<h5 class="text-dark font-weight-bolder font-size-h1 mt-3">{{web}}</h5>
+				<a href="#" class="text-muted text-hover-primary font-weight-bold font-size-lg mt-1">Total Web Pages to Index</a>
+			</div>
+		</div>
+		<!--end::Tiles Widget 12-->
+	</div>
+	<div class="col-lg-3">
+		<!--begin::Tiles Widget 12-->
+		<div class="card card-custom gutter-b" style="height: 150px">
+			<div class="card-body">
+				<i class="fas fa-mobile fa-2x text-success"></i>
+				<h5 class="text-dark font-weight-bolder font-size-h1 mt-3">{{mobilefriendly}}</h5>
+				<a href="#" class="text-muted text-hover-primary font-weight-bold font-size-lg mt-1">Total Mobile Friendly Pages</a>
+			</div>
+		</div>
+		<!--end::Tiles Widget 12-->
+	</div>
+	<div class="col-lg-3">
+		<!--begin::Tiles Widget 12-->
+		<div class="card card-custom gutter-b" style="height: 150px">
+			<div class="card-body">
+				<i class="fas fa-mobile fa-2x text-danger"></i>
+				<h5 class="text-dark font-weight-bolder font-size-h1 mt-3">{{not_mobilefriendly}}</h5>
+				<a href="#" class="text-muted text-hover-primary font-weight-bold font-size-lg mt-1">Total Not Mobile Friendly Pages</a>
+			</div>
+		</div>
+		<!--end::Tiles Widget 12-->
+	</div>
+	<div class="col-lg-3">
+		<!--begin::Tiles Widget 12-->
+		<div class="card card-custom gutter-b" style="height: 150px">
+			<div class="card-body">
+				<i class="fas fa-sitemap fa-2x text-success"></i>
+				<h5 class="text-dark font-weight-bolder font-size-h1 mt-3">{{sitemap}}</h5>
+				<a href="#" class="text-muted text-hover-primary font-weight-bold font-size-lg mt-1">Total Sitemap Pages</a>
+			</div>
+		</div>
+		<!--end::Tiles Widget 12-->
+	</div>
+</div>
+<div class="row mt-3">
+	<div class="col-lg-3">
+		<!--begin::Tiles Widget 12-->
+		<div class="card card-custom gutter-b" style="height: 150px">
+			<div class="card-body">
+				<i class="fas fa-star fa-2x text-success"></i>
+				<h5 class="text-dark font-weight-bolder font-size-h2 mt-3">${% if overall_cost.cost__sum != None %}{{overall_cost.cost__sum}}{% else %}0{% endif %}</h5>
+				<a href="#" class="text-muted text-hover-primary font-weight-bold font-size-lg mt-1">OverAll Total Rank Tracker Cost</a>
+			</div>
+		</div>
+		<!--end::Tiles Widget 12-->
+	</div>
+	<div class="col-lg-3">
+		<!--begin::Tiles Widget 12-->
+		<div class="card card-custom gutter-b" style="height: 150px">
+			<div class="card-body">
+				<i class="fas fa-star fa-2x text-danger"></i>
+				<h5 class="text-dark font-weight-bolder font-size-h2 mt-3">${% if cost_perday.cost__sum != None %}{{cost_perday.cost__sum}}{% else %}0{% endif %}</h5>
+				<a href="#" class="text-muted text-hover-primary font-weight-bold font-size-lg mt-1">Total Rank Tracker Cost Per Day</a>
+			</div>
+		</div>
+		<!--end::Tiles Widget 12-->
+	</div>
+	<div class="col-lg-3">
+		<!--begin::Tiles Widget 12-->
+		<div class="card card-custom gutter-b" style="height: 150px">
+			<div class="card-body">
+				<i class="fas fa-key fa-2x text-success"></i>
+				<h5 class="text-dark font-weight-bolder font-size-h2 mt-3">{{api}}</h5>
+				<a href="#" class="text-muted text-hover-primary font-weight-bold font-size-lg mt-1">Total API</a>
+			</div>
+		</div>
+		<!--end::Tiles Widget 12-->
+	</div>
+</div>
+{% endblock %}

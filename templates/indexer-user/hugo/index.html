@@ -1,0 +1,330 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load staticfiles %}
+{% block app %}
+  <div class="d-flex justify-content-between">
+        
+  </div>
+
+<div class="row mt-5 align-items-center justify-content-between">
+	<div class="col-auto">
+		<h3 class="app-page-title mb-0"><i class="fas fa-globe-asia text-success me-2" style="zoom:0.85"></i> PBN Manager</h3>
+	</div>
+	<div class="col-auto">
+		 <div class="page-utilities">
+			<div class="row g-2 justify-content-start justify-content-md-end align-items-center">
+				<div class="col-auto">
+					<div>
+						<div class="spinner-border spinner-border-sm fs-1 mb-2 client-spinner" hidden role="status">
+						  	<span class="visually-hidden">Loading...</span>
+						</div>
+						<div class="btn-group" role="group" aria-label="Basic example">
+							<button type="button" class="btn btn-primary active website-btn">Websites</button>
+							<button type="button" class="btn btn-primary cloudflare-btn">Cloudflare</button>
+						</div>
+					</div>				    
+					
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<section class="card client-card">
+    {% include 'indexer-user/hugo/partials/sites.html' %}
+</section>
+<div class="modal fade" id="addWebsiteModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-pencil text-success me-2"></i> ADD WEBSITE</h5>
+                <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <form action="/hugo-client/add-website/" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label>Title <label class="text-danger">*</label></label>
+                        <input type="text" class="form-control" name="title" placeholder="Title" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Base URL</label>
+                        <input type="text" class="form-control" name="base_url" placeholder="Base URL">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Language Code <label class="text-danger">*</label></label>
+                        <input type="text" class="form-control" name="language_code" placeholder="Language Code" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Theme <label class="text-danger">*</label></label>
+                        <select class="form-select select2" name="theme" required>
+                            <option></option>
+                            {% for row in themes %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-ass-modal">Close</button>
+                    <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span> Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="addCloudflareAccountModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-pencil text-success me-2"></i> ADD ACCOUNT</h5>
+                <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <form action="/hugo-client/add-account/" method="POST" id="addCloudflareAccountForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label>Cloudflare Model <label class="text-danger">*</label></label>
+                        <select id="cloudflare" name="cloudflare" required class="form-select select2">
+                            <option></option>
+                            {% for row in cloudflare_model %}
+                            <option value='{{row.id}}'>{{row.email}}</option>
+                            {% endfor%}
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Account ID <label class="text-danger">*</label></label>
+                        <input type="text" class="form-control" name="id" placeholder="Enter ID" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Account Token <label class="text-danger">*</label></label>
+                        <input type="text" class="form-control" name="token" placeholder="Enter Token">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span> Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="publishModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="back-to-routes"><i class="fas fa-long-arrow-left route-back-spinner" style="cursor:pointer"></i> PUBLISH</h5>
+                <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="actionsModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content" id="actionsModalContent">
+
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
+<script>
+    $('.select2').select2({
+		width: '100%',
+		theme: 'bootstrap-5',
+	    placeholder: 'Choose',
+	});
+
+    const routesButton = (pk, action) => {
+        if(action == 'forward'){
+            $(`#site-routes-btn-${pk}`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>')
+            $('#actionsModalContent').load(`/hugo-client/routes/${pk}/`, function(response, status, jqXhr){
+                if(status == "success"){
+                    localStorage.setItem('website_id', pk)
+                    $('#actionsModalContent').empty().append(response);
+                    $(`#site-routes-btn-${pk}`).html('Routes');
+                    $('#actionsModal').modal('toggle');
+                }else if(status == "error"){
+                    alert('error')
+                }
+            });
+        }else if(action == 'back'){
+            $(`#back-to-routess`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+            $('#actionsModalContent').load(`/hugo-client/routes/${pk}/`, function(response, status, jqXhr){
+                if(status == "success"){
+                    $('#actionsModalContent').empty().append(response);
+                }else if(status == "error"){
+                    alert('error')
+                }
+            });
+        }
+
+    }
+    const routeContentsButton = (pk, action) => {
+        var website_id = localStorage.getItem('website_id')
+        if(action == 'forward'){
+            $(`#site-routes-contents-btn-${pk}`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+            $('#actionsModalContent').load(`/hugo-client/route-contents/${pk}/`, function(response, status, jqXhr){
+                if(status == "success"){
+                    $('#actionsModalContent').empty().append(response);
+                    $('.route-back-spinner').attr('onClick', `routesButton('${website_id}', 'back')`);
+                }else if(status == "error"){
+                    alert('error')
+                }
+            });
+        }else if(action == 'back'){
+            $(`#back-to-route-contents`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+            $('#actionsModalContent').load(`/hugo-client/route-contents/${pk}/`, function(response, status, jqXhr){
+                if(status == "success"){
+                    $('#actionsModalContent').empty().append(response);
+                    $('.route-back-spinner').attr('onClick', `routesButton('${website_id}', 'back')`);
+                }else if(status == "error"){
+                    alert('error')
+                }
+            });
+
+        }
+    }
+
+    const contentButton = (pk, route_id) => {
+        var website_id = localStorage.getItem('website_id')
+        $(`#site-route-content-btn-${pk}`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+        $('#actionsModalContent').load(`/hugo-client/route-content/${pk}/`, function(response, status, jqXhr){
+            if(status == "success"){
+                $('#actionsModalContent').empty().append(response);
+                $('.route-contents-back-spinner').attr('onClick', `routesButton('${website_id}', 'back')`);
+            }else if(status == "error"){
+                alert('error')
+            }
+        });
+    }
+
+    const publishSite = (website_id, cloudflare_id, email, title) => {
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to publish this site?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                $.ajax({
+                    type: 'POST',
+                    url: `/hugo-client/publish-website/${ website_id }/`,
+                    data: {'cloudflare_id': cloudflare_id, 'email': email, 'title': title, 'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()},
+                    cache: false,
+                    success: (result) => {
+                        Swal.fire({
+                            title: "Good job!",
+                            html:  'You has been successfully published a website, it will take sometime to take effect.',
+                            icon: "success",
+                            allowOutsideClick: false,
+                        })
+                    },
+                    error: (result) => {
+                        const statusMsg = result['responseJSON']['statusMsg'];
+                        Swal.fire({
+                            title: "Oops!",
+                            html:  statusMsg,
+                            icon: "error",
+                            allowOutsideClick: false,
+                        });
+
+                    }
+                });
+            },
+        });
+    }
+
+    const updateCloudflare = (pk) => {
+        $(`.cloudflare-update-btn-${pk}`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>')
+        $('#actionsModalContent').load(`/hugo-client/update-cloudflare/${pk}/`, function(response, status, jqXhr){
+            if(status == "success"){
+                $(`.cloudflare-update-btn-${pk}`).html('Update');
+                $('#actionsModalContent').empty().append(response);
+                $('#actionsModal').modal('toggle');
+            }else if(status == "error"){
+                alert('error')
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        localStorage.removeItem('website_id');
+        $('#cloudflareTable').DataTable();
+        $('#websiteTable').DataTable();
+        $('.cloudflare-btn').on('click', (e) => {
+            $('.client-spinner').attr('hidden', false);
+            $('.client-card').load(`/hugo-client/cloudflare/`, function(response, status, jqXhr){
+                $('.client-card').empty().append(response);
+                $('.client-spinner').attr('hidden', true);
+                $('.website-btn').removeClass('active')
+                $('.cloudflare-btn').addClass('active')
+            });
+        });
+
+        $('.website-btn').on('click', (e) => {
+            $('.client-spinner').attr('hidden', false);
+            $('.client-card').load(`/hugo-client/website/`, function(response, status, jqXhr){
+                $('.client-card').empty().append(response);
+                $('.client-spinner').attr('hidden', true);
+                $('.cloudflare-btn').removeClass('active')
+                $('.website-btn').addClass('active')
+            });
+        });
+
+
+        $('#addCloudflareAccountForm').on('submit', (e) => {
+            e.preventDefault();
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to add this account?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    const formData = $('#addCloudflareAccountForm').serialize();
+                    const url = $('#addCloudflareAccountForm').attr('action');
+                    $.ajax({
+                        type: 'POST',
+                        url: url,
+                        data: formData,
+                        cache: false,
+                        success: (result) => {
+                            Swal.fire({
+                                title: "Good job!",
+                                html:  'You has been successfully added an account.',
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then((result) => {
+                                if (result.isConfirmed){
+                                    $('#addCloudflareAccountForm').trigger('reset');
+                                    window.location.reload();
+                                }
+                            });
+                        },
+                        error: (result) => {
+                            const statusMsg = result['responseJSON']['statusMsg'];
+                            Swal.fire({
+                                title: "Oops!",
+                                html:  statusMsg,
+                                icon: "error",
+                                allowOutsideClick: false,
+                            });
+
+                        }
+                    });
+                },
+            });
+        })
+    });
+</script>
+{% endblock %}

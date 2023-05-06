@@ -1,0 +1,267 @@
+{% extends 'indexer-admin/admin/layout.html' %}
+{% load static %}
+{% block content %}
+<div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader">
+	<div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+		<div class="d-flex align-items-center flex-wrap mr-2">
+			<h5 class="text-dark font-weight-bold mt-2 mb-2 mr-5">API's Type</h5>
+		</div>
+	</div>
+</div>
+<div class="d-flex flex-column-fluid">
+	<div class="container">
+		<div class="card card-custom">
+			<div class="card-header flex-wrap border-0 pt-6 pb-0">
+				<div class="card-title">
+					<h3 class="card-label">API's Type
+					<span class="text-muted pt-2 font-size-sm d-block">List of details</span></h3>
+				</div>
+				<div class="card-toolbar">
+					<a href="#" class="btn btn-success font-weight-bolder font-size-sm" data-toggle="modal" data-target="#add_api_type"><i class="fas fa-plus"></i> Add Type</a>
+				</div>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-hover" id="api_type" width="100%">
+						<thead>
+							<tr>
+								<th class="cell">Action</th>
+								<th class="cell">Api's Method</th>
+								<th class="cell">Created At</th>
+								<th class="cell text-center">Status</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="add_api_type" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-pencil-alt text-success me-2" style="zoom:0.85"></i> CREATE API TYPE</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i aria-hidden="true" class="ki ki-close"></i>
+                </button>
+			</div>
+			<form id="submitForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="mb-3">
+						<label>Method <span class="asteriskField">*</span></label>
+						<input name="method_type" type="text" class="form-control" placeholder="Method" required="required">
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" name="status">
+						<label class="form-check-label" for="flexCheckDefault">
+							Status
+						</label>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal" id="close-api-modal">Close</button>
+					<button type="submit" class="btn btn-primary">Save changes</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div class="modal" tabindex="-1" id="viewModal">
+  	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title"><i class="fas fa-edit text-success me-2" style="zoom:0.85"></i> EDIT API</h5>
+			<button type="button" class="close up-btn-close" onClick="closeModal('viewModal')" aria-label="Close">
+                <i aria-hidden="true" class="ki ki-close"></i>
+            </button>
+		  </div>
+		  <div class="modal-body">
+				<form id="updateIndexForm">
+					{% csrf_token %}
+					<div class="form-group display-none">
+						<label>ID</label>
+						<input type="hidden" class="form-control" name="pk" required>
+					</div>
+					<div class="mb-3">
+						<label>Method <span class="asteriskField">*</span></label>
+						<input name="up_method_type" type="text" class="form-control" placeholder="Method" required="required">
+					</div>
+					<div class="form-check mt-3">
+						<input class="form-check-input" type="checkbox" name="up_status" id="up_status">
+						<label class="form-check-label" for="flexCheckDefault">
+							Status
+						</label>
+					</div>
+					<hr>
+					<div class="d-flex justify-content-end mt-3">
+						<button class="btn btn-primary" type="submit" id="updateBtn">Update</button>
+					</div>
+				</form>
+		  </div>
+		</div>
+  	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#api_type').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 1, 'asc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': '/indexer/new/api/api/type/method?format=datatables',
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+						return `<a onClick="viewIndex(${row['id']})" style="cursor:pointer;" class="text-primary">View</a>`
+					}
+				},
+				{'data': 'type_method'},
+				{'data': 'date_added'},
+				{'data': 'status',
+					'render': function(data, type, row, meta) {
+						if(row['status'] == 1) {
+							return '<svg xmlns="http://www.w3.org/2000/svg" width="16" style="color:green" height="16" fill="currentColor" class="bi 					bi-check-circle" viewBox="0 0 16 16">\
+										  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+										  <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>\
+									</svg> Active'
+						}else if (row['status'] == 0) {
+							return '<svg xmlns="http://www.w3.org/2000/svg" style="color:red" width="16" height="16" fill="currentColor" class="bi 						bi-x-circle" viewBox="0 0 16 16">\
+									  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+									  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\
+									</svg> Inactive'
+						}
+					},
+					'className': 'text-center'
+				},
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [2] }
+			]
+		});
+
+
+		$('#submitForm').on('submit', function(e){
+			var form = new FormData(this);
+			Swal.fire({
+				title: "Are you sure",
+				text: "You want to add this api type?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.post({
+						url: "{% url 'api-type' %}",
+						data: form,
+						success : function (response){
+							if(response.data == "success"){
+								Swal.fire({
+									title: "Good job!",
+									html:  response.msg,
+									icon: "success",
+									allowOutsideClick: false,
+								}).then((result) => {
+									if (result.isConfirmed){
+										$('#submitForm').trigger('reset');
+										$('#api_type').DataTable().ajax.reload();
+										$('#close-api-modal').click();
+									}
+								});
+							}else{
+								Swal.fire({
+									title: "Oops!",
+									html:  response.msg,
+									icon: "error",
+									allowOutsideClick: false,
+								});
+							}
+						},
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			});
+			e.preventDefault();
+		});
+
+		$('#updateIndexForm').on('submit', function(e){
+            var form = new FormData(this);
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to edit your the api type?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.post({
+                        url: "{% url 'api-type-update' %}",
+                        data: form,
+                        success : function (response){
+                            if(response.data == "success"){
+                                Swal.fire({
+                                    title: "Good job!",
+                                    html:  response.msg,
+                                    icon: "success",
+                                    allowOutsideClick: false,
+                                }).then((result) => {
+                                    if (result.isConfirmed){
+                                        $('#updateIndexForm').trigger('reset');
+                                        $('#api_type').DataTable().ajax.reload();
+                                        $('.up-btn-close').click();
+                                    }
+                                });
+                            }else{
+								Swal.fire({
+									title: "Oops!",
+									html:  response.msg,
+									icon: "error",
+									allowOutsideClick: false,
+								});
+							}
+                        },
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            });
+            e.preventDefault();
+        });
+	});
+
+	const viewIndex = (pk) => {
+        $.ajax({
+            type: 'GET',
+            url: `/indexer/new/api/type/detail/${pk}?json=true`,
+            success: (result) => {
+                console.log(result)
+                const data = result['results'][0];
+                $("#updateIndexForm").trigger("reset");
+                $('#updateIndexForm').find('input[name="pk"]').val(data['id']);
+                $('#updateIndexForm').find('input[name="up_method_type"]').val(data['type_method'])
+                $('#updateIndexForm').find('input[name="up_status"]').val((data['status']== "1") ? $('#up_status').attr('checked', true) : $('#up_status').attr('checked', false))
+                $('#viewModal').toggle('modal');
+            }
+
+        });
+    }
+
+    const closeModal = (modal) => {
+        $(`#${modal}`).toggle('modal');
+    }
+</script>
+{% endblock %}

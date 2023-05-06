@@ -1,0 +1,286 @@
+{% load static %}
+<style type="text/css">
+/* The actual timeline (the vertical ruler) */
+.main-timeline {
+	position: relative;
+}
+
+/* The actual timeline (the vertical ruler) */
+.main-timeline::after {
+	content: "";
+	position: absolute;
+	width: 6px;
+	background-color: #939597;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	margin-left: -3px;
+}
+
+/* Container around content */
+.timeline {
+	position: relative;
+	background-color: inherit;
+	width: 50%;
+}
+
+/* The circles on the timeline */
+.timeline::after {
+	content: "";
+	position: absolute;
+	width: 25px;
+	height: 25px;
+	right: -13px;
+	background-color: #939597;
+	border: 5px solid #f5df4d;
+	top: 15px;
+	border-radius: 50%;
+	z-index: 1;
+}
+
+/* Place the container to the left */
+.left {
+	padding: 0px 40px 20px 0px;
+	left: 0;
+}
+
+/* Place the container to the right */
+.right {
+	padding: 0px 0px 20px 40px;
+	left: 50%;
+}
+
+/* Add arrows to the left container (pointing right) */
+.left::before {
+	content: " ";
+	position: absolute;
+	top: 18px;
+	z-index: 1;
+	right: 30px;
+	border: medium solid white;
+	border-width: 10px 0 10px 10px;
+	border-color: transparent transparent transparent white;
+}
+
+/* Add arrows to the right container (pointing left) */
+.right::before {
+	content: " ";
+	position: absolute;
+	top: 18px;
+	z-index: 1;
+	left: 30px;
+	border: medium solid white;
+	border-width: 10px 10px 10px 0;
+	border-color: transparent white transparent transparent;
+}
+
+/* Fix the circle for containers on the right side */
+.right::after {
+	left: -12px;
+}
+
+/* Media queries - Responsive timeline on screens less than 600px wide */
+@media screen and (max-width: 600px) {
+	/* Place the timelime to the left */
+	.main-timeline::after {
+		left: 31px;
+	}
+
+	/* Full-width containers */
+	.timeline {
+		width: 100%;
+		padding-left: 70px;
+		padding-right: 25px;
+	}
+
+	/* Make sure that all arrows are pointing leftwards */
+	.timeline::before {
+		left: 60px;
+		border: medium solid white;
+		border-width: 10px 10px 10px 0;
+		border-color: transparent white transparent transparent;
+	}
+
+	/* Make sure all circles are at the same spot */
+	.left::after,
+	.right::after {
+		left: 18px;
+	}
+
+	.left::before {
+		right: auto;
+	}
+
+	/* Make all right containers behave like the left ones */
+	.right {
+		left: 0%;
+	}
+}
+</style>
+<div class="row">
+	<div class="modal-body">
+  		<ul class="nav nav-tabs">
+			<li class="nav-item">
+				<a class="nav-link font-normal active" data-role="info-index" data-bs-toggle="tab" href="#index"><i class="fas fa-info-circle text-success"></i>&nbsp; Index Detail</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link font-normal" data-role="tracking"  data-bs-toggle="tab" href="#tracking"><i class="fas fa-truck text-success"></i>&nbsp; Tracking</a>
+			</li>
+		</ul>
+		<div class="tab-content clearfix">
+			<div class="tab-pane active" id="index">
+				<div class="card border-top-0 rounded-0">
+					<div class="card-body">
+						<form id="updateIndexForm">
+							{% csrf_token %}
+							<div class="form-group display-none">
+								<label>ID</label>
+								<input type="hidden" class="form-control" value="{{pk}}" id="pk" name="pk" required>
+							</div>
+							<div class="mb-3">
+								<label>Index API <small class="text-danger">Note: This API is validated, make sure to validate first the API keys before it reflect here. Thanks</small><span class="asteriskField">*</span></label>
+								<select class="form-select select2" data-dropdown-parent="#viewModal" name="web_api_email" id="web_api_email" required>
+									<option value=""></option>
+									{% for row in index_api %}
+										{% if row.id == web.indexapi_id %}
+										<option value="{{ row.id }}" selected>{{ row.email }}</option>
+										{% else %}
+										<option value="{{ row.id }}">{{ row.email }}</option>
+										{% endif %}
+									{% endfor %}
+								</select>
+							</div>
+							<div class="mb-3">
+								<label>Website <span class="asteriskField">*</span>&nbsp;<small>Currently: <a href="{{web.website}}" target="_blank" id="website_current">{{web.website}}</a></small></label>
+								<input type="text" class="form-control" name="index_website" placeholder="Website" value="{{web.website}}" required>
+							</div>
+							<!-- <div class="form-group mt-3">
+								<label>Pages</label>
+								<textarea class="form-control" rows="10" name="index_pages">{% if web.pages %}{{web.pages}}{% endif %}</textarea>
+							</div> -->
+							<div class="form-group mt-3">
+								<label>Index Api Result</label>
+								<textarea class="form-control" rows="10" name="index_index_api">{% if web.jsonFile %}{{web.jsonFile}}{% endif %}</textarea>
+								<small>Response From API</small>
+							</div>
+							<!-- <div class="form-group mt-3">
+								<label>Check Indexed Status</label>
+								<textarea class="form-control" rows="10" name="index_status">{% if web.JsonResponse %}{{web.JsonResponse}}{% endif %}</textarea>
+								<small>Check Index Box Below to run indexed checker</small>
+							</div> -->
+							<!-- <div class="form-group mt-3">
+								<label>Pages Indexed</label>
+								<textarea class="form-control" rows="10" name="pages_done_index"></textarea>
+							</div>
+							<div class="form-group mt-3">
+								<label>Pages Not Indexed</label>
+								<textarea class="form-control" rows="10" name="pages_not_index"></textarea>
+							</div> -->
+							<hr>
+							<div class="d-flex justify-content-end mt-3">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-web-modal">Close</button>&nbsp;
+								<button class="btn btn-primary" type="submit" id="updateBtn">Update Index</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="tab-pane" id="tracking">
+				<div class="card border-top-0 rounded-0">
+					<div class="card-body">
+						<!-- Section: Timeline -->
+						<section style="background-color: #F0F2F5;">
+							<div class="container py-5">
+								<div class="main-timeline">
+									{% if first_update %}
+										{% if tracking %}
+										{% for row in tracking %}
+										<div class="timeline {% if row.is_right == 1 %}right{% else %}left{% endif %}">
+											<div class="card">
+												<div class="card-body p-4">
+													<h3>{{row.updated_at}}</h3>
+													<p class="mb-0" style="font-style: italic;">Latest Updated</p>
+													<small class="text-danger">Update By: {{row.updated_by.first_name}} {{row.updated_by.last_name}}</small>
+												</div>
+											</div>
+										</div>
+										{% endfor %}
+										{% endif %}
+									{% endif %}
+									{% if first_update %}
+									<div class="timeline left">
+										<div class="card">
+											<div class="card-body p-4">
+												<h3>{{first_update.updated_at}}</h3>
+												<p class="mb-0" style="font-style: italic;">Last Update</p>
+											</div>
+										</div>
+									</div>
+									{% endif %}
+								</div>
+								{% if first_update is None %}
+								<p><i class="fas fa-info-circle"></i> No result found.</p>
+								{% endif %}
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		</div>
+  	</div>
+</div>
+{% block script %}
+<script type="text/javascript">
+	$('.select2').select2({
+		width: '100%',
+		theme: 'bootstrap-5',
+	    placeholder: 'Choose',
+	});
+
+	$('#updateIndexForm').on('submit', function(e){
+		var form = new FormData(this);
+		Swal.fire({
+			title: "Are you sure",
+			text: "You want to update this indexed website?",
+			icon: "info",
+			showCancelButton: true,
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+				return $.post({
+					url: "/indexer/user/update-user/web-index/websites/{{pk}}",
+					data: form,
+					success : function (response){
+						if(response.data == "success"){
+							Swal.fire({
+								title: "Good job!",
+								html:  response.msg,
+								icon: "success",
+								allowOutsideClick: false,
+							}).then((result) => {
+								if (result.isConfirmed){
+									$('#updateIndexForm').trigger('reset');
+									$('#api_web').DataTable().ajax.reload();
+                                    $('#close-editindex-modal').click();
+								}
+							});
+						}else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+					},
+					cache       : false,
+					contentType : false,
+					processData : false,
+				});
+			},
+		});
+		e.preventDefault();
+	});
+</script>
+{% endblock %}

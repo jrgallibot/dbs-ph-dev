@@ -1,0 +1,370 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load staticfiles %}
+{% block app %}
+<style type="text/css">
+	.display-none{
+		display: none;
+	}
+	.zoom:hover {
+		z-index: inherit;
+		transform: scale(3.5);
+	}
+</style>
+<div class="row mt-5 align-items-center justify-content-between">
+    <div class="col-auto">
+        <h3 class="app-page-title mb-0"><i class="fas fa-mobile text-success me-2" style="zoom:0.85"></i> Mobile Friendly</h3>
+    </div>
+    <div class="col-auto">
+         <div class="page-utilities">
+            <div class="row g-2 justify-content-start justify-content-md-end align-items-center">
+                <div class="col-auto">						    
+                    <a class="btn btn-primary" href="#" data-bs-toggle="modal" data-bs-target="#add_web">
+                        <i class="fas fa-plus"></i>
+                        Add Websites
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br>
+<section class="app-card">
+    <div class="app-card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="mobile_friendly_api" width="100%">
+                <thead>
+                    <tr>
+                        <th class="cell">Action</th>
+                        <th class="cell">Website</th>
+                        <th class="cell">Api Used</th>
+                        <th class="cell">Created Date</th>
+                        <th class="cell text-center">Submitted Count</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</section>
+<div class="modal fade" id="add_web" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-pencil text-success me-2" style="zoom:0.85"></i> ADD WEBSITE</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="submitForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>API Key<span class="text-danger">*</span></label>
+                        <select class="form-select select2" data-dropdown-parent="#add_web" name="api_email" id="api_email" required>
+                            <option></option>
+                            {% for row in api %}
+                            <option value="{{ row.id }}">{{ row.email }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Website <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="website" placeholder="Website" required>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Pages <span class="text-danger">*</span></label>
+                        <textarea class="form-control" rows="10" name="pages" required></textarea>
+                        <small>List of pages you want to check if mobile friendy or not. 1 Url Per Line</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-web-modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" id="viewPagesModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog" style="max-width:1650px;width: 100%;">
+        <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-globe-asia text-success me-2" style="zoom:0.85"></i> VIEW PAGES in <span id="web_name"></span></h5>
+                <button type="button" class="btn-close" onClick="closeModal('viewPagesModal')"></button>
+              </div>
+              <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="api_pages_mob" width="100%">
+                        <thead>
+                            <tr>
+								<th class="cell">Action</th>
+                                <th class="cell">Url</th>
+                                <!-- <th class="cell text-center">Image</th> -->
+                                <th class="cell text-center">Status</th>
+                                <th class="cell">Results</th>
+                                <th class="cell">Date Added</th>
+                                <th class="cell">Time allocated</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onClick="closeModal('viewPagesModal')">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="viewModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit text-success me-2" style="zoom:0.85"></i>VIEW WEBSITE MOBILE FRIENDLY UPDATE</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-editindex-modal" aria-label="Close"></button>
+              </div>
+              <div class="view_edit_modal_content"></div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $('.select2').select2({
+		width: '100%',
+		theme: 'bootstrap-5',
+	    placeholder: 'Choose',
+	});
+
+    $(document).ready(function(){
+		$('#mobile_friendly_api').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 3, 'desc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': '/indexer/new/api/mobile/friendly/{{request.user.id}}?format=datatables',
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+						return '<a href="javascript:void(0);" style="cursor:pointer;" data-role="edit" data-id="'+ row['id'] + '" class="text-primary">View</a> &nbsp;|&nbsp; <br>\
+						<a href="javascript:void(0);" data-role="if_check" data-id="'+ row['id'] + '" style="cursor:pointer;" class="text-primary">Check</a> &nbsp;|&nbsp; <br>\
+						<a href="javascript:void(0);" data-role="view_pages" data-id="'+ row['id'] + '" data-filter="'+ row['website'] + '" style="cursor:pointer;" class="text-primary">Pages</a>'
+					}
+				},
+				{'data': 'website',
+					'render': function(data, type, row, meta){
+						return '<span style="white-space: normal;">'+data+'</span>'
+					}
+				},
+				{'data': 'email', 'className': 'text-center', "searchable": false,},
+				{'data': 'date_created'},
+				{'data': 'times_checked', 'className': 'text-center'},
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [3] }
+			]
+		});
+
+        $('#submitForm').on('submit', function(e){
+			var form = new FormData(this);
+			Swal.fire({
+				title: "Are you sure",
+				text: "You want to add this website?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.post({
+						url: "/indexer/user/mobile/friendly/",
+						data: form,
+						success : function (response){
+							if(response.data == "success"){
+								Swal.fire({
+									title: "Good job!",
+									html:  response.msg,
+									icon: "success",
+									allowOutsideClick: false,
+								}).then((result) => {
+									if (result.isConfirmed){
+										$('#submitForm').trigger('reset');
+										$('#mobile_friendly_api').DataTable().ajax.reload();
+										$('#close-web-modal').click();
+										$('#api_email').val("").trigger('change');
+									}
+								});
+							}else{
+								Swal.fire({
+									title: "Oops!",
+									html:  response.msg,
+									icon: "error",
+									allowOutsideClick: false,
+								});
+							}
+						},
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			});
+			e.preventDefault();
+		});
+
+        $(document).on('click', 'a[data-role=view_pages]', function(){
+	        var id = $(this).data('id');
+	        $('#web_id').val(id)
+	        $('#web_name').text($(this).data('filter'))
+	        $('#api_pages_mob').DataTable({
+				'serverSide': true,
+				'processing': true,
+				'deferRender': true,
+				'lengthMenu': [ 10, 25, 50, 100 ],
+				'order': [[ 3, 'asc' ]],
+				'bDestroy': true,
+				'ajax': {
+					'url': `/indexer/new/api/user/mobile/friendly/website/pages/detail/`+id+`?format=datatables`,
+					'type': 'GET',
+				},
+				'columns': [
+					{'data': 'id',
+						'render': function(data, type, row, meta) {
+							return '<a href="javascript:void(0);" data-role="check_if_mob" data-id="'+row['id']+'" style="cursor:pointer;" class="text-primary">Check <br> Mobile Friendly</a>'
+						}
+					},
+					{'data': 'url',
+						'render': function(data, type, row, meta){
+							return '<span style="white-space: normal;">'+data+'</span>'
+						}
+					},
+					// {'data': 'request_screenshot',
+					// 	'render': function(data, type, row, meta) {
+					// 		return `<center><img src='`+data+`' class="zoom" style='width: 60px; height: 60px'></center>`;
+					// 	},
+					// },
+					{'data': 'status',
+						'render': function(data, type, row, meta) {
+							if(row['status']) {
+								return '<span class="badge bg-info">'+data+'</span>'
+							}else{
+								return '<span class="badge bg-info">Pending...</span>'
+							}
+						},
+						'className': 'text-center'
+					},
+					{'data': 'results',
+						'render': function(data, type, row, meta) {
+							if(row['results']) {
+								return '<p>'+data+'</p>'
+							}else{
+								return ''
+							}
+						},
+					},
+					{'data': 'date_created'},
+					{'data': 'seconds',
+						'render': function(data, type, row, meta) {
+							if(row['seconds']) {
+								return '<p>'+data+' seconds</p>'
+							}else{
+								return ''
+							}
+						},
+					},
+				],
+				"columnDefs": [
+				  { "orderable": false, "searchable": false, "targets": [3] }
+				]
+			});
+			$('#viewPagesModal').toggle('modal');
+	    });
+    });
+
+	$(document).on('click', 'a[data-role=check_if_mob]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+          text: "Do you want to submit to mobile friendly?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  		url: "{% url 'check_pages_if_mobile_friendly' %}",
+				data: {
+					id: id
+				},
+				type: "POST"
+		  	});
+		  }
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  html:  response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#mobile_friendly_api').DataTable().ajax.reload();
+						$('#api_pages_mob').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+    });
+	
+
+    $(document).on('click', 'a[data-role=if_check]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+          text: "You want to check if pages are in mobile friendly ?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes"
+		}).then((result) => {
+			if (result.isConfirmed) {
+				Swal.fire({
+					title: "Information",
+					html:  'Mobile friendly pages successfully checking. Please wait for the result since the it is in schedule. Thanks!',
+					icon: "success",
+					confirmButtonColor: "#3498DB"
+				});
+				return $.ajax({
+					data: {
+						id: id
+					},
+					url: "/indexer/user/check/mobile/friendly/",
+					type        : 'POST',
+				});
+			}
+		});
+    });
+
+    $(document).on('click', 'a[data-role=edit]', function(){
+        var id = $(this).data('id');
+        var viewModal = new bootstrap.Modal(document.getElementById('viewModal'), {});
+		$('.view_edit_modal_content', $('#viewModal')).load('/indexer/user/mobile/friendly/update/' + id, function(){
+			viewModal.show();
+		});
+    });
+
+    const closeModal = (modal) => {
+		$(`#${modal}`).toggle('modal');
+	}
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% load tags %}
+{% load static %}
+<div class="card-header d-flex justify-content-between">
+  <h3>Cloudflare</h3>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCloudflareAccountModal">Add Account</button>
+</div>
+<div class="card-body">
+    <div class="table-responsive p-2">
+        <table id="cloudflareTable" class="table table-striped fs-6" style="width:100%">
+            <thead>
+                <tr>
+                    <th>UUID</th>
+                    <th>Email</th>
+                    <th>Account ID</th>
+                    <th>Account Token</th>
+                    <th>Page Name</th>
+                    <th>Website Title</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ row.id|truncatechars:10 }}</td>
+                    <td>{{ row.email }}</td>
+                    <td>{{ row.account_id|truncatechars:10 }}</td>
+                    <td>{{ row.account_token|truncatechars:10 }}</td>
+                    <td>{{ row.page_name }}</td>
+                    <td>{% if row.website %} {{ row.website_title }} {% endif %}</td>
+                    <td>
+                        <a class="badge badge-success text-success cloudflare-update-btn-{{ row.id }}" href="#" onClick="updateCloudflare('{{ row.id }}')">Update</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(document).ready(function () {
+        $('#cloudflareTable').DataTable();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <title>Welcome to Indexer App | The only tool you need</title>
+	<link rel="shortcut icon" type="image/png" href="{% static 'img/logo-ico.ico' %}"/>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'; img-src * 'self' data: https:;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+
+	<link href="{% static 'indexing/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'indexing/fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'indexing/fontawesomefree/css/brands.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'indexing/fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
+	<link href="{% static 'indexing/css/sidebars.css' %}" rel="stylesheet">
+	<link href="{% static 'indexing/css/style.css' %}" rel="stylesheet">
+
+	<link href="{% static 'indexing/css/plugins/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+	<link href="{% static 'indexing/css/plugins/datatables/datatables.min.css' %}" rel="stylesheet" type="text/css" />
+	<link href="{% static 'indexing/css/select2.min.css' %}" rel="stylesheet" type="text/css" />
+	<link href="{% static 'indexing/css/select2-bootstrap-5-theme.min.css' %}" rel="stylesheet" type="text/css" />
+	<link href="{% static 'indexing/css/plugins/toastr/build/toastr.min.css' %}" rel="stylesheet" type="text/css" />
+	<link href="{% static 'indexing/css/jquery-ui.min.css' %}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<main class="d-flex flex-nowrap">
+	<div class="d-flex flex-column flex-shrink-0 p-3 text-bg-dark" style="width: 280px; height:100vh;">
+		<a href="/" class="align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
+			<img src="{% static 'images/favicons/android-chrome-512x512.png' %}" width="50px;" class="img-logo">&emsp;Indexer Quick Portal
+		</a>
+		<hr>
+		<ul class="nav nav-pills flex-column mb-auto">
+			<li class="nav-item">
+				<a href="{% url 'dashboard-page' %}" class="nav-link {% if li == 'dashboard' %}active{% else %}text-white{% endif %}" aria-current="page">
+					<i class="fas fa-th-large bi pe-none me-2" width="16" height="16"></i>
+					Dashboard
+				</a>
+			</li>
+			<li class="nav-item">
+				<a href="{% url 'index-websites' %}" class="nav-link {% if li == 'index_web' %}active{% else %}text-white{% endif %}">
+					<i class="fas fa-globe bi pe-none me-2" width="16" height="16"></i>
+					Google Index
+				</a>
+			</li>
+			<li class="nav-item">
+				<a href="{% url 'url-shortners' %}" class="nav-link {% if li == 'url_short' %}active{% else %}text-white{% endif %}" aria-current="page">
+					<i class="fas fa-chain bi pe-none me-2" width="16" height="16"></i>
+					Url Shortener
+				</a>
+			</li>
+			<li class="nav-item">
+				<a href="{% url 'mobile-friendly' %}" class="nav-link {% if li == 'mobile_friendly' %}active{% else %}text-white{% endif %}" aria-current="page">
+					<i class="fas fa-mobile bi pe-none me-2" width="16" height="16"></i> 
+					&nbsp;Mobile Friendly
+				</a>
+			</li>
+			<li class="nav-item">
+				<a href="{% url 'dashboard-index-page' %}" class="nav-link {% if li == 'index_api' %}active{% else %}text-white{% endif %}" aria-current="page">
+					<i class="fas fa-server bi pe-none me-2" width="16" height="16"></i>
+					Api's
+				</a>
+			</li>
+			<li class="nav-item">
+				<a href="{% url 'api-type' %}" class="nav-link {% if li == 'api_type' %}active{% else %}text-white{% endif %}" aria-current="page">
+					<i class="fas fa-info-circle bi pe-none me-2" width="16" height="16"></i>
+					Api Type
+				</a>
+			</li>
+			<!-- <li class="nav-item">
+				<a href="#" class="nav-link {% if li == 'gsc_verify' %}active{% else %}text-white{% endif %}" aria-current="page">
+					<i class="fas fa-check-circle bi pe-none me-2" width="16" height="16"></i>
+					Gsc Verifys
+				</a>
+			</li> -->
+			<li class="nav-item">
+				<a href="{% url 'logs-history' %}" class="nav-link {% if li == 'settings' %}active{% else %}text-white{% endif %}">
+					<i class="fas fa-cog bi pe-none me-2" width="16" height="16"></i>
+					Settings
+				</a>
+			</li>
+		</ul>
+		<hr>
+		<div class="dropdown">
+			<a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+				<img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
+				<strong>Account</strong>
+			</a>
+			<ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+				<li>
+					<a class="dropdown-item logout" href="#">Sign out</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div class="container-fluid h-100 overflow-auto p-5">
+		{% block content %}{% endblock %}
+	</div>
+</main>
+	<script src="{% static 'indexing/js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'indexing/js/bootstrap.bundle.min.js' %}"></script>
+	<script src="{% static 'indexing/js/sidebars.js' %}"></script>
+    <!-- Libraries -->
+    <script src="{% static 'indexing/js/select2.full.min.js' %}"></script>
+	<script src="{% static 'indexing/css/plugins/sweetalert2/sweetalert2.min.js' %}"></script>
+	<script src="{% static 'indexing/css/plugins/datatables/datatables.min.js' %}"></script>
+	<script src="{% static 'indexing/css/plugins/toastr/build/toastr.min.js' %}"></script>
+	<script src="{% static 'indexing/css/plugins/summernote/summernote.min.js' %}"></script>
+	<script src="{% static 'indexing/js/jquery.twbsPagination.min.js' %}"></script>
+
+	<script type="text/javascript">
+    	$('.select2').select2({
+    		width: '100%',
+    		theme: 'bootstrap-5',
+		    placeholder: 'Choose',
+		});
+
+    	{% for msg in messages %}
+            {% if 'welcome' in msg.extra_tags %}
+                $("#liveToastContainer").css('z-index', '1005');
+                new bootstrap.Toast(document.getElementById("liveToast")).show();
+            {% endif %}
+        {% endfor %}
+    </script>
+    {% block script %}{% endblock %}
+</body>
+</html>

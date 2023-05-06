@@ -1,0 +1,128 @@
+{% load tags %}
+{% load static %}
+<div class="modal-header">
+    <h5 class="modal-title"><i class="fas fa-pencil text-success me-2"></i> VIEW SITES</h5>
+    <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="btn-group" role="group">
+                <button class="btn btn-primary ms-3" data-bs-toggle="collapse" data-bs-target="#new-pages" aria-expanded="false" aria-controls="collapseExample" id="new-pages-button"><i class='fas fa-plus'></i> Add Site</button>
+                <button class="btn btn-success ms-3" data-role="check_updated_sites"><i class='fas fa-send'></i> Check Updated Sites</button>
+            </div>
+        </div>
+        <br>
+        <form id="creatednewsitesForm">
+            {% csrf_token %}
+            <div class="collapse px-3 py-0" id="new-pages">
+                <input type="hidden" name="pk" id="pk">
+                <div class="form-group mb-3">
+                    <label>Sites <span class="text-danger">*</span></label>
+                    <textarea class="form-control" rows="7" name="sites" required></textarea>
+                    <small>List of sites you want to save. 1 header Per Line</small>
+                </div>
+                <div class="form-group mt-3 float-end">
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </form>
+        <br><br><hr>
+        <div class="table-responsive">
+            <table class="table table-hover" id="user_site_cloudflare" width="100%">
+                <thead>
+                    <tr>
+                        <th class="cell text-center">Action</th>
+                        <th class="cell">Zone Id</th>
+                        <th class="cell">Site Name</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function(){
+        $('#actionsModal').on('hidden.bs.modal', function (e) {
+            location.reload(true);
+        })
+
+        $('#pk').val({{pk}})
+        $('#user_site_cloudflare').DataTable({
+            'serverSide': true,
+            'processing': true,
+            'deferRender': true,
+            'lengthMenu': [ 10, 25, 50, 100 ],
+            'order': [[ 1, 'asc' ]],
+            'bDestroy': true,
+            'ajax': {
+                'url': `/indexer/new/api/user/cloudflare/api/sites/`+{{pk}}+`?format=datatables`,
+                'type': 'GET',
+            },
+            'columns': [
+                {'data': 'id',
+                    'render': function(data, type, row, meta) {
+                        return `<a href="javascript:void(0);" onClick="routeDNSButton(`+ row['id'] + `, 'forward')" id="site-dns-btn-`+ row['id'] + `" style="cursor:pointer;" class="text-primary">DNS</a> | \
+                        <a href="javascript:void(0);" onClick="routeRuleButton(`+ row['id'] + `, 'forward')" id="site-rule-btn-`+ row['id'] + `" style="cursor:pointer;" class="text-primary">Page Rule</a>`
+                    },
+                    'className': 'text-center'
+                },
+                {'data': 'zone_id','className': 'text-center'},
+                {'data': 'zone_name','className': 'text-center'},
+            ],
+        });
+
+        $(document).on('click', 'a[data-role=page_rule]', function(){
+			var id = $(this).data('id');
+			var viewModal = new bootstrap.Modal(document.getElementById('viewPagesModal'), {});
+            $('.view_sites_modal_content', $('#viewPagesModal')).empty();
+			$('.view_sites_modal_content', $('#viewPagesModal')).load('/cloudflare/page_rule/' + id);
+		});
+    });
+
+    $('#creatednewsitesForm').on('submit', function(e){
+		var form = new FormData(this);
+		Swal.fire({
+			title: "Are you sure",
+			text: "You want to create new sites ?",
+			icon: "info",
+			showCancelButton: true,
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+				return $.post({
+					url: "{% url 'add_sites' %}",
+					data: form,
+					success : function (response){
+						if(response.data == "success"){
+							Swal.fire({
+								title: "Good job!",
+								html:  response.msg,
+								icon: "success",
+								allowOutsideClick: false,
+							}).then((result) => {
+								if (result.isConfirmed){
+									$('#creatednewsitesForm').trigger('reset');
+									$('#api_key_cloudflare').DataTable().ajax.reload();
+									$('#user_site_cloudflare').DataTable().ajax.reload();
+								}
+							});
+						}else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+					},
+					cache       : false,
+					contentType : false,
+					processData : false,
+				});
+			},
+		});
+		e.preventDefault();
+	});
+</script>

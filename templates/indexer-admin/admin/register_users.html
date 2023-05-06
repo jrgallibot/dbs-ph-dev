@@ -1,0 +1,143 @@
+{% extends 'indexer-admin/admin/layout.html' %}
+{% load static %}
+{% block content %}
+<div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader">
+	<div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+		<div class="d-flex align-items-center flex-wrap mr-2">
+			<h5 class="text-dark font-weight-bold mt-2 mb-2 mr-5">Register User</h5>
+		</div>
+	</div>
+</div>
+<div class="d-flex flex-column-fluid">
+	<div class="container">
+		<div class="card card-custom">
+            <div class="card-body">
+                <form id="register_form">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="mb-3">
+                                <label>First Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="fname" placeholder="First Name" required>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="mb-3">
+                                <label>Middle Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="mname" placeholder="Middle Name" required>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="mb-3">
+                                <label>Last Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="lname" placeholder="Last Name" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label>Email <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="email" placeholder="Email" required>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label>Username <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="username" placeholder="Username" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label>Password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" name="password" id="password" placeholder="Password" required>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label>Re-type Password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" name="retype-password" id="password1" placeholder="Re-type Password" required>
+                            </div>
+                            <div id="alertPassword2"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn btn-primary float-right">Register Account</button>
+                            <button type="button" class="btn btn-secondary float-right btn-reset" style="margin-right: 5px;">Reset</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$('.btn-reset').on('click', function(e){
+        $('#register_form').trigger('reset');
+    });
+
+    $('#password1').on('keyup', function(){
+		$('#alertPassword2').empty();
+		if($('#password').val() == $(this).val()){
+			$('#alertPassword2').append('<small class="text-success">*Password Match.</small>');
+		}else{
+			$('#alertPassword2').append('<small class="text-danger">*Password Do Not Match.</small>');
+		}
+	});
+
+    $('#register_form').on('submit', function(e){
+        var form = new FormData(this);
+        e.preventDefault();
+        $('#alertPassword2').empty();
+        if($('#password').val() == $('#password1').val()){
+            Swal.fire({
+                title: "Confirmation",
+                text: "Are you sure for this information?",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    return $.post({
+                        url: "{% url 'admin_register_user' %}",
+                        data: form,
+                        success : function (response){
+                            if(response.data == "success"){
+                                Swal.fire({
+                                    title: "Good job!",
+                                    html:  response.msg,
+                                    icon: "success",
+                                    allowOutsideClick: false,
+                                }).then((result) => {
+                                    if (result.isConfirmed){
+                                        $('#register_form').trigger('reset');
+                                        window.location.href="{% url 'admin_register_user' %}";
+                                    }
+                                });
+                            }else{
+                                Swal.fire({
+                                    title: "Oops!",
+                                    html:  response.msg,
+                                    icon: "error",
+                                    allowOutsideClick: false,
+                                });
+                            }
+                        },
+                        cache       : false,
+                        contentType : false,
+                        processData : false,
+                    });
+                },
+            });
+        }else{
+            $('#alertPassword2').append('<small class="text-danger">*Password Do Not Match.</small>');
+        }
+    });
+</script>
+{% endblock %}

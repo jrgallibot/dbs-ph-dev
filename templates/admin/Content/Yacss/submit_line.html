@@ -1,0 +1,67 @@
+{% extends "admin/submit_line.html" %}
+{% load jazzmin %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+{% block extra-actions %}
+
+{# Simple link #}
+
+
+{# Process with form submission #}
+<div class="form-group">
+    <input class="btn {{ jazzmin_ui.button_classes.secondary }} form-control" id="answerid" value="SAVE ANSWER" name="SAVE ANSWER">
+    <a download="{% now "Y-m-d" %}-answers.txt" id="downloadanswer" style="display: none"><input class="btn {{ jazzmin_ui.button_classes.primary }} form-control" value="DOWNLOAD ANSWER" name="DOWNLOAD ANSWER"></a>
+</div>
+<div class="form-group">
+    <input class="btn {{ jazzmin_ui.button_classes.secondary }} form-control" id="questionid" value="SAVE QUESTIONS" name="SAVE QUESTIONS">
+    <a download="{% now "Y-m-d" %}-questions.txt" id="questiondownload" style="display: none"><input class="btn {{ jazzmin_ui.button_classes.primary }} form-control" value="DOWNLOAD QUESTIONS" name="DOWNLOAD QUESTIONS"></a>
+</div>
+
+<script>
+    function functioncreate(buttonid,textid,dlid) {
+      var textFile = null,
+        makeTextFile = function (text) {
+          var data = new Blob([text], {
+            type: "text/plain"
+          });
+    
+          // If we are replacing a previously generated file we need to
+          // manually revoke the object URL to avoid memory leaks.
+          if (textFile !== null) {
+            window.URL.revokeObjectURL(textFile);
+          }
+    
+          textFile = window.URL.createObjectURL(data);
+    
+          return textFile;
+        };
+    
+      var create = document.getElementById(buttonid),
+        textbox = document.getElementById(textid);
+    
+      create.addEventListener(
+        "click",
+        function () {
+          var link = document.getElementById(dlid);
+          link.href = makeTextFile(textbox.value);
+          link.style.display = "block";
+          document.getElementById(buttonid).style.display = "none";
+        },
+        false
+      );
+    }
+    
+            function functionreset(buttonid,dlid) {
+                var link = document.getElementById(dlid);
+                link.style.display = 'none';
+                document.getElementById(buttonid).style.display = 'block';
+            }
+    
+        </script>
+        <script>
+            document.getElementById("answerid").onchange = functioncreate('answerid',"id_answers","downloadanswer",functionreset('answerid','downloadanswer'))
+       </script>
+       <script>
+        document.getElementById("questionid").onchange = functioncreate('questionid',"id_questions","questiondownload",functionreset('questionid','questiondownload'))
+   </script>
+{% endblock %}

@@ -1,0 +1,27 @@
+<form id="updateIndexForms">
+	<div class="modal-body">
+		{% csrf_token %}
+		<div class="mb-3">
+			<label>Website <span class="text-danger">*</span></label>
+			<input type="text" class="form-control" name="website" placeholder="Website" required value="{{site_map.website}}" readonly>
+		</div>
+		<div class="mb-3">
+			<label>Api Email <span class="text-danger">*</span></label>
+			<input type="text" class="form-control" name="api_email" placeholder="Api Email" required value="{{site_map.apikey.email}}" readonly>
+		</div>
+		<div class="mb-3">
+			<label>Result <span class="text-danger">*</span></label>
+			<textarea class="form-control" rows="10" name="index_index_api" readonly>{% if site_map.results %}{{site_map.results}}{% endif %}</textarea>
+		</div>
+		<div class="form-check">
+			<input class="form-check-input" type="checkbox" name="update_check_human_writer" {% if site_map.is_for_human_check %}checked{% endif %}>
+			<label class="form-check-label" for="flexCheckDefault">
+				Fix For Human Writer
+			</label>
+		</div>
+	</div>
+	<div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-api-modal">Close</button>
+		<!-- <button type="submit" class="btn btn-primary">Save changes</button> -->
+	</div>
+</form>

@@ -1,0 +1,59 @@
+{% load i18n %}
+<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3   bg-gradient-dark" id="sidenav-main">
+  <div class="sidenav-header">
+    <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenavbb"></i>
+    <a class="navbar-brand m-0" href="{% url 'web:home' %}">
+      <span class="ms-1 font-weight-bold text-white">{{project_meta.NAME}}</span>
+    </a>
+  </div>
+  <hr class="horizontal light mt-0 mb-2">
+  <div class="collapse navbar-collapse  w-auto  max-height-vh-100" id="sidenav-collapse-main">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a href="{% url 'web:home' %}" class="nav-link {% if active_tab == 'dashboard' %}active{% endif %}">
+          <span class="icon"><i class="fa fa-home"></i></span><span>&nbsp;Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/indexer/user/dashboard/" class="nav-link">
+          <span class="icon"><i class="fa fa-globe-asia"></i></span><span>&nbsp;Indexer App</span>
+        </a>
+      </li>
+      {% include "web/components/team_nav.html" %}
+      <li class="nav-item mt-3">
+        <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">&nbsp;Account pages</h6>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'users:user_profile' %}" class="nav-link {% if active_tab == 'profile' %}active{% endif %}">
+          <span class="icon"><i class="fa fa-user"></i></span><span>&nbsp;Profile</span>
+        </a>
+      </li>
+      {% if user.has_usable_password %}
+        <li class="nav-item">
+          <a href="{% url 'account_change_password' %}" class="nav-link {% if 'accounts/password/change' in request.path %}active{% endif %}">
+            <span class="icon"><i class="fa fa-unlock-alt"></i></span><span>&nbsp;Change Password</span>
+          </a>
+        </li>
+      {% endif %}
+      <li class="nav-item mt-3">
+        <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">&nbsp;Teams</h6>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'teams:manage_teams' %}" class="nav-link {% if 'teams' in request.path %}active{% endif %}">
+          <span class="icon"><i class="fa fa-group"></i></span><span>&nbsp;Teams</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'account_logout' %}"
+           class="nav-link {% if 'accounts/logout' in request.path %}active{% endif %}">
+          <span class="icon"><i class="fa fa-sign-out"></i></span><span>&nbsp;Sign out</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="sidenav-footer position-absolute w-100 bottom-0 ">
+    <div class="mx-3">
+      <a class="btn bg-gradient-primary mt-4 w-100" href="/indexer/user/dashboard/" type="button">{% translate "Indexer" %}</a>
+    </div>
+  </div>
+</aside>

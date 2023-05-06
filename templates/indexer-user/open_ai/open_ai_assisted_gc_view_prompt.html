@@ -1,0 +1,87 @@
+<form id="updateform">
+    {% csrf_token %}
+    <div class="modal-body">
+        <div class="mb-3">
+            <label>Write title name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="up_title" id="up_title" placeholder="Write content name" required 
+                    value="{{ass.title}}">
+        </div>
+        <div class="mb-3">
+            <label>Prompt <span class="text-danger">*</span></label>
+            <select class="form-select select3" name="up_prompts" id="up_prompts" required>
+                <option></option>
+                {% for row in prompt %}
+                <option value="{{ row.id }}">{{ row.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="up_status" {% if ass.status %}checked{% endif %}>
+            <label class="form-check-label" for="flexCheckDefault">
+                Status
+            </label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-web-modal">Close</button>
+        <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span> Save changes</button>
+    </div>
+</form>
+<script>
+    $(document).ready(function(){
+        $('#up_prompts').select2('val', '{{ass.prompt_id}}');
+    });
+        
+    $('#updateform').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to update this details informations?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.post({
+                    url: "{% url 'user_open_ai_assisted_gc_view_prompt' pk %}",
+                    data: form,
+                    success : function (response){
+                        if(response.data == "success"){
+                            Swal.fire({
+                                title: "Good job!",
+                                html:  response.msg,
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then((result) => {
+                                if (result.isConfirmed){
+                                    $('#content_logs').DataTable().ajax.reload();
+									$('#updateform').trigger('reset');
+									$('#close-editindex-modal').click();
+                                }
+                            });
+                        }else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+                    },
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        });
+        e.preventDefault();
+    });
+
+    $('.select3').select2({
+		width: '100%',
+		theme: 'bootstrap-5',
+	    placeholder: 'Choose',
+        dropdownParent: $('#viewModal')
+	});
+</script>
