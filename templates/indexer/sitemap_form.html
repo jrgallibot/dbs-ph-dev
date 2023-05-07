@@ -1,0 +1,12 @@
+{% extends "pegasus/employees/django_object_lifecycle_base.html" %}
+{% load form_tags %}
+{% block django_app %}
+<form method="post">
+  <div class="app-card">
+    <h2 class="pg-subtitle">Sitemap Analyzer</h2>
+
+    {% csrf_token %}
+    {% render_form_fields form %}
+    <input type="submit" value="Save" class="pg-button-secondary">
+  </form>
+{% endblock %}

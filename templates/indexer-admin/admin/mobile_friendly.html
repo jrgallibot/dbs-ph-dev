@@ -1,0 +1,378 @@
+{% extends 'indexer-admin/admin/layout.html' %}
+{% load static %}
+{% block content %}
+<div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader">
+	<div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+		<div class="d-flex align-items-center flex-wrap mr-2">
+			<h5 class="text-dark font-weight-bold mt-2 mb-2 mr-5">Mobile Friendly</h5>
+		</div>
+	</div>
+</div>
+<div class="d-flex flex-column-fluid">
+	<div class="container">
+		<div class="card card-custom">
+			<div class="card-header flex-wrap border-0 pt-6 pb-0">
+				<div class="card-title">
+					<h3 class="card-label">Mobile Friendly
+					<span class="text-muted pt-2 font-size-sm d-block">List of details</span></h3>
+				</div>
+				<div class="card-toolbar">
+					<a href="#" class="btn btn-success font-weight-bolder font-size-sm" data-toggle="modal" data-target="#add_web"><i class="fas fa-plus"></i> Add Websites</a>
+				</div>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-hover" id="mobile_friendly_api" width="100%">
+						<thead>
+							<tr>
+								<th class="cell">Action</th>
+								<th class="cell">Website</th>
+								<th class="cell">Api Used</th>
+								<th class="cell">Created Date</th>
+								<th class="cell text-center">Submitted Count</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="add_web" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-pencil-alt text-success me-2" style="zoom:0.85"></i> ADD WEBSITE</h5>
+				<button type="button" class="close btn-close" data-dismiss="modal" aria-label="Close">
+                    <i aria-hidden="true" class="ki ki-close"></i>
+                </button>
+			</div>
+			<form id="submitForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="mb-3">
+						<label>API Key<span class="asteriskField">*</span></label>
+						<select class="form-select select2" data-dropdown-parent="#add_web" name="api_email" id="api_email" required>
+							<option></option>
+							{% for row in api %}
+							<option value="{{ row.id }}">{{ row.email }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="mb-3">
+						<label>Website <span class="asteriskField">*</span></label>
+						<input type="text" class="form-control" name="website" placeholder="Website" required>
+					</div>
+					<div class="form-group mt-3">
+						<label>Pages <span class="text-danger">*</span></label>
+						<textarea class="form-control" rows="10" name="pages" required></textarea>
+						<small>List of pages you want to check if mobile friendy or not. 1 Url Per Line</small>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal" id="close-web-modal">Close</button>
+					<button type="submit" class="btn btn-primary">Save changes</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div class="modal" tabindex="-1" id="viewPagesModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdrop" aria-hidden="true">
+	<div class="modal-dialog" role="document" style="max-width:1650px;width: 100%;">
+		<div class="modal-content">
+		  	<div class="modal-header">
+				<h5 class="modal-title"><i class="fas fa-globe-asia text-success me-2" style="zoom:0.85"></i> VIEW PAGES in <span id="web_name"></span></h5>
+				<button type="button" class="close btn-close" onClick="closeModal('viewPagesModal')" aria-label="Close">
+	                <i aria-hidden="true" class="ki ki-close"></i>
+	            </button>
+		  	</div>
+		  	<div class="modal-body">
+				<div class="table-responsive">
+					<table class="table table-hover" id="api_pages_mob" width="100%">
+						<thead>
+							<tr>
+								<th class="cell">Action</th>
+								<th class="cell display-none">Date Tracking</th>
+								<!-- <th class="cell">Rank</th> -->
+								<th class="cell">Url</th>
+								<!-- <th class="cell text-center">Image</th> -->
+								<th class="cell text-center">Status</th>
+								<th class="cell">Results</th>
+								<th class="cell">Date Added</th>
+								<th class="cell">Time allocated</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+		  	</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="viewModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdrop" aria-hidden="true">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+		  	<div class="modal-header">
+				<h5 class="modal-title"><i class="fas fa-edit text-success me-2" style="zoom:0.85"></i>VIEW WEBSITE MOBILE FRIENDLY UPDATE</h5>
+				<button type="button" class="close btn-close" data-dismiss="modal" id="close-up-modal" aria-label="Close">
+                    <i aria-hidden="true" class="ki ki-close"></i>
+                </button>
+		  	</div>
+		  	<div class="view_edit_modal_content"></div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(function () {
+		$('[data-toggle="tooltip"]').tooltip()
+	})
+	$(document).ready(function(){
+		$('#mobile_friendly_api').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 3, 'desc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': '/indexer/new/api/mobile_friendly/?format=datatables',
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+						return '<a href="javascript:void(0);" style="cursor:pointer;" data-role="edit" data-id="'+ row['id'] + '">View</a> &nbsp;|&nbsp;\
+						<a href="javascript:void(0);" data-role="if_check" data-id="'+ row['id'] + '" style="cursor:pointer;" class="text-primary">Check</a> &nbsp;|&nbsp;\
+						<a href="javascript:void(0);" data-role="view_pages" data-id="'+ row['id'] + '" data-filter="'+ row['website'] + '" style="cursor:pointer;" class="text-primary">Pages</a>'
+					}
+				},
+				{'data': 'website'},
+				{'data': 'email', 'className': 'text-center', "searchable": false,},
+				{'data': 'date_created'},
+				{'data': 'times_checked', 'className': 'text-center'},
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [3] }
+			]
+		});
+
+		$('#submitForm').on('submit', function(e){
+			var form = new FormData(this);
+			Swal.fire({
+				title: "Are you sure",
+				text: "You want to add this website?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.post({
+						url: "{% url 'mobile-friendly' %}",
+						data: form,
+						success : function (response){
+							if(response.data == "success"){
+								Swal.fire({
+									title: "Good job!",
+									html:  response.msg,
+									icon: "success",
+									allowOutsideClick: false,
+								}).then((result) => {
+									if (result.isConfirmed){
+										$('#submitForm').trigger('reset');
+										$('#mobile_friendly_api').DataTable().ajax.reload();
+										$('#close-web-modal').click();
+										$('#api_email').val("").trigger('change');
+									}
+								});
+							}else{
+								Swal.fire({
+									title: "Oops!",
+									html:  response.msg,
+									icon: "error",
+									allowOutsideClick: false,
+								});
+							}
+						},
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			});
+			e.preventDefault();
+		});
+
+		$(document).on('click', 'a[data-role=view_pages]', function(){
+	        var id = $(this).data('id');
+	        $('#web_id').val(id)
+	        $('#web_name').text($(this).data('filter'))
+	        $('#api_pages_mob').DataTable({
+				'serverSide': true,
+				'processing': true,
+				'deferRender': true,
+				'lengthMenu': [ 10, 25, 50, 100 ],
+				'order': [[ 1, 'asc' ]],
+				'bDestroy': true,
+				'ajax': {
+					'url': `/indexer/new/api/mobile_friendly/website/pages/detail/`+id+`?format=datatables`,
+					'type': 'GET',
+				},
+				'columns': [
+					{'data': 'id',
+						'render': function(data, type, row, meta) {
+							return '<a href="javascript:void(0);" data-role="check_if_mob" data-id="'+row['id']+'" style="cursor:pointer;" class="text-primary">Check <br> Mobile Friendly</a>'
+						}
+					},
+					{'data': 'date_tracking', 'className': 'display-none'},
+					// {'data': 'rank'},
+					{'data': 'url',},
+					// {'data': 'request_screenshot',
+					// 	'render': function(data, type, row, meta) {
+					// 		return `<center><img src='`+data+`' class="zoom" style='width: 60px; height: 60px'></center>`;
+					// 	},
+					// },
+					{'data': 'status',
+						'render': function(data, type, row, meta) {
+							if(row['status']) {
+								return '<span class="label label-lg label-light-info label-inline" data-toggle="tooltip" title="Tracking: '+row['date_tracking']+'">'+data+'</span>'
+							}else{
+								return '<span class="label label-lg label-light-info label-inline" data-toggle="tooltip" title="Tracking: '+row['date_tracking']+'">Pending...</span>'
+							}
+						},
+						'className': 'text-center'
+					},
+					{'data': 'results',
+						'render': function(data, type, row, meta) {
+							if(row['results']) {
+								return '<p>'+data+'</p>'
+							}else{
+								return ''
+							}
+						},
+					},
+					{'data': 'date_created'},
+					{'data': 'seconds',
+						'render': function(data, type, row, meta) {
+							if(row['seconds']) {
+								return '<p>'+data+' seconds</p>'
+							}else{
+								return ''
+							}
+						},
+					},
+				],
+				"columnDefs": [
+				  { "orderable": false, "searchable": false, "targets": [3] }
+				]
+			});
+			$('#viewPagesModal').toggle('modal');
+	    });
+	});
+
+	$(document).on('click', 'a[data-role=check_if_mob]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+          text: "Do you want to submit to mobile friendly?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  		url: "{% url 'check_pages_if_mobile_friendly' %}",
+				data: {
+					id: id
+				},
+				type: "POST"
+		  	});
+		  }
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  html:  response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#mobile_friendly_api').DataTable().ajax.reload();
+						$('#api_pages_mob').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+    });
+
+
+	$(document).on('click', 'a[data-role=if_check]', function(){
+    	var id = $(this).data('id');
+    	Swal.fire({
+		  title: "Are you sure",
+          text: "You want to check if pages are in mobile friendly ?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  		url: "{% url 'check-mobile-friendly' %}",
+				data: {
+					id: id
+				},
+				type: "POST"
+		  	});
+		  }
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  html:  response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#mobile_friendly_api').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+    });
+
+	$(document).on('click', 'a[data-role=edit]', function(){
+        var id = $(this).data('id');
+        var viewModal = new bootstrap.Modal(document.getElementById('viewModal'), {});
+		$('.view_edit_modal_content', $('#viewModal')).load('/mobile-friendly/update/' + id, function(){
+			viewModal.show();
+		});
+    });
+
+	const closeModal = (modal) => {
+		$(`#${modal}`).toggle('modal');
+	}
+</script>
+{% endblock %}

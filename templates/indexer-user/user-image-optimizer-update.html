@@ -1,0 +1,40 @@
+<form action="{% url 'download_image_again' pk %}" method="post">
+	<div class="modal-body">
+		{% csrf_token %}
+		<div class="mb-3">
+			<label>Url <span class="text-danger">*</span></label>
+			<input type="text" class="form-control" name="up_url" placeholder="Website" required value="{{img.url}}">
+		</div>
+		<div class="mb-3">
+			<label>Entities (comma-separated)<span class="text-danger">*</span></label>
+			<textarea class="form-control" rows="10" name="up_entities">{{img.entities}}</textarea>
+		</div>
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="form-group mt-3">
+					<label>GPS Lat <span class="text-danger">*</span></label>
+					<input type="text" class="form-control" name="up_latitude" id="up_latitude" placeholder="Latitude" required value="{{img.gps_lat}}">
+				</div>
+			</div>
+			<div class="col-sm-6">
+				<div class="form-group mt-3">
+					<label>GPS Long <span class="text-danger">*</span></label>
+					<input type="text" class="form-control" name="up_longitude" id="up_longitude" placeholder="Longitude" required value="{{img.gps_lat}}">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-editimg-modal">Close</button>
+		<button type="submit" class="btn btn-primary up-clear-wrapper">Download</button>
+	</div>
+</form>
+<script>
+    $('.up-clear-wrapper').click(function(){
+        setTimeout(function(){
+            $('#close-editimg-modal').click();
+            $('.loader-wrapper').fadeOut('slow');
+            $('#tbl_image_op').DataTable().ajax.reload();
+        }, 8000);
+    });
+</script>

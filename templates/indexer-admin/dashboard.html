@@ -1,0 +1,254 @@
+{% extends 'indexer-admin/layout.html' %}
+{% load static %}
+{% block content %}
+<div class="row mt-5 align-items-center justify-content-between">
+	<div class="col-auto">
+		<h3 class="mb-0"><i class="fas fa-tachometer text-success me-2" style="zoom:0.85"></i> Dashboard</h3>
+	</div>
+</div>
+<br>
+<div class="col-sm-12 row">
+	<div class="col-6 col-lg-3 mt-3">
+		<div class="card">
+            <div class="card-header">
+                <i class="fas fa-check-circle text-success me-2" style="zoom:0.85"></i> Total Web Pages to Index
+            </div>
+            <div class="card-body text-center">
+                <h2 class="bold">
+                	<span class="float-start"><i class="fas fa-globe-asia"></i></span> 
+                	<span class="text-center">{{web}}</span>
+                </h2>
+            </div>
+        </div>
+	</div>
+	<div class="col-6 col-lg-3 mt-3">
+		<div class="card">
+            <div class="card-header">
+                <i class="fas fa-key text-success me-2" style="zoom:0.85"></i> Total API
+            </div>
+            <div class="card-body text-center">
+                <h2 class="bold">
+                	<span class="float-start"><i class="fas fa-key"></i></span> 
+                	<span class="text-center">{{api}}</span>
+                </h2>
+            </div>
+        </div>
+	</div>
+	<div class="col-6 col-lg-3 mt-3">
+		<div class="card">
+            <div class="card-header">
+                <i class="fas fa-users text-success me-2" style="zoom:0.85"></i> Total Users
+            </div>
+            <div class="card-body text-center">
+                <h2 class="bold">
+                	<span class="float-start"><i class="fas fa-users"></i></span> 
+                	<span class="text-center">{{users}}</span>
+                </h2>
+            </div>
+        </div>
+	</div>
+	<div class="col-6 col-lg-3 mt-3">
+		<div class="card">
+            <div class="card-header">
+                <i class="fas fa-users text-success me-2" style="zoom:0.85"></i> Total Subscribers
+            </div>
+            <div class="card-body text-center">
+                <h2 class="bold">
+                	<span class="float-start"><i class="fas fa-users"></i></span> 
+                	<span class="text-center">0</span>
+                </h2>
+            </div>
+        </div>
+	</div>
+</div>
+<div class="row">
+    <div class="col-4 mt-5">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-server text-success me-2" style="zoom:0.85"></i> Index vs Non Index Page
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="index_vs_none"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-8 mt-5">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-server text-success me-2" style="zoom:0.85"></i> Indexing Summary Report By Month
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="index_per_month_summary"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'indexing/js/chart.js/chart.min.js' %}"></script> 
+<script src="{% static 'indexing/js/chart.js/index-charts.js' %}"></script>
+<script type="text/javascript">
+
+    $(document).ready(function(){
+        window.chartColors = {
+            green: '#75c181', // rgba(117,193,129, 1)
+            blue: '#5b99ea', // rgba(91,153,234, 1)
+            gray: '#a9b5c9',
+            text: '#252930',
+            border: '#e7e9ed'
+        };
+
+        /* Random number generator for demo purpose */
+        var randomDataPoint = function(){ return Math.round(Math.random()*100)};
+
+
+        //Bar Chart Demo
+
+        var topPlans = {
+            type: 'bar',
+
+            data: {
+                labels: [
+                        "January", 
+                        "February", 
+                        "March", 
+                        "April", 
+                        "May", 
+                        "June", 
+                        "July", 
+                        "August",
+                        "September",
+                        "October",
+                        "November",
+                        "December"
+                ],
+                datasets: [{
+                    label: 'Index',
+                    backgroundColor: "rgba(117,193,129,0.8)", 
+                    hoverBackgroundColor: "rgba(117,193,129,1)",
+                    
+                    
+                    data: [
+                        '{{index_jan}}',
+                        '{{index_feb}}',
+                        '{{index_march}}',
+                        '{{index_april}}',
+                        '{{index_may}}',
+                        '{{index_june}}',
+                        '{{index_july}}',
+                        '{{index_aug}}',
+                        '{{index_sep}}',
+                        '{{index_oct}}',
+                        '{{index_nov}}',
+                        '{{index_dec}}',
+                    ]
+                }, 
+                {
+                    label: 'None Index',
+                    backgroundColor: "rgba(91,153,234,0.8)", 
+                    hoverBackgroundColor: "rgba(91,153,234,1)",
+                    
+                    
+                    data: [
+                        '{{none_index_jan}}',
+                        '{{none_index_feb}}',
+                        '{{none_index_march}}',
+                        '{{none_index_april}}',
+                        '{{none_index_may}}',
+                        '{{none_index_june}}',
+                        '{{none_index_july}}',
+                        '{{none_index_aug}}',
+                        '{{none_index_sep}}',
+                        '{{none_index_oct}}',
+                        '{{none_index_nov}}',
+                        '{{none_index_dec}}',
+                    ]
+                }
+                ]
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    position: 'bottom',
+                    align: 'end',
+                },
+
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                    titleMarginBottom: 10,
+                    bodySpacing: 10,
+                    xPadding: 16,
+                    yPadding: 16,
+                    borderColor: window.chartColors.border,
+                    borderWidth: 1,
+                    backgroundColor: '#fff',
+                    bodyFontColor: window.chartColors.text,
+                    titleFontColor: window.chartColors.text,
+                    callbacks: {
+                        label: function(tooltipItem, data) {                     
+                            return tooltipItem.value + '%';   
+                        }
+                    },
+                    
+
+                },
+                scales: {
+                    xAxes: [{
+                        display: true,
+                        gridLines: {
+                            drawBorder: false,
+                            color: window.chartColors.border,
+                        },
+
+                    }],
+                    yAxes: [{
+                        display: true,
+                        gridLines: {
+                            drawBorder: false,
+                            color: window.chartColors.borders,
+                        },
+                        ticks: {
+                            beginAtZero: true,
+                            userCallback: function(value, index, values) {
+                                return value + '%';  
+                            }
+                        },
+
+                        
+                    }]
+                }
+                
+            }
+        }
+
+        window.addEventListener('load', function(){
+            var top_plans = document.getElementById('index_per_month_summary').getContext('2d');
+            window.myBar = new Chart(top_plans, topPlans);
+        });
+
+
+        var ctx = document.getElementById("index_vs_none");
+        var myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Index Pages', 'None-Index Page'],
+                datasets: [{
+                    label: 'Index vs None Index Pages',
+                    data: [{{index_pages}}, {{none_index_pages}}],
+                    backgroundColor:["#66b2b2", "#008080"],
+                    borderColor: ["#66b2b2", "#008080"],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+            }
+        });
+    });
+</script>
+{% endblock %}

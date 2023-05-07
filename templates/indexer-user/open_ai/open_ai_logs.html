@@ -1,0 +1,321 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load staticfiles %}
+{% block app %}
+<style type="text/css">
+	.display-none{
+		display: none;
+	}
+	.zoom:hover {
+		z-index: inherit;
+		transform: scale(3.5);
+	}
+</style>
+<div class="row mt-5 align-items-center justify-content-between">
+    <div class="col-auto">
+        <h3 class="app-page-title mb-0"><i class="fas fa-file text-success me-2" style="zoom:0.85"></i> Content Generator</h3>
+    </div>
+	<div class="col-auto">
+		<div class="page-utilities">
+		   <div class="row g-2 justify-content-start justify-content-md-end align-items-center">
+			   <div class="col-auto">						    
+				   <a class="btn btn-primary" href="#" data-bs-toggle="modal" data-bs-target="#add_web">
+					   <i class="fas fa-plus"></i>
+					   Create Content
+				   </a>
+			   </div>
+		   </div>
+	   </div>
+   </div>
+</div>
+<br><br>
+<section class="app-card">
+    <div class="app-card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="content_logs" width="100%">
+                <thead>
+                    <tr>
+                        <th class="cell text-center">Action</th>
+                        <th class="cell">Keyword</th>
+						<th class="cell">Prompt Used</th>
+                        <th class="cell">Date Added</th>
+                        <th class="cell text-center">Status</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</section>
+<div class="modal fade" id="add_web" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-pencil text-success me-2" style="zoom:0.85"></i> CREATE CONTENT</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="submitForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Write content name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="message" id="message" placeholder="Write content name" required>
+                    </div>
+					<div class="mb-3">
+                        <label>Prompt <span class="text-danger">*</span></label>
+                        <select class="form-select select2" name="prompts" id="prompts" required>
+							<option></option>
+                            {% for row in prompt %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-web-modal">Close</button>
+                    <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span> Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="viewModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit text-success me-2" style="zoom:0.85"></i>VIEW DETAILS</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-editindex-modal" aria-label="Close"></button>
+              </div>
+              <div class="view_edit_modal_content"></div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+	let global_variable = '';
+	let beforeSend = function(){
+		$('.loading').css('display', '');
+		$('button').prop("disabled", true);
+	}
+
+	let afterSend = function(){
+		$('.loading').css('display', 'none');
+		$('button').prop("disabled", false);
+	}
+
+	function nl2br(str){
+		return str.replace(new RegExp('\n', 'g'), '<br>');
+	}
+
+	function sleep(ms) {
+  		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+	$('#submitForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to search this keyword?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.post({
+                    url: "{% url 'create_generate_content' %}",
+                    data: form,
+                    success : function (response){
+                        if(response.data == "success"){
+                            Swal.fire({
+                                title: "Good job!",
+                                html:  response.msg,
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then((result) => {
+                                if (result.isConfirmed){
+                                    $('#content_logs').DataTable().ajax.reload();
+									$('#submitForm').trigger('reset');
+									$('#close-web-modal').click();
+                                }
+                            });
+                        }else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+                    },
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        });
+        e.preventDefault();
+    });
+
+
+	$('#submitForms').on('submit', function(e){
+		e.preventDefault();
+		let form = new FormData(this);
+		let message = form.get("message");
+		beforeSend();
+		$.ajax({
+			data        : form,
+			url         : '{% url "create_generate_content" %}',
+			type        : 'POST',
+			cache       : false,
+			contentType : false,
+			processData : false,
+			success: function (data) {
+				$('#content_logs').DataTable().ajax.reload();
+				let info = data.article_headers;
+				$.ajax({
+					data        : form,
+					url         : '/user/open-ai/content/introduction/'+message+'/'+info,
+					type        : 'POST',
+					cache       : false,
+					contentType : false,
+					processData : false,
+					success		: function(data){
+						Swal.fire({
+							title: "Information",
+							html:  'Keyword sucessfully created for the content. Please dont refresh the page and wait for the result since the it is \
+							in schedule for generating. Thanks!',
+							icon: "success",
+							allowOutsideClick: false,
+						}).then((result) => {
+							if (result.isConfirmed){
+								afterSend();
+								$('#submitForm').trigger('reset');
+								$('#close-web-modal').click();
+							}
+						});
+					}
+				}).done(function(){
+					sleep(120).then(() => {
+						for(let i = 1; i <= info.length; i++){
+							if(i==1){
+								$.ajax({
+									data        : form,
+									url         : '/user/open-ai/content/sections/first/'+message+'/'+info[i-1],
+									type        : 'POST',
+									cache       : false,
+									contentType : false,
+									processData : false,
+									success: function (data) {
+										console.log('success first section..');
+									}
+								}).done(function(){
+									sleep((200*i)+150);
+								});
+							} else {
+								$.ajax({
+									data        : form,
+									url         : '/user/open-ai/content/sections/others/'+message+'/'+info[i-1]+'/'+info[i-2],
+									type        : 'POST',
+									cache       : false,
+									contentType : false,
+									processData : false,
+									success: function (data) {
+										console.log('success other section..');
+									}
+								}).done(function(){
+									sleep((200*i)+150);
+								});
+							}
+						}
+					});
+				});
+    		}
+		}).done(function(data){
+			sleep(20000).then(() => {
+				$.ajax({
+					data: form,
+					url: '/user/open-ai/content/conclusion/' + message + '/' + data.article_headers,
+					type: 'POST',
+					cache: false,
+					contentType: false,
+					processData: false,
+					success: function (data) {
+						console.log('success conclusions..');
+						$('#content_logs').DataTable().ajax.reload();
+					}
+				});
+			});
+		});
+	});
+
+	$('.select2').select2({
+		width: '100%',
+		theme: 'bootstrap-5',
+	    placeholder: 'Choose',
+		dropdownParent: $('#add_web')
+	});
+	
+    $(document).ready(function(){
+		$('#content_logs').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 3, 'desc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': `/indexer/new/api/user/open_ai_content_logs/{{request.user.id}}?format=datatables`,
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+						return `<a data-role="edit" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">Edit</a> |
+							<a data-role="view" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">View Results</a>`
+					},
+					'className': 'text-center'
+				},
+				{'data': 'keyword', 'className': 'text-center'},
+				{'data': 'prompt',
+                    'render': function(data, type, row, meta){
+						if(data){
+							return '<span style="white-space: normal;">'+data+'</span>'
+						}else{
+							return ''
+						}
+                    },
+					'className': 'text-center'
+                },
+				{'data': 'dateadded'},
+				{'data': 'status',
+					'render': function(data, type, row, meta) {
+						return '<span class="badge bg-primary">'+data+'</span>'
+					},
+					'className': 'text-center'
+				},
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [2] }
+			]
+		});
+
+        $(document).on('click', 'a[data-role=view]', function(){
+	        var id = $(this).data('id');
+            var url = '/user/open-ai/user_open_ai_content_view/'+ id;
+			window.open(url, '_blank');
+	    });
+	});
+
+    const closeModal = (modal) => {
+        $(`#${modal}`).toggle('modal');
+    }
+
+	$(document).on('click', 'a[data-role=edit]', function(){
+        var id = $(this).data('id');
+		console.log(id);
+        var viewModal = new bootstrap.Modal(document.getElementById('viewModal'), {});
+		$('.view_edit_modal_content', $('#viewModal')).load('/user/open-ai/content/generator/view-logs/' + id, function(){
+			viewModal.show();
+		});
+    });
+</script>
+{% endblock %}

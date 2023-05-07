@@ -1,0 +1,486 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load staticfiles %}
+{% block app %}
+<style type="text/css">
+	.display-none{
+		display: none;
+	}
+	.zoom:hover {
+		z-index: inherit;
+		transform: scale(3.5);
+	}
+</style>
+<div class="row mt-5 align-items-center justify-content-between">
+    <div class="col-auto">
+        <h3 class="app-page-title mb-0"><i class="fas fa-support text-success me-2" style="zoom:0.85"></i> OPEN AI GC</h3>
+    </div>
+	<div class="col-auto">
+		<div class="page-utilities">
+		   <div class="row g-2 justify-content-start justify-content-md-end align-items-center">
+			   <div class="col-auto">						    
+				   <a class="btn btn-primary" href="#" data-bs-toggle="modal" data-bs-target="#add_web">
+					   <i class="fas fa-plus"></i>
+					   Create Title
+				   </a>
+			   </div>
+		   </div>
+	   </div>
+   </div>
+</div>
+<br><br>
+<section class="app-card">
+    <div class="app-card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="content_logs" width="100%">
+                <thead>
+                    <tr>
+                        <th class="cell text-center">Action</th>
+                        <th class="cell">Title</th>
+                        <th class="cell">Prompt Used</th>
+                        <th class="cell">Date Added</th>
+                        <th class="cell text-center">Status</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</section>
+<div class="modal fade" id="add_web" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-pencil text-success me-2" style="zoom:0.85"></i> CREATE CONTENT</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="submitForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Write title name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="title" id="title" placeholder="Write title name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Other Keyword </label>
+                        <input type="text" class="form-control" name="keywords" id="keywords" placeholder="Other Keyword">
+                    </div>
+                    <div class="mb-3">
+                        <label>Other Keyword </label>
+                        <input type="text" class="form-control" name="keywords" id="keywords" placeholder="Other Keyword">
+                    </div>
+                    <div class="mb-3">
+                        <label>Other Keyword </label>
+                        <input type="text" class="form-control" name="keywords" id="keywords" placeholder="Other Keyword">
+                    </div>
+                    <div class="mb-3">
+                        <label>Other Keyword </label>
+                        <input type="text" class="form-control" name="keywords" id="keywords" placeholder="Other Keyword">
+                    </div>
+                    <div class="mb-3">
+                        <label>Prompt <span class="text-danger">*</span></label>
+                        <select class="form-select select2" name="prompts" id="prompts" required>
+                            <option></option>
+                            {% for row in prompt %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-ass-modal">Close</button>
+                    <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span> Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" id="viewPagesModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdrop" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="fas fa-globe-asia text-success me-2" style="zoom:0.85"></i> CREATE HEADERS</h5>
+            <button type="button" class="btn-close" onClick="closeModal('viewPagesModal')"></button>
+          </div>
+          <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-primary ms-3" data-bs-toggle="collapse" data-bs-target="#new-pages" aria-expanded="false" aria-controls="collapseExample" id="new-pages-button"><i class='fas fa-plus'></i> Add Headers</button>
+                            <button class="btn btn-success ms-3" data-role="generate_headers_content"><i class='fas fa-send'></i> Generate Content</button>
+                        </div>
+                    </div>
+                    <br>
+                    <form id="createdHeadersForm">
+                        {% csrf_token %}
+                        <div class="collapse px-3 py-0" id="new-pages">
+                            <input type="hidden" name="pk" id="pk">
+                            <div class="form-grou mb-3">
+                                <label>Headers <span class="text-danger">*</span></label>
+                                <textarea class="form-control" rows="10" name="headers" required></textarea>
+                                <small>List of headers you want to save. 1 header Per Line</small>
+                            </div>
+                            <div class="form-group mt-3 float-end">
+                                <button type="submit" class="btn btn-primary">Save changes</button>
+                            </div>
+                        </div>
+                    </form>
+                    <br><br><hr>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="user_headers_tbl" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="cell">Action</th>
+                                    <th class="cell display-none">Title Id</th>
+                                    <th class="cell">Headers</th>
+                                    <th class="cell">Date Added</th>
+                                    <th class="cell text-center">Status</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onClick="closeModal('viewPagesModal')">Close</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" tabindex="-1" id="viewPagesModalGeneratedHeaders" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdrop" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="fas fa-globe-asia text-success me-2" style="zoom:0.85"></i> GENERATED HEADERS</h5>
+            <button type="button" class="btn-close" onClick="closeModal('viewPagesModalGeneratedHeaders')"></button>
+          </div>
+          <div class="modal-body">
+                <div class="row">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="user_generate_headers_tbl" width="100%">
+                            <thead>
+                                <tr>
+                                    <th class="cell">Action</th>
+                                    <th class="cell display-none">Title Id</th>
+                                    <th class="cell">Headers</th>
+                                    <th class="cell">Date Added</th>
+                                    <th class="cell text-center">Status</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onClick="closeModal('viewPagesModalGeneratedHeaders')">Close</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="viewModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit text-success me-2" style="zoom:0.85"></i>VIEW DETAILS</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-editindex-modal" aria-label="Close"></button>
+              </div>
+              <div class="view_edit_modal_content"></div>
+        </div>
+    </div>
+</div>
+<script>
+    $('.select2').select2({
+		width: '100%',
+		theme: 'bootstrap-5',
+	    placeholder: 'Choose',
+	});
+
+    $(document).ready(function(){
+		$('#content_logs').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 3, 'desc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': `/indexer/new/api/user/open_ai_assisted_gc/{{request.user.id}}?format=datatables`,
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+                        if(row['prompt'] == 'Content Generator Default'){
+                            return `<a data-role="edit" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">Edit</a> | \
+                            <a data-role="generate_headings" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">Generated Headers</a> | \
+                            <a data-role="view_results_ass" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">View Results</a>`
+                        }else{
+                            return `<a data-role="edit" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">Edit</a> | \
+                            <a data-role="create_headings" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">Create Headings</a> | \
+                            <a data-role="view_results_ass" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">View Results</a>`
+                        }
+					},
+					'className': 'text-center'
+				},
+				{'data': 'title',
+                    'render': function(data, type, row, meta){
+                        return '<span style="white-space: normal;">'+data+'</span>'
+                    }
+                },
+				{'data': 'prompt', 'className': 'text-center'},
+                {'data': 'dateadded'},
+                {'data': 'status',
+					'render': function(data, type, row, meta) {
+						if(data == 1) {
+							return '<svg xmlns="http://www.w3.org/2000/svg" width="16" style="color:green" height="16" fill="currentColor" class="bi 					bi-check-circle" viewBox="0 0 16 16">\
+										  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+										  <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>\
+									</svg> Active'
+						}else{
+							return '<svg xmlns="http://www.w3.org/2000/svg" style="color:red" width="16" height="16" fill="currentColor" class="bi 						bi-x-circle" viewBox="0 0 16 16">\
+									  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+									  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\
+									</svg> In Active'
+						}
+					},
+					'className': 'text-center', "searchable": false
+				},
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [3] }
+			]
+		});
+
+        $(document).on('click', 'a[data-role=view_results_ass]', function(){
+	        var id = $(this).data('id');
+            var url = '/user/open-ai/user_open_ai_assisted_gc_view_results/'+ id;
+			window.open(url, '_blank');
+	    });
+
+        $(document).on('click', 'a[data-role=edit]', function(){
+            var id = $(this).data('id');
+            console.log(id);
+            var viewModal = new bootstrap.Modal(document.getElementById('viewModal'), {});
+            $('.view_edit_modal_content', $('#viewModal')).load('/user/open-ai/assisted/gc/view/' + id, function(){
+                viewModal.show();
+            });
+        });
+	});
+
+    $(document).on('click', 'a[data-role=create_headings]', function(){
+        var id = $(this).data('id');
+        $('#pk').val(id)
+        $('#user_headers_tbl').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 2, 'asc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': `/indexer/new/api/user/open_ai_assisted_gc_headers/`+id+`?format=datatables`,
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+                        if (row['status'] == 'Done'){
+                            return '<a href="javascript:void(0);" data-role="view_headers_results" data-id="'+ data + '" style="cursor:pointer;" class="text-primary">View Result</a>'
+                        }else{
+                            return ''
+                        }
+                        
+					}
+				},
+                {'data': 'ass_id', 'className': 'display-none'},
+				{'data': 'headers'},
+				{'data': 'dateadded'},
+				{'data': 'status',
+					'render': function(data, type, row, meta) {
+						return '<span class="badge bg-primary">'+data+'</span>'
+					},
+					'className': 'text-center'
+				},
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [4] }
+			]
+		});
+		$('#viewPagesModal').toggle('modal');
+
+        $(document).on('click', 'a[data-role=view_headers_results]', function(){
+	        var id = $(this).data('id');
+            var url = '/user/open-ai/user_open_ai_content_view_headers/'+ id;
+			window.open(url, '_blank');
+	    });
+    });
+
+
+    $(document).on('click', 'a[data-role=generate_headings]', function(){
+        var id = $(this).data('id');
+        $('#pk').val(id)
+        $('#user_generate_headers_tbl').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 2, 'asc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': `/indexer/new/api/user/open_ai_assisted_gc_headers/`+id+`?format=datatables`,
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+                        if (row['status'] == 'Done'){
+                            return '<a href="javascript:void(0);" data-role="view_headers_results" data-id="'+ data + '" style="cursor:pointer;" class="text-primary">View Result</a>'
+                        }else{
+                            return ''
+                        }
+                        
+					}
+				},
+                {'data': 'ass_id', 'className': 'display-none'},
+				{'data': 'headers'},
+				{'data': 'dateadded'},
+				{'data': 'status',
+					'render': function(data, type, row, meta) {
+						return '<span class="badge bg-primary">'+data+'</span>'
+					},
+					'className': 'text-center'
+				},
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [4] }
+			]
+		});
+		$('#viewPagesModalGeneratedHeaders').toggle('modal');
+
+        $(document).on('click', 'a[data-role=view_headers_results]', function(){
+	        var id = $(this).data('id');
+            var url = '/user/open-ai/user_open_ai_content_view_headers/'+ id;
+			window.open(url, '_blank');
+	    });
+    });
+
+    $('#createdHeadersForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to create this headers?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.post({
+                    url: "{% url 'user_open_ai_assisted_gc_generate_headers' %}",
+                    data: form,
+                    success : function (response){
+                        if(response.data == "success"){
+                            Swal.fire({
+                                title: "Good job!",
+                                html:  response.msg,
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then((result) => {
+                                if (result.isConfirmed){
+                                    $('#createdHeadersForm').trigger('reset');
+                                    $('#content_logs').DataTable().ajax.reload();
+                                    $('#user_headers_tbl').DataTable().ajax.reload();
+                                    $('#close-headers-modal').click();
+                                }
+                            });
+                        }else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+                    },
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        });
+        e.preventDefault();
+    });
+
+    const closeModal = (modal) => {
+		$(`#${modal}`).toggle('modal');
+	}
+
+    $(document).on('click', 'button[data-role=generate_headers_content]', function(){
+    	var pk = $('#pk').val();
+    	Swal.fire({
+            title: "Are you sure",
+            text: "Do you want to generate content all the headers?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes"
+		}).then((result) => {
+			if (result.isConfirmed) {
+				Swal.fire({
+					title: "Information",
+					html:  'OpenAI content headers generating successfully checking. Please wait for the result since the it is in schedule. Thanks!',
+					icon: "success",
+					confirmButtonColor: "#3498DB"
+				});
+				return $.ajax({
+					data: {
+						pk: pk
+					},
+					url: "{% url 'GenerateFirstSectionAndOtherSections' %}",
+					type        : 'POST',
+				});
+			}
+		});
+    });
+
+
+    $('#submitForm').on('submit', function(e){
+        var title = $('#title').val();
+        var prompts = $('#prompts').val();
+    	Swal.fire({
+            title: "Are you sure",
+            text: "You want to add this title?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes"
+		}).then((result) => {
+			if (result.isConfirmed) {
+				Swal.fire({
+                    title: 'Information',
+                    html:  'Successfully the title of content generated. Please wait for the result since it is automated. Thanks!',
+                    icon: "success",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        $('#submitForm').trigger('reset');
+                        $('#content_logs').DataTable().ajax.reload();
+                        $('#close-ass-modal').click();
+                    }
+                });
+				return $.ajax({
+					data: {
+						title: title,
+                        prompts: prompts
+					},
+					url: "{% url 'user_open_ai_assisted_gc' %}",
+					type: 'POST',
+				});
+			}
+		});
+        e.preventDefault();
+    });
+</script>
+{% endblock %}

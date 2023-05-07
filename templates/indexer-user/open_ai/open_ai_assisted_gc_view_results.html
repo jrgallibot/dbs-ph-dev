@@ -1,0 +1,130 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load staticfiles %}
+{% block app %}
+<style type="text/css">
+	.display-none{
+		display: none;
+	}
+	.zoom:hover {
+		z-index: inherit;
+		transform: scale(3.5);
+	}
+	.copy-button {
+		display: inline-flex;
+		background: #222;
+		width: 50px;
+		justify-content: center;
+		-moz-appearance: none;
+		-webkit-appearance: none;
+		color: #f7f7f7;
+		padding: 1rem;
+		border: 0;
+		border-radius: 10px;
+		font-weight: 500;
+		transition: 2s;
+		cursor: pointer;
+	}
+</style>
+<div class="row mt-5 align-items-center justify-content-between">
+    <div class="col-auto">
+        <h3 class="app-page-title mb-0"><i class="fas fa-list-alt text-success me-2" style="zoom:0.85"></i> Content Generate</h3>
+	</div>
+	<div class="col-auto pull-right">
+		<button class="btn btn-success ms-3 pull-right" id="generate-btn"><i class='fas fa-send'></i> Generate HTML</button>
+    </div>
+</div>
+<br><br>
+<section class="app-card">
+	<div class="result_area">
+		<div class="card mb-3">
+			<div class="card-body">
+				{% if first_section or other_section %}
+				<button class="copy-button pull-right btn-outline-primary" onclick="copyText()"><i class="fas fa-copy"></i></button>
+				<br>
+				{% endif %}
+				<div id="result_text">
+					<h2><b><span id="you_search">{{title.title}}</span></b></h2>
+					<br>
+					{% if intro %}
+						{% for dictionary in intro.results %}
+							{% for k, v in dictionary.items %}
+								<h5>{{ k|linebreaksbr|safe|cut:"Introduction"  }}</h5>
+								<p>{{ v|linebreaksbr|safe  }}</p>
+							{% endfor %}
+						{% endfor %}
+					{% endif %}
+
+                    {% if first_section %}
+                        {% for dictionary in first_section.results %}
+                            {% for k, v in dictionary.items %}
+								<h5>{{ k|linebreaksbr|safe  }}</h5>
+								<p>{{ v|linebreaksbr|safe  }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if other_section %}
+                        {% for x in other_section %}
+                            {% for dictionary in x.results %}
+                                {% for k, v in dictionary.items %}
+									<h5>{{ k|linebreaksbr|safe  }}</h5>
+									<p>{{ v|linebreaksbr|safe  }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endif %}
+
+					{% if conclusion %}
+						{% for dictionary in conclusion.results %}
+							{% for k, v in dictionary.items %}
+								<h5>{{ k|linebreaksbr|safe  }}</h5>
+								<p>{{ v|linebreaksbr|safe  }}</p>
+							{% endfor %}
+						{% endfor %}
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<script>
+	document.getElementById('generate-btn').addEventListener('click', function() {
+		// get the div element and its content
+		var contentDiv = document.getElementById('result_text');
+		var content = contentDiv.innerHTML;
+		
+		// create a new blob with the content
+		var blob = new Blob([content], {type: 'text/html'});
+		
+		// create a new download link for the file
+		var downloadLink = document.createElement('a');
+		downloadLink.href = URL.createObjectURL(blob);
+		downloadLink.download = 'content.html';
+		
+		// simulate a click on the download link to initiate the download
+		document.body.appendChild(downloadLink);
+		downloadLink.click();
+		document.body.removeChild(downloadLink);
+	});
+
+	function copyText() {
+		// Get the text content of the <div> element
+		const divText = document.getElementById('result_text').innerText;
+		
+		// Create a temporary <textarea> element
+		const textarea = document.createElement('textarea');
+		textarea.value = divText;
+		document.body.appendChild(textarea);
+		
+		// Select and copy the text from the <textarea> element
+		textarea.select();
+		document.execCommand('copy');
+		
+		// Remove the <textarea> element
+		document.body.removeChild(textarea);
+		
+		// Log a message to the console
+		alert(`Copied text: ${divText}`);
+	}
+</script>
+{% endblock %}

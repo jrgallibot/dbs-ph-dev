@@ -1,0 +1,205 @@
+<div class="modal-header">
+    <h5 class="modal-title" id="back-to-routess"><i class="fas fa-long-arrow-left route-back-spinner" style="cursor:pointer"></i> ROUTES</h5>
+    <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+</div>
+<div class="modal-body">
+	<form id="creatednewdnsForm">
+		{% csrf_token %}
+		<div class="row">
+			<h5>Add New DNS</h5>
+			<br>
+            <div class="col-sm-4">
+                <label for="id_name">Name:</label>
+                <input type="text" id="id_name" class="form-control" name="name" maxlength="255" required placeholder="Dns Name">
+            </div>
+            <div class="col-sm-4">
+                <label for="id_type">Type:</label>
+                <select id="id_type" name="type" required class="form-control select2">
+                    <!-- <option></option> -->
+					<option value="A">A</option>
+					<option value="AAAA">AAAA</option>
+					<option value="CAA">CAA</option>
+					<option value="CERT">CERT</option>
+					<option value="CNAME">CNAME</option>
+					<option value="DNSKEY">DNSKEY</option>
+					<option value="DS">DS</option>
+					<option value="HTTPS">HTTPS</option>
+					<option value="LOC">LOC</option>
+					<option value="MX">MX</option>
+					<option value="NAPTR">NAPTR</option>
+					<option value="NS">NS</option>
+					<option value="PTR">PTR</option>
+					<option value="SMIMEA">SMIMEA</option>
+					<option value="SRV">SRV</option>
+					<option value="SSHFP">SSHFP</option>
+					<option value="SVCB">SVCB</option>
+					<option value="TLSA">TLSA</option>
+					<option value="TXT">TXT</option>
+					<option value="URI">URI</option>
+                </select>
+            </div>
+            <div class="col-sm-4">
+                <label for="id_content">Content:</label>
+                <input type="text" id="id_content" name="content" maxlength="255" required class="form-control" placeholder="Dns Content">
+            </div>
+			<div class="form-group mt-3 float-end">
+				<button type="submit" class="btn btn-primary" id="btn-save-dns">Save changes</button>
+			</div>
+		</div>
+	</form>
+	<br><br><hr>
+	<div class="table-responsive">
+		<table class="table table-hover" id="user_site_cloudflare_dns" width="100%">
+			<thead>
+				<tr>
+					<th>Actions</th>
+					<th>Name</th>
+					<th class="text-center">Type</th>
+					<th>Content</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for record in dns_records %}
+				<tr>
+					<td>
+						<a href="javascript:void(0);" onClick="editDNSButton('{{ record.id }}', '{{ pk }}')" id="site-route-editdns-btn-{{record.id}}" style="cursor:pointer;" class="text-primary">Edit</a> |
+						<a data-role="delete_dns_info" data-id="{{ record.id }}" data-filter="{{ pk }}"  style="cursor:pointer;" class="text-primary">Delete</a>
+					</td>
+					<td>{{ record.name }}</td>
+					<td class="text-center">{{ record.type }}</td>
+					<td style="white-space: normal;" >{{ record.content }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+{% block script %}
+    <script>
+    $(document).ready(function () {
+		$('#actionsModal').on('hidden.bs.modal', function (e) {
+			location.reload(true);
+		})
+		$('#user_site_cloudflare_dns').DataTable();
+        // $('#').DataTable({
+        //     'lengthMenu': [ 10, 25, 50, 100 ],
+        // });
+    });
+
+    
+
+    $('#creatednewdnsForm').on('submit', function(e){
+		$(`#btn-save-dns`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+		var form = new FormData(this);
+		Swal.fire({
+			title: "Are you sure",
+			text: "You want to add new dns ?",
+			icon: "info",
+			showCancelButton: true,
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+				return $.post({
+					url: "{% url 'edit_dns' pk %}",
+					data: form,
+					success : function (response){
+						if(response.data == "success"){
+							Swal.fire({
+								title: "Good job!",
+								html:  response.msg,
+								icon: "success",
+								allowOutsideClick: false,
+							}).then((result) => {
+								if (result.isConfirmed){
+									$('#creatednewdnsForm').trigger('reset');
+									$('#actionsModalContent').load(`/cloudflare/edit_dns/{{pk}}`, function(response, status, jqXhr){
+										if(status == "success"){
+											$('#actionsModalContent').empty().append(response);
+										}else{
+											alert('error')
+										}
+									});
+									$(`#btn-save-dns`).html('Save Changes');
+									// $('#user_site_cloudflare_dns').DataTable().ajax.reload();
+								}
+							});
+						}else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+					},
+					cache       : false,
+					contentType : false,
+					processData : false,
+				});
+			},
+		});
+		e.preventDefault();
+	});
+
+	$(document).on('click', 'a[data-role=delete_dns_info]', function(){
+		$(this).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+		var record_id = $(this).data('id');
+		var pk = $(this).data('filter');
+		Swal.fire({
+			title: "Are you sure",
+			text: "You want to delete this dns?",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+			return $.ajax({
+				url: "{% url 'delete_dns_record' %}",
+				data: {
+					record_id: record_id,
+					pk: pk
+				},
+				type: "POST"
+			});
+		}
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+					title: "Good job!",
+					html:  response.value.msg,
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#actionsModalContent').load(`/cloudflare/edit_dns/{{pk}}`, function(response, status, jqXhr){
+							if(status == "success"){
+								$('#actionsModalContent').empty().append(response);
+							}else{
+								alert('error')
+							}
+						});
+						$(this).html('Delete');
+						// $('#actionsModalContent').html(result);
+						// var viewModal = new bootstrap.Modal(document.getElementById('viewPagesModal'), {});
+						// $('.view_sites_modal_content', $('#viewPagesModal')).empty();
+						// $('.view_sites_modal_content', $('#viewPagesModal')).load('/cloudflare/edit_dns/' + pk);
+						// $('#api_key_cloudflare').DataTable().ajax.reload();
+						// $('#user_site_cloudflare_dns').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+	});
+	</script>
+{% endblock %}

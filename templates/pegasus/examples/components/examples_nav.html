@@ -1,0 +1,128 @@
+{% load tags %}
+<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3   bg-gradient-dark" id="sidenav-main">
+  <div class="sidenav-header">
+    <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenavbb"></i>
+    <a class="navbar-brand m-0" href="{% url 'web:home' %}">
+      <span class="ms-1 font-weight-bold text-white">{{project_meta.NAME}}</span>
+    </a>
+  </div>
+  <hr class="horizontal light mt-0 mb-2">
+  <div class="collapse navbar-collapse  w-auto  max-height-vh-100" id="sidenav-collapse-main">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a href="/indexer/user/dashboard/" class="nav-link {% if active_tab == 'dashboard' %}active{% endif %}">
+          <span class="icon"><i class="fa fa-credit-card"></i></span><span>&nbsp;Dashboard</span>
+        </a>
+      </li>
+      {% if user|check_permission:'superadmin' %}
+      <li class="nav-item mt-3">
+        <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">User Management</h6>
+      </li>
+      <li class="nav-item">
+        <a href="/indexer/user/register/account/" class="nav-link {% if active_tab == 'reg_user' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-user-pen"></i></span><span>&nbsp;Register Users</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/indexer/user/list-of-accounts/" class="nav-link {% if active_tab == 'user_list' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-users"></i></span><span>&nbsp;List of Users</span>
+        </a>
+      </li>
+      {% endif %}
+      <li class="nav-item mt-3">
+        <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Open AI</h6>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'user_open_ai' %}" class="nav-link {% if active_tab == 'open_ai' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-list-alt"></i></span><span>&nbsp;Content Generator</span>
+        </a>
+      </li>
+      <!-- <li class="nav-item">
+        <a href="{% url 'user_open_ai_logs' %}" class="nav-link {% if active_tab == 'content_logs' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-info-circle"></i></span><span>&nbsp;Content Details</span>
+        </a>
+      </li> -->
+      <li class="nav-item">
+        <a href="{% url 'user_open_ai_assisted_gc' %}" class="nav-link {% if active_tab == 'assisted_gc' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-support"></i></span><span>&nbsp;OPEN AI GC</span>
+        </a>
+      </li>
+      {% if user|check_permission:'superadmin' %}
+      <li class="nav-item">
+        <a href="{% url 'user_open_ai_prompt_parent' %}" class="nav-link {% if active_tab == 'prompt_parent' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-terminal"></i></span><span>&nbsp;Parent Prompt</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'user_open_ai_prompt' %}" class="nav-link {% if active_tab == 'prompt' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-terminal"></i></span><span>&nbsp;Sub-Parent Prompt</span>
+        </a>
+      </li>
+      {% endif %}
+      <!-- <li class="nav-item">
+        <a href="{% url 'user_open_ai' %}" class="nav-link {% if active_tab == 'open_ai' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-list"></i></span><span>&nbsp;Prompts</span>
+        </a>
+      </li> -->
+      <li class="nav-item mt-3">
+        <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Apps</h6>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'image_optimizer' %}" class="nav-link {% if active_tab == 'image_optimizer' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-image"></i></span><span>&nbsp;Image Optimizer</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/hugo-client/" class="nav-link {% if active_tab == 'hugo' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-globe"></i></span><span>&nbsp;PBN Manager</span>
+        </a>
+      </li>
+      <li class="nav-item mt-3">
+        <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Cloudflare</h6>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'cloud_fare_api' %}" class="nav-link {% if active_tab == 'user_api' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-cloud"></i></span><span>&nbsp;Cloundflare</span>
+        </a>
+      </li>
+      <li class="nav-item mt-3">
+        <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">GOOGLE SEO</h6>
+      </li>
+      <li class="nav-item">
+        <a href="/indexer/user/google-index/" class="nav-link {% if active_tab == 'google_index' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-globe"></i></span><span>&nbsp;Google Index</span>
+        </a>
+      </li>
+      <!-- <li class="nav-item">
+        <a href="#" class="nav-link {% if active_tab == 'payments' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-chain"></i></span><span>&nbsp;Url Shortener</span>
+        </a>
+      </li> -->
+      <li class="nav-item">
+        <a href="/indexer/user/mobile/friendly/" class="nav-link {% if active_tab == 'mobile_friendly' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-mobile"></i></span><span>&nbsp;Mobile Friendly</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/indexer/user/site-map/" class="nav-link {% if active_tab == 'site_map' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-sitemap"></i></span><span>&nbsp;Site Map</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/indexer/user/rank-tracker/" class="nav-link {% if active_tab == 'rank' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-star"></i></span><span>&nbsp;Rank Tracker</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/indexer/user/index-api/" class="nav-link {% if active_tab == 'index_api' %}active{% endif %}">
+          <span class="icon"><i class="fas fa-server"></i></span><span>&nbsp;Api's</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="sidenav-footer position-absolute w-100 bottom-0 ">
+    <div class="mx-3">
+      <a class="btn bg-gradient-primary mt-4 w-100" href="{% url 'web:home' %}" type="button">Back to Dashboard</a>
+    </div>
+  </div>
+</aside>

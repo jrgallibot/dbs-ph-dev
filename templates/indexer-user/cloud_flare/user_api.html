@@ -1,0 +1,428 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load staticfiles %}
+{% block app %}
+<style type="text/css">
+	.display-none{
+		display: none;
+	}
+	.zoom:hover {
+		z-index: inherit;
+		transform: scale(3.5);
+	}
+</style>
+<div class="row mt-5 align-items-center justify-content-between">
+	<div class="col-auto">
+		<h3 class="app-page-title mb-0"><i class="fas fa-cloud text-success me-2" style="zoom:0.85"></i> Cloudflare Api</h3>
+	</div>
+	<div class="col-auto">
+		 <div class="page-utilities">
+			<div class="row g-2 justify-content-start justify-content-md-end align-items-center">
+				<div class="col-auto">						    
+					<a class="btn btn-primary" href="#" data-bs-toggle="modal" data-bs-target="#add_api">
+						<i class="fas fa-plus"></i>
+						Add API
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<br><br>
+<section class="app-card">
+	<div class="app-card-body">
+		<div class="table-responsive">
+			<table class="table table-hover" id="api_key_cloudflare" width="100%">
+				<thead>
+					<tr>
+						<th class="cell">Action</th>
+						<th class="cell">Email</th>
+						<th class="cell">Created At</th>
+						<th class="cell">Updated At</th>
+						<th class="cell text-center">Status</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</section>
+<div class="modal fade" id="add_api" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-pencil text-success me-2" style="zoom:0.85"></i> CREATE API <br></h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<form id="submitForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="mb-3">
+						<label>Email <span class="text-danger">*</span></label>
+						<input name="email" type="text" class="form-control" placeholder="JSON Email" required="required">
+						<small>Paste Email Associated with Json Api Above</small>
+					</div>
+					<div class="mb-3">
+						<label>Account ID <span class="text-danger">*</span></label>
+						<input name="acc_id" type="text" class="form-control" placeholder="Account ID" required="required">
+					</div>
+					<div class="mb-3">
+						<label>Account Token <span class="text-danger">*</span></label>
+						<textarea class="form-control" name="acc_token" required></textarea>
+					</div>
+					<div class="mb-3">
+						<label>Keys <span class="text-danger">*</span></label>
+						<textarea class="form-control" name="keys"></textarea>
+						<small>Paste Key from Cloudflare</small>
+					</div>
+					<div class="mb-3">
+						<label>Server Name <span class="text-danger">*</span></label>
+						<textarea class="form-control" name="nameServers"></textarea>
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" name="status">
+						<label class="form-check-label" for="flexCheckDefault">
+							Status
+						</label>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-api-modal">Close</button>
+					<button type="submit" class="btn btn-primary">Save changes</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="viewModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title"><i class="fas fa-edit text-success me-2" style="zoom:0.85"></i> VIEW DETAILS</h5>
+				<button type="button" class="btn-close text-dark"  data-bs-dismiss="modal" onClick="closeModal('viewModal')" aria-label="Close"><i class="fas fa-times"></i></button>
+			</div>
+			<div class="view_edit_modal_content"></div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="actionsModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+	<div class="modal-dialog modal-dialog-centered modal-xl">
+		<div class="modal-content" id="actionsModalContent">
+
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="viewPagesModal"  role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title"><i class="fas fa-globe-asia text-success me-2" style="zoom:0.85"></i> VIEW SITES CLOUDFLARE</h5>
+				<button type="button" class="btn-close text-dark" data-bs-dismiss="modal" onClick="closeModal('viewModal')" aria-label="Close"><i class="fas fa-times"></i></button>
+			</div>
+			<div class="view_sites_modal_content"></div>
+		</div>
+	</div>
+</div>
+<script>
+	$('.select2').select2({
+		width: '100%',
+		theme: 'bootstrap-5',
+		placeholder: 'Choose',
+	});
+
+	$(document).on('click', 'button[data-role=check_updated_sites]', function(){
+		var pk = $('#pk').val();
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "Do you want to check the updated sites to generate?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  		url: "{% url 'generate_updated_sites' %}",
+				data: {
+					pk: pk
+				},
+				type: "POST"
+		  	});
+		  }
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  html:  response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#api_key_cloudflare').DataTable().ajax.reload();
+						$('#user_site_cloudflare').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+	});
+
+	$(document).ready(function(){
+		$('#viewPagesModal').on('hidden.bs.modal', function (e) {
+			location.reload(true);
+		})
+
+		$('#api_key_cloudflare').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 2, 'desc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': `/indexer/new/api/user/cloudflare/api/{{request.user.id}}?format=datatables`,
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+						return `<a data-role="edit" data-id=`+ row['id'] + ` style="cursor:pointer;" class="text-primary">View</a> |
+						<a onClick="routesButton(`+ row['id'] + `, 'forward')" style="cursor:pointer;" class="text-primary" id="site-routes-btn-`+ row['id'] + `">Sites</a>`
+					},
+					'className': 'text-center'
+				},
+				{'data': 'email',
+					'render': function(data, type, row, meta){
+						return '<span style="white-space: normal;">'+data+'</span>'
+					}
+				},
+				{'data': 'created_at'},
+				{'data': 'updated_at'},
+				{'data': 'status',
+					'render': function(data, type, row, meta) {
+						if(row['status'] == 1) {
+							return '<svg xmlns="http://www.w3.org/2000/svg" width="16" style="color:green" height="16" fill="currentColor" class="bi 					bi-check-circle" viewBox="0 0 16 16">\
+										  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+										  <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>\
+									</svg> Active'
+						}else if (row['status'] == 0) {
+							return '<svg xmlns="http://www.w3.org/2000/svg" style="color:red" width="16" height="16" fill="currentColor" class="bi 						bi-x-circle" viewBox="0 0 16 16">\
+									  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>\
+									  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>\
+									</svg> Inactive'
+						}
+					},
+					'className': 'text-center'
+				},
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [4] }
+			]
+		});
+
+		$(document).on('click', 'a[data-role=edit]', function(){
+			var id = $(this).data('id');
+			var viewModal = new bootstrap.Modal(document.getElementById('viewModal'), {});
+			$('.view_edit_modal_content', $('#viewModal')).load('/cloudflare/user/api/view/' + id, function(){
+				viewModal.show();
+			});
+		});
+	});
+
+	const routesButton = (pk, action) => {
+		if(action == 'forward'){
+			$(`#site-routes-btn-${pk}`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>')
+			$('#actionsModalContent').load(`/cloudflare/cloud_fare_api_view_sites/${pk}`, function(response, status, jqXhr){
+				if(status == "success"){
+					localStorage.setItem('website_id', pk)
+					$('#actionsModalContent').empty().append(response);
+					$(`#site-routes-btn-${pk}`).html('Sites');
+					$('#actionsModal').modal('toggle');
+				}else if(status == "error"){
+					alert('error')
+				}
+			});
+		}else if(action == 'back'){
+			$(`#back-to-routess`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+			$('#actionsModalContent').load(`/cloudflare/cloud_fare_api_view_sites/${pk}`, function(response, status, jqXhr){
+				if(status == "success"){
+					$('#actionsModalContent').empty().append(response);
+				}else if(status == "error"){
+					alert('error')
+				}
+			});
+		}
+	}
+
+	const routeDNSButton = (pk, action) => {
+		var website_id = localStorage.getItem('website_id')
+		if(action == 'forward'){
+			$(`#site-dns-btn-${pk}`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+			$('#actionsModalContent').load(`/cloudflare/edit_dns/${pk}`, function(response, status, jqXhr){
+				if(status == "success"){
+					$('#actionsModalContent').empty().append(response);
+					$('.route-back-spinner').attr('onClick', `routesButton('${website_id}', 'back')`);
+				}else if(status == "error"){
+					alert('error')
+				}
+			});
+		}else if(action == 'back'){
+			$(`#back-to-dns`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+			$('#actionsModalContent').load(`/cloudflare/edit_dns/${pk}`, function(response, status, jqXhr){
+				if(status == "success"){
+					$('#actionsModalContent').empty().append(response);
+					$('.route-back-spinner').attr('onClick', `routesButton('${website_id}', 'back')`);
+				}else if(status == "error"){
+					alert('error')
+				}
+			});
+		}
+	}
+
+	const routeRuleButton = (pk, action) => {
+		var website_id = localStorage.getItem('website_id')
+		if(action == 'forward'){
+			$(`#site-rule-btn-${pk}`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+			$('#actionsModalContent').load(`/cloudflare/page_rule/${pk}`, function(response, status, jqXhr){
+				if(status == "success"){
+					$('#actionsModalContent').empty().append(response);
+					$('.route-backrule-spinner').attr('onClick', `routesButton('${website_id}', 'back')`);
+				}else if(status == "error"){
+					alert('error')
+				}
+			});
+		}
+	}
+
+	const editDNSButton = (id, pk) => {
+		var website_id = localStorage.getItem('website_id')
+		$(`#site-route-editdns-btn-${id}`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>');
+		$('#actionsModalContent').load(`/cloudflare/edit_dns_record/${id}/${pk}`, function(response, status, jqXhr){
+			if(status == "success"){
+				$('#actionsModalContent').empty().append(response);
+				$('.route-back-dns-spinner').attr('onClick', `routesButton('${website_id}', 'back')`);
+			}else if(status == "error"){
+				alert('error')
+			}
+		});
+	}
+
+	$('#submitForm').on('submit', function(e){
+		var form = new FormData(this);
+		Swal.fire({
+			title: "Are you sure",
+			text: "You want to add this api key?",
+			icon: "info",
+			showCancelButton: true,
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+				return $.post({
+					url: "{% url 'cloud_fare_api' %}",
+					data: form,
+					success : function (response){
+						if(response.data == "success"){
+							Swal.fire({
+								title: "Good job!",
+								html:  response.msg,
+								icon: "success",
+								allowOutsideClick: false,
+							}).then((result) => {
+								if (result.isConfirmed){
+									$('#submitForm').trigger('reset');
+									$('#api_key_cloudflare').DataTable().ajax.reload();
+									$('#close-api-modal').click();
+								}
+							});
+						}else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+					},
+					cache       : false,
+					contentType : false,
+					processData : false,
+				});
+			},
+		});
+		e.preventDefault();
+	});
+
+	const closeModal = (modal) => {
+		$(`#${modal}`).toggle('modal');
+		location.reload(true);
+	}
+
+	$(document).on('click', 'a[data-role=edit_dns_info]', function(){
+		var id = $(this).data('id');
+		var pk = $(this).data('filter');
+		var viewModal = new bootstrap.Modal(document.getElementById('viewPagesModal'), {});
+		$('.view_sites_modal_content', $('#viewPagesModal')).empty();
+		$('.view_sites_modal_content', $('#viewPagesModal')).load('/cloudflare/edit_dns_record/' + id +'/'+ pk);
+	});
+
+	$(document).on('click', 'a[data-role=delete_dns_info]', function(){
+		var record_id = $(this).data('id');
+		var pk = $(this).data('filter');
+		Swal.fire({
+			title: "Are you sure",
+			text: "You want to delete this dns?",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+			return $.ajax({
+				url: "{% url 'delete_dns_record' %}",
+				data: {
+					record_id: record_id,
+					pk: pk
+				},
+				type: "POST"
+			});
+		}
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+					title: "Good job!",
+					html:  response.value.msg,
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						var viewModal = new bootstrap.Modal(document.getElementById('viewPagesModal'), {});
+						$('.view_sites_modal_content', $('#viewPagesModal')).empty();
+						$('.view_sites_modal_content', $('#viewPagesModal')).load('/cloudflare/edit_dns/' + pk);
+						$('#api_key_cloudflare').DataTable().ajax.reload();
+						$('#user_site_cloudflare').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+	});
+</script>
+{% endblock %}

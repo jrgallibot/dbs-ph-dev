@@ -1,0 +1,84 @@
+{% load tags %}
+{% load static %}
+<div class="modal-header">
+    <h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-pencil text-success me-2"></i> UPDATE ACCOUNT</h5>
+    <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+</div>
+<form action="/hugo-client/update-cloudflare/{{ data.id }}/" method="POST" id="updateCloudflareAccountForm">
+    {% csrf_token %}
+    <div class="modal-body">
+        <div class="form-group mb-3">
+            <label>Cloudflare Model <label class="text-danger">*</label></label>
+            <select id="cloudflare" name="cloudflare" required class="form-select select2">
+                {% for row in cloudflare_model %}
+                <option value='{{row.id}}' {% if row.email == data.email %}selected{% endif %}>{{row.email}}</option>
+                {% endfor%}
+            </select>
+        </div>
+        <div class="form-group mb-3">
+            <label>Account ID <label class="text-danger">*</label></label>
+            <input type="text" class="form-control" name="id" placeholder="Enter ID" value="{{ data.account_id}}" required>
+        </div>
+        <div class="form-group mb-3">
+            <label>Account Token <label class="text-danger">*</label></label>
+            <input type="text" class="form-control" name="token" placeholder="Enter Token" value="{{ data.account_token }}">
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span> Save changes</button>
+    </div>
+</form>
+
+{% block script %}
+<script>
+    $('.select2').select2({
+		width: '100%',
+		theme: 'bootstrap-5',
+	    placeholder: 'Choose',
+        dropdownParent: $('#actionsModal')
+	});
+
+    $(document).ready(function () {
+        $('#updateCloudflareAccountForm').on('submit', (e) => {
+            e.preventDefault();
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to update this account?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    const formData = $('#updateCloudflareAccountForm').serialize();
+                    const url = $('#updateCloudflareAccountForm').attr('action');
+                    $.ajax({
+                        type: 'POST',
+                        url: url,
+                        data: formData,
+                        cache: false,
+                        success: (result) => {
+                            Swal.fire({
+                                title: "Good job!",
+                                html:  'Account has been successfully updated.',
+                                icon: "success",
+                                allowOutsideClick: false,
+                            })
+                        },
+                        error: (result) => {
+                            const statusMsg = result['responseJSON']['statusMsg'];
+                            Swal.fire({
+                                title: "Oops!",
+                                html:  statusMsg,
+                                icon: "error",
+                                allowOutsideClick: false,
+                            });
+
+                        }
+                    });
+                },
+            });
+        });
+    });
+</script>
+{% endblock %}

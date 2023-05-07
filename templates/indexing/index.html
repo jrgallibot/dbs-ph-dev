@@ -1,0 +1,135 @@
+{% extends 'indexing/landing.html' %}
+{% block body %}
+<div class="card shadow-sm p-3 mb-5 bg-body rounded">
+  <div class="card-body">
+      <table id="datatable">
+          <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Date Added</th>
+                <th>Actions</th>
+            </tr>
+          </thead>
+      </table>
+  </div>
+</div>
+<div class="modal" tabindex="-1" id="viewModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">View</h5>
+        <button type="button" class="btn-close" onClick="closeModal('viewModal')"></button>
+      </div>
+      <div class="modal-body">
+            <form id="updateIndexForm" method="POST">
+                {% csrf_token %}
+                <div class="form-group visually-hidden">
+                    <label>ID</label>
+                    <input type="hidden" class="form-control" name="pk" required>
+                </div>
+                <div class="form-group">
+                    <label>Email <span class="text-danger">*</span></label>
+                    <input type="email" class="form-control" name="index_email" required>
+                </div>
+                <div class="form-group mt-3">
+                    <label>Index API <span class="text-danger">*</span></label>
+                    <textarea class="form-control" rows="10" name="index_index_api" required></textarea>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-end mt-3">
+                    <button class="btn btn-primary" type="submit" id="updateBtn">Update</button>
+                </div>
+            </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    $(document).ready(function(){
+        $('#datatable').DataTable({
+            'serverSide': true,
+            'processing': true,
+            'deferRender': true,
+            'lengthMenu': [ 10, 25, 50, 100 ],
+            'order': [[ 1, 'asc' ]],
+            'bDestroy': true,
+            'ajax': {
+                'url': '/indexer/new/api/list?format=datatables',
+                'type': 'GET',
+            },
+            'columns': [
+                {'data': 'id'},
+                {'data': 'email'},
+                {'data': 'created_at'},
+                {'data': 'id',
+                    'render': function(data, type, row, meta) {
+                        return `<a onClick="viewIndex(${row['id']})" style="cursor:pointer;" class="text-primary">View</a>`
+                    }
+                },
+            ],
+            "columnDefs": [
+              { "orderable": false, "searchable": false, "targets": [3] }
+            ]
+        });
+
+        $('#updateIndexForm').on('submit', (e) => {
+            e.preventDefault();
+            swal({
+                title: "Are you sure",
+                text: "Please Confirm",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            }).then((result) => {
+                if(result){
+                    $('#updateBtn').text('Saving...');
+                    $('#updateBtn').attr('disabled', true);
+                    const formData = $('#updateIndexForm').serialize();
+                    const pk = $('#updateIndexForm').find('input[name="pk"]').val();
+                    $.ajax({
+                        url: `/indexer/new/api/update/${pk}`,
+                        type: 'POST',
+                        data: formData,
+                        success: (result) => {
+                             swal({
+                                title: "Success",
+                                text: result['statusMsg'],
+                                icon: "success",
+                            }).then(() => {
+                                $('#saveLibraryBtn').text('Save');
+                                $('#saveLibraryBtn').attr('disabled', false);
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    });
+
+    const viewIndex = (pk) => {
+        $.ajax({
+            type: 'GET',
+            url: `/indexer/new/api/detail/${pk}?json=true`,
+            success: (result) => {
+                console.log(result)
+                const data = result['results'][0];
+                $("#updateIndexForm").trigger("reset");
+                $('#updateIndexForm').find('input[name="pk"]').val(data['id']);
+                $('#updateIndexForm').find('input[name="index_email"]').val(data['email'])
+                $('#updateIndexForm').find('textarea[name="index_index_api"]').text(JSON.stringify(data['indexApi']))
+                console.log(data['indexApi']['auth_uri']);
+                $('#viewModal').toggle('modal');
+            }
+
+        });
+    }
+
+    const closeModal = (modal) => {
+        $(`#${modal}`).toggle('modal');
+    }
+</script>
+{% endblock %}

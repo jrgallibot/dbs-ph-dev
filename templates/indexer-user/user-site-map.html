@@ -1,0 +1,728 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load staticfiles %}
+{% block app %}
+<style type="text/css">
+	.display-none{
+		display: none;
+	}
+	.zoom:hover {
+		z-index: inherit;
+		transform: scale(3.5);
+	}
+</style>
+<div class="row mt-5 align-items-center justify-content-between">
+	<div class="col-auto">
+		<h3 class="app-page-title mb-0"><i class="fas fa-sitemap text-success me-2" style="zoom:0.85"></i> Site Map</h3>
+	</div>
+	<div class="col-auto">
+		 <div class="page-utilities">
+			<div class="row g-2 justify-content-start justify-content-md-end align-items-center">
+				<div class="col-auto">
+					<a class="btn btn-success" href="#" id="btncheck_gsc">
+						<i class="fas fa-check-circle"></i>
+						Check GSC
+					</a>				    
+					<a class="btn btn-primary" href="#" data-bs-toggle="modal" data-bs-target="#add_web">
+						<i class="fas fa-plus"></i>
+						Add Websites
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<br><br>
+<section class="app-card">
+	<div class="app-card-body">
+		<div class="table-responsive">
+			<table class="table table-hover" id="site_map_table" width="100%">
+				<thead>
+					<tr>
+						<th class="cell text-center">
+							Select
+						</th>
+						<th class="cell">Status</th>
+						<th class="cell">Action</th>
+						<th class="cell">Website</th>
+						<th class="cell">Date Updated</th>
+						<th class="cell">Clicks</th>
+						<th class="cell">Impressions</th>
+						<th class="cell">CTR</th>
+						<th class="cell">Position</th>
+						<th class="cell">Created Date</th>
+						<th class="cell text-center">Api Key</th>
+						<th class="cell">Action</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</section>
+<div class="modal fade" id="add_web" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-pencil text-success me-2" style="zoom:0.85"></i> ADD WEBSITE</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<form id="submitForm">
+				{% csrf_token %}
+				<div class="modal-body">
+					<div class="mb-3">
+						<label>Site Map Xml sss<span class="text-danger">*</span></label>
+						<input type="text" class="form-control" name="website" placeholder="Site Map Xml" required>
+					</div>
+					<div class="mb-3">
+						<label>Index API Key <span class="asteriskField">*</span></label>
+						<select class="form-select select2" data-dropdown-parent="#add_web" name="api_key" id="api_key" required>
+							<option></option>
+							{% for row in index_api %}
+							<option value="{{ row.id }}">{{ row.email }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" name="check_human_writer">
+						<label class="form-check-label" for="flexCheckDefault">
+							Fix For Human Writer
+						</label>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-site-modal">Close</button>
+					<button type="submit" class="btn btn-primary">Save changes</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="viewModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			  <div class="modal-header">
+				<h5 class="modal-title"><i class="fas fa-edit text-success me-2" style="zoom:0.85"></i>VIEW WEBSITE SITE MAP UPDATE</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" id="close-editindex-modal" aria-label="Close"></button>
+			  </div>
+			  <div class="view_edit_modal_content"></div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" tabindex="-1" id="viewPagesModal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+	<div class="modal-dialog" style="max-width:1650px;width: 100%;">
+		<div class="modal-content">
+			  <div class="modal-header">
+				<h5 class="modal-title"><i class="fas fa-globe-asia text-success me-2" style="zoom:0.85"></i> VIEW PAGES in <span id="web_name"></span></h5>
+				<button type="button" class="btn-close" onClick="closeModal('viewPagesModal')"></button>
+			  </div>
+			  <div class="modal-body">
+				<div class="row">
+					<div class="col-sm-6">
+						<div class="btn-group" role="group">
+							<input type="hidden" name="pk" id="pk">
+							<button class="btn btn-success ms-3" data-role="chck_pages_gsc"><i class='fas fa-check-circle-o'></i> Check Pages GSC</button>
+							<button class="btn btn-danger ms-3" data-role="delete_dup_sitepage"><i class='fas fa-trash'></i> Delete Duplicated Pages</button>
+						</div>
+					</div>
+				</div>
+				<hr>
+				<div class="table-responsive">
+					<table class="table table-hover" id="sitemap_pages" width="100%">
+						<thead>
+							<tr>
+								<th class="cell">Status</th>
+								<th class="cell">Action</th>
+								<th class="cell display-none">Sitemap ID</th>
+								<th class="cell">Page</th>
+								<th class="cell">Submitted Date</th>
+								<th class="cell">Last Mod</th>
+								<th class="cell">Date Updated</th>
+								<th class="cell">Index Status Result</th>
+								<th class="cell">Conanical Url</th>
+								<th class="cell">Last Crawl Time</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			  </div>
+			  <div class="modal-footer">
+				<button type="button" class="btn btn-secondary close-btn-pages" onClick="closeModal('viewPagesModal')">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$('.select2').select2({
+		width: '100%',
+		theme: 'bootstrap-5',
+		placeholder: 'Choose',
+	});
+
+
+	$('#btncheck_gsc').click(function(){
+        var dataArr = new Array();
+        if($('input[class=checkbox]:checked').length > 0){
+            $('input[class=checkbox]:checked').each(function(){
+                dataArr.push($(this).attr('id'));
+            });
+            console.log(dataArr);
+			Swal.fire({
+				title: "Are you sure",
+				text: "You want to check the gsc of the selected pages?",
+				icon: "warning",
+				showCancelButton: true,
+				confirmButtonColor: "#DD6B55",
+				confirmButtonText: "Yes",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.ajax({
+						url: "/indexer/user/user_check_all_sitemap_gsc/"+dataArr,
+						type: "POST"
+					});
+				}
+				}).then(function (response){
+				if (response.value.data == 'success'){
+					Swal.fire({
+					title: "Good job!",
+					html:  response.value.msg,
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed) {
+							$('#site_map_table').DataTable().ajax.reload();
+						}
+					});
+				}else{
+					Swal.fire({
+						title: "Oops!",
+						html:  response.value.msg,
+						icon: "error",
+						allowOutsideClick: false,
+					});
+				}
+			});
+        }else{
+            Swal.fire("Information", 'No record seleted !', "info");
+        }
+    })
+	
+	$(document).on('click', 'button[data-role=chck_pages_gsc]', function(){
+		var pk = $('#pk').val();
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "Do you want to check all pages GSC for sitemap?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		}).then((result) => {
+			if (result.isConfirmed) {
+				Swal.showLoading()
+				Swal.fire({
+					title: "Information",
+					html:  'You have successfully check all pages site url. Please wait for the result for a while since the threading in the background is still on process. Thanks!',
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+				});
+				$('.close-btn-pages').click();
+				return $.ajax({
+					url: "/indexer/user/check_all_pages_siteurl_update_page/",
+					data: {
+						pk: pk
+					},
+					type: "POST"
+				});
+			}
+		});
+	});
+
+	
+	$(document).on('click', 'button[data-role=delete_dup_sitepage]', function(){
+		var pk = $('#pk').val();
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "Do you want to delete duplicated pages in this sitemap?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  		url: "/indexer/user/user_check_the_sitemap_duplicated_delete/",
+				data: {
+					pk: pk
+				},
+				type: "POST"
+		  	});
+		  }
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  html:  response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#sitemap_pages').DataTable().ajax.reload();
+						$('#site_map_table').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+	});
+
+	$(document).ready(function(){
+		$('#site_map_table').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 9, 'desc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': '/indexer/new/api/site-map/{{request.user.id}}?format=datatables',
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+						return "<input type='checkbox' name='check' class='checkbox' id='"+ data + "'>"
+					},
+					'searchable': false, 'className': 'text-center'
+				},
+				{'data': 'sitemap_status',
+					'render': function(data, type, row, meta) {
+						if(row['sitemap_status'] == 1) {
+							return '<i class="fa fa-check-circle-o text-success" aria-hidden="true"></i> Good'
+						}else if(row['sitemap_status'] == 0){
+							return '<i class="fa fa-times-circle-o text-danger" aria-hidden="true"></i> Broken'
+						}else{
+							return ''
+						}
+					}, 'className': 'text-center', 'searchable': false
+				},
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+						return '<a href="javascript:void(0);" data-role="if_check" data-id="'+ row['id'] + '" style="cursor:pointer;" class="text-primary">Check Sitemap</a> | <br>\
+						<a href="javascript:void(0);" data-role="if_check_siteurl" data-id="'+ row['id'] + '" style="cursor:pointer;" class="text-primary">Check GSC</a> | <br>\
+						<a href="javascript:void(0);" data-role="view_pages" data-id="'+ row['id'] + '" data-filter="'+ row['website'] + '" style="cursor:pointer;" class="text-primary">View Pages</a>'
+					}
+				},
+				{'data': 'website',
+					'render': function(data, type, row, meta){
+						return '<span style="white-space: normal;">'+data+'</span>'
+					}
+				},
+				{'data': 'updated_at'},
+				{'data': 'clicks', 'className': 'text-center'},
+				{'data': 'impressions', 'className': 'text-center'},
+				{'data': 'ctr', 'className': 'text-center'},
+				{'data': 'positions', 'className': 'text-center'},
+				{'data': 'created_at'},
+				{'data': 'apikey', 'name': 'apikey.email', 'className': 'text-center',
+					'render': function(data, type, row, meta){
+						return '<span style="white-space: normal;">'+data+'</span>'
+					}
+				},
+				{'data': 'id',
+					'render': function(data, type, row, meta) {
+						return '<a href="javascript:void(0);" style="cursor:pointer;" data-role="edit" data-id="'+ row['id'] + '" class="text-primary">View</a> &nbsp;|&nbsp;\
+						<a href="javascript:void(0);" data-role="delete_web" data-id="'+ data + '" style="cursor:pointer;" class="text-primary">Delete</a>'
+					}
+				},
+			],
+		});
+
+		// DELETE WEBSITE IN SITEMAP
+		$(document).on('click', 'a[data-role=delete_web]', function(){
+			var id = $(this).data('id');
+			Swal.fire({
+			title: "Are you sure",
+			text: "You want to delete this data?",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#DD6B55",
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+				return $.ajax({
+					url: "/indexer/user/user_sitemap_web_delete/",
+					data: {
+						id: id
+					},
+					type: "POST"
+				});
+			}
+			}).then(function (response){
+				if (response.value.data == 'success'){
+					Swal.fire({
+					title: "Good job!",
+					html:  response.value.msg,
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+					}).then((result) => {
+						if (result.isConfirmed) {
+							$('#site_map_table').DataTable().ajax.reload();
+						}
+					});
+				}else{
+					Swal.fire({
+						title: "Oops!",
+						html:  response.value.msg,
+						icon: "error",
+						allowOutsideClick: false,
+					});
+				}
+			});
+		});
+
+		$(document).on('click', 'a[data-role=view_pages]', function(){
+			var id = $(this).data('id');
+			$('#pk').val(id)
+			$('#web_id').val(id)
+			$('#web_name').text($(this).data('filter'))
+			$('#sitemap_pages').DataTable({
+				'serverSide': true,
+				'processing': true,
+				'deferRender': true,
+				'lengthMenu': [ 10, 25, 50, 100 ],
+				'order': [[ 4, 'asc' ]],
+				'bDestroy': true,
+				'ajax': {
+					'url': `/indexer/new/api/site-map/pages/`+id+`?format=datatables`,
+					'type': 'GET',
+				},
+				'columns': [
+					{'data': 'status',
+						'render': function(data, type, row, meta) {
+							if(row['status'] == 1) {
+								return '<i class="fa fa-check-circle-o text-success" aria-hidden="true"></i> Good'
+							}else if(row['status'] == 0){
+								return '<i class="fa fa-times-circle-o text-danger" aria-hidden="true"></i> Broken'
+							}else{
+								return ''
+							}
+						}, 'className': 'text-center', 'searchable': false
+					},
+					{'data': 'id',
+						'render': function(data, type, row, meta) {
+							return '<a href="javascript:void(0);" data-role="check_if_update" data-id="['+row['id']+ ","+ row['sitemap_id']+']" style="cursor:pointer;" class="text-primary">Check Lastmod Update</a> | <br>\
+							<a href="javascript:void(0);" data-role="check_siteurl_pages" data-id="['+row['id']+ ","+ row['sitemap_id']+']" style="cursor:pointer;" class="text-primary">Check Site Url</a> | <br>\
+							<a href="javascript:void(0);" data-role="delete_pages" data-id="'+ data + '" style="cursor:pointer;" class="text-primary">Delete Pages</a>'
+						}
+					},
+					{'data': 'sitemap_id', 'className':'display-none'},
+					{'data': 'pages',
+						'render': function(data, type, row, meta){
+							return '<span style="white-space: normal;">'+data+'</span>'
+						}
+					},
+					{'data': 'date_created'},
+					{'data': 'last_mod', "searchable": false},
+					{'data': 'updated_at',
+						'render': function(data, type, row, meta) {
+							if(row['updated_at']) {
+								return data
+							}else{
+								return ''
+							}
+						}, "searchable": false
+					},
+					{'data': 'indexStatusResult'},
+					{'data': 'conanical_url',
+						'render': function(data, type, row, meta){
+							if(data){
+								return '<span style="white-space: normal;">'+data+'</span>'
+							}else{
+								return ''
+							}
+						}
+					},
+					{'data': 'lastcrawltime', 'className': 'text-center'},
+				],
+				"columnDefs": [
+				  { "orderable": false, "searchable": false, "targets": [3] }
+				]
+			});
+			$('#viewPagesModal').toggle('modal');
+		});
+
+		$('#submitForm').on('submit', function(e){
+			var form = new FormData(this);
+			Swal.fire({
+				title: "Are you sure",
+				text: "You want to add this website?",
+				icon: "info",
+				showCancelButton: true,
+				confirmButtonText: "Yes",
+				allowOutsideClick: false,
+				showLoaderOnConfirm: true,
+				preConfirm: function (){
+					return $.post({
+						url: "/indexer/user/site-map/",
+						data: form,
+						success : function (response){
+							if(response.data == "success"){
+								Swal.fire({
+									title: "Good job!",
+									html:  response.msg,
+									icon: "success",
+									allowOutsideClick: false,
+								}).then((result) => {
+									if (result.isConfirmed){
+										$('#submitForm').trigger('reset');
+										$('#site_map_table').DataTable().ajax.reload();
+										$('#close-site-modal').click();
+									}
+								});
+							}else{
+								Swal.fire({
+									title: "Oops!",
+									html:  response.msg,
+									icon: "error",
+									allowOutsideClick: false,
+								}).then((result) => {
+									if (result.isConfirmed){
+										$('#submitForm').trigger('reset');
+										$('#site_map_table').DataTable().ajax.reload();
+										$('#close-site-modal').click();
+									}
+								});
+							}
+						},
+						cache       : false,
+						contentType : false,
+						processData : false,
+					});
+				},
+			});
+			e.preventDefault();
+		});
+	});
+
+	// DELETE PAGES IN SITEMAP
+	$(document).on('click', 'a[data-role=delete_pages]', function(){
+		var id = $(this).data('id');
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "You want to delete this page?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  		url: "/indexer/user/user_sitemap_pages_delete/",
+				data: {
+					id: id
+				},
+				type: "POST"
+		  	});
+		  }
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  html:  response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#sitemap_pages').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+	});
+
+	$(document).on('click', 'a[data-role=check_if_update]', function(){
+		var id = $(this).data('id')[0];
+		var sitemap_id = $(this).data('id')[1];
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "Do you want to check the lastmod update of the url for automation?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		}).then((result) => {
+			if (result.isConfirmed) {
+				Swal.showLoading()
+				Swal.fire({
+					title: "Information",
+					html:  'You have successfully automate the lastmod update for sitemap pages. Please wait for the result for a while since the threading in the background is still on process. Thanks!',
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+				});
+				$('.close-btn-pages').click();
+				return $.ajax({
+					data: {
+						id: id,
+						sitemap_id: sitemap_id
+					},
+					url: "/indexer/user/check-site-map/lastmod/update/",
+					type        : 'POST',
+				});
+				$('#site_map_table').DataTable().ajax.reload();
+				$('#sitemap_pages').DataTable().ajax.reload();
+			}
+		});
+	});
+	
+	$(document).on('click', 'a[data-role=check_siteurl_pages]', function(){
+		var id = $(this).data('id')[0];
+		var sitemap_id = $(this).data('id')[1];
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "Do you want this submit to site url of the pages for the automation?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		}).then((result) => {
+			if (result.isConfirmed) {
+				Swal.showLoading()
+				Swal.fire({
+					title: "Information",
+					html:  'You have successfully check the site url. Please wait for the result for a while since the threading in the background is still on process. Thanks!',
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+				});
+				$('.close-btn-pages').click();
+				return $.ajax({
+					data: {
+						id: id,
+						sitemap_id: sitemap_id
+					},
+					url: "/indexer/user/check_siteurl_update_page/",
+					type        : 'POST',
+				});
+			}
+		});
+	});
+
+	$(document).on('click', 'a[data-role=if_check_siteurl]', function(){
+		var id = $(this).data('id');
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "Do you want to check the update of the Site Url of this Website?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		  preConfirm: function (){
+		  	return $.ajax({
+		  		url: "/indexer/user/user_check_site_url/",
+				data: {
+					id: id,
+				},
+				type: "POST"
+		  	});
+		  }
+		}).then(function (response){
+			if (response.value.data == 'success'){
+				Swal.fire({
+				  title: "Good job!",
+				  html:  response.value.msg,
+				  icon: "success",
+				  confirmButtonColor: "#3498DB",
+				  allowOutsideClick: false,
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$('#site_map_table').DataTable().ajax.reload();
+					}
+				});
+			}else{
+				Swal.fire({
+					title: "Oops!",
+					html:  response.value.msg,
+					icon: "error",
+					allowOutsideClick: false,
+				});
+			}
+		});
+	});
+
+
+	$(document).on('click', 'a[data-role=if_check]', function(){
+		var id = $(this).data('id');
+		Swal.fire({
+		  title: "Are you sure",
+		  text: "Do you want this submit to site map for the automation?",
+		  icon: "warning",
+		  showCancelButton: true,
+		  confirmButtonColor: "#DD6B55",
+		  confirmButtonText: "Yes",
+		  allowOutsideClick: false,
+		  showLoaderOnConfirm: true,
+		}).then((result) => {
+			if (result.isConfirmed) {
+				Swal.showLoading()
+				Swal.fire({
+					title: "Information",
+					html:  'You have successfully adding web pages for sitemap. Please wait for the result for a while since the threading in the background is still on process. Thanks!',
+					icon: "success",
+					confirmButtonColor: "#3498DB",
+					allowOutsideClick: false,
+				});
+				return $.ajax({
+					data: {
+						id: id
+					},
+					url: "/indexer/user/check-site-map/",
+					type        : 'POST',
+				});
+			}
+		});
+	});
+
+	$(document).on('click', 'a[data-role=edit]', function(){
+		var id = $(this).data('id');
+		var viewModal = new bootstrap.Modal(document.getElementById('viewModal'), {});
+		$('.view_edit_modal_content', $('#viewModal')).load('/indexer/user/update-site-map/' + id, function(){
+			viewModal.show();
+		});
+	});
+
+	const closeModal = (modal) => {
+		$(`#${modal}`).toggle('modal');
+	}
+</script>
+{% endblock %}

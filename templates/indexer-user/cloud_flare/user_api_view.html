@@ -1,0 +1,90 @@
+{% load tags %}
+<form id="updateapiform">
+	{% csrf_token %}
+	<div class="modal-body">
+		{% csrf_token %}
+		<div class="mb-3">
+			<label>Email <span class="text-danger">*</span></label>
+			<input name="up_email" type="text" class="form-control" placeholder="JSON Email" required="required" value="{{cloud_flare.email}}">
+			<small>Paste Email Associated with Json Api Above</small>
+		</div>
+		<div class="mb-3">
+			<label>Account ID <span class="text-danger">*</span></label>
+			</textarea>
+			<input name="up_acc_id" type="text" class="form-control" placeholder="Account ID" required="required" value="{% if cloud_flare.account_id %}
+			{{cloud_flare.account_id}}{% endif %}">
+		</div>
+		<div class="mb-3">
+			<label>Account Token <span class="text-danger">*</span></label>
+			<textarea class="form-control" name="up_acc_token" required>{% if cloud_flare.account_token %}
+				{{cloud_flare.account_token}}{% endif %}
+			</textarea>
+		</div>
+		<div class="mb-3">
+			<label>Keys <span class="text-danger">*</span></label>
+			<textarea class="form-control" name="up_keys" required>{{cloud_flare.key}}</textarea>
+			<small>Paste Key from Cloudflare</small>
+		</div>
+		<div class="mb-3">
+			<label>Server Name <span class="text-danger">*</span></label>
+			<textarea class="form-control" name="up_nameServers">{{cloud_flare.nameServers}}</textarea>
+		</div>
+		<div class="form-check">
+			<input class="form-check-input" type="checkbox" name="up_status" {% if cloud_flare.status %}checked{% endif %}>
+			<label class="form-check-label" for="flexCheckDefault">
+				Status
+			</label>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-edit-modal">Close</button>
+		<button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span> Save changes</button>
+	</div>
+</form>
+<script>
+	$('#updateapiform').on('submit', function(e){
+		var form = new FormData(this);
+		Swal.fire({
+			title: "Are you sure",
+			text: "You want to update this api key?",
+			icon: "info",
+			showCancelButton: true,
+			confirmButtonText: "Yes",
+			allowOutsideClick: false,
+			showLoaderOnConfirm: true,
+			preConfirm: function (){
+				return $.post({
+					url: "{% url 'cloud_fare_api_view' pk %}",
+					data: form,
+					success : function (response){
+						if(response.data == "success"){
+							Swal.fire({
+								title: "Good job!",
+								html:  response.msg,
+								icon: "success",
+								allowOutsideClick: false,
+							}).then((result) => {
+								if (result.isConfirmed){
+									$('#updateapiform').trigger('reset');
+									$('#api_key_cloudflare').DataTable().ajax.reload();
+									$('#close-edit-modal').click();
+								}
+							});
+						}else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+					},
+					cache       : false,
+					contentType : false,
+					processData : false,
+				});
+			},
+		});
+		e.preventDefault();
+	});
+</script>

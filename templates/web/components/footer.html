@@ -1,0 +1,13 @@
+<footer>
+  <div class="container text-center py-5">
+      {{project_meta.NAME}} &mdash; Copyright <span id="copyright-year">2019</span>
+  </div>
+</footer>
+<style>
+.form-control {
+  border: 1px solid #5d82f5;
+}
+</style>
+<script>
+    document.getElementById('copyright-year').innerText = (new Date()).getFullYear();
+</script>

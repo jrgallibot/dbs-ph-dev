@@ -1,0 +1,75 @@
+{% extends 'indexer-admin/admin/layout.html' %}
+{% load static %}
+{% block content %}
+<div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader">
+	<div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+		<div class="d-flex align-items-center flex-wrap mr-2">
+			<h5 class="text-dark font-weight-bold mt-2 mb-2 mr-5">Rank Tracker Cost</h5>
+		</div>
+	</div>
+</div>
+<div class="d-flex flex-column-fluid">
+	<div class="container">
+		<div class="card card-custom">
+			<div class="card-header flex-wrap border-0 pt-6 pb-0">
+				<div class="card-title">
+					<h3 class="card-label">Rank Tracker Cost
+					<span class="text-muted pt-2 font-size-sm d-block">List of details</span></h3>
+				</div>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-hover" id="rank_tracker_cost_table" width="100%">
+						<thead>
+							<tr>
+								<th class="cell">First Name</th>
+                                <th class="cell">Middle Name</th>
+                                <th class="cell">Last Name</th>
+                                <th class="cell">Email</th>
+                                <th class="cell text-center">Rank Tracker Cost Total</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#rank_tracker_cost_table').DataTable({
+			'serverSide': true,
+			'processing': true,
+			'deferRender': true,
+			'lengthMenu': [ 10, 25, 50, 100 ],
+			'order': [[ 4, 'asc' ]],
+			'bDestroy': true,
+			'ajax': {
+				'url': '/indexer/new/api/rank-tracker-cost/?format=datatables',
+				'type': 'GET',
+			},
+			'columns': [
+				{'data': 'first_name', 'name': 'rank.user.first_name'},
+				{'data': 'middle_name', 'name': 'rank.user.middle_name'},
+                {'data': 'last_name', 'name': 'rank.user.last_name'},
+                {'data': 'email', 'name': 'rank.user.email'},
+                {'data': 'total_cost',
+                    'render': function(data, type, row, meta) {
+                        if(data) {
+                            return '$'+data
+                        }else{
+                            return '$0'
+                        }
+                    },
+                    'className': 'text-center'
+                },
+			],
+			"columnDefs": [
+			  { "orderable": false, "searchable": false, "targets": [4] }
+			]
+		});
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,105 @@
+<form id="updateform">
+    {% csrf_token %}
+    <div class="modal-body">
+        <div class="mb-3">
+            <label>Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="up_name" id="up_name" placeholder="Write name" required 
+                    value="{{parent.name}}">
+        </div>
+        <div class="mb-3">
+            <label>Prompt <span class="text-danger">*</span></label>
+            <select class="form-select select3" name="up_prompts" id="up_prompts" required multiple data-bs-reorder=1>
+                {% for row in prompt %}
+                <option value="{{ row.id }}">{{ row.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="up_status" {% if parent.status %}checked{% endif %}>
+            <label class="form-check-label" for="flexCheckDefault">
+                Status
+            </label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-web-modal">Close</button>
+        <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span> Save changes</button>
+    </div>
+</form>
+<script>
+    $('#updateform').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "You want to update this parent prompt?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.post({
+                    url: "{% url 'user_open_ai_prompt_parent_view' pk %}",
+                    data: form,
+                    success : function (response){
+                        if(response.data == "success"){
+                            Swal.fire({
+                                title: "Good job!",
+                                html:  response.msg,
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then((result) => {
+                                if (result.isConfirmed){
+                                    $('#api_prompt').DataTable().ajax.reload();
+									$('#updateform').trigger('reset');
+									$('#close-up-modal').click();
+                                }
+                            });
+                        }else{
+							Swal.fire({
+								title: "Oops!",
+								html:  response.msg,
+								icon: "error",
+								allowOutsideClick: false,
+							});
+						}
+                    },
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        });
+        e.preventDefault();
+    });
+
+    $('#up_prompts').on('select2:select', function(e){
+        var id = e.params.data.id;
+        var option = $(e.target).children('[value='+id+']');
+        option.detach();
+        $(e.target).append(option).change();
+    });
+
+    $(document).ready(function(){
+        var comps = [];
+        {% for row in sub_parent %}
+            comps.push('{{ row.prompt_id }}');
+
+            var id = '{{ row.prompt_id }}';
+            var option = $('#up_prompts').children('[value='+id+']');
+            option.detach();
+            $('#up_prompts').append(option).change();
+        {% endfor %}
+        $('#up_prompts').val(comps);
+        $('#up_prompts').trigger('change');
+
+        $('.select2-selection--multiple').css('background-color', 'white');
+    });
+
+    $('.select3').select2({
+		width: '100%',
+		theme: 'bootstrap-5',
+	    placeholder: 'Choose',
+        dropdownParent: $('#viewModal')
+	});
+</script>

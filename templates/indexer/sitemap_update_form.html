@@ -1,0 +1,11 @@
+{% extends "pegasus/employees/django_object_lifecycle_base.html" %}
+{% load form_tags %}
+{% block django_app %}
+<form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Update">
+</form>
+<script type="text/javascript" src="/static/ckeditor/ckeditor-init.js"></script>
+<script type="text/javascript" src="/static/ckeditor/ckeditor/ckeditor.js"></script>
+{% endblock %}
+
