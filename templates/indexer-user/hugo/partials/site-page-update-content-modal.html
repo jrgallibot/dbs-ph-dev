@@ -1,0 +1,108 @@
+{% load tags %}
+{% load static %}
+<div id="modal-backdrop" class="modal-backdrop fade show" style="display:block;">
+</div>
+<div id="modal" class="modal fade show" tabindex="-1"  style="display:block;">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content" id="actionsModalContent">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Content</h5>
+                <a href="/hugo-client/website-view/{{ data.website_id }}/" class="btn-close text-dark"  aria-label="Close"><i class="fas fa-times"></i></a>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <div class="card-body">
+                        <form action="/hugo-client/update-route-content/{{ data.id }}/" method="POST" id="updateRouteContentForm">
+                            {% if not data.route_has_pages %}
+                            <label class="text-danger"><strong>Note:</strong> This is a Single Page Only</label>
+                            {% endif %}
+                            {% csrf_token %}
+                            <div class="row mb-3">
+                                <div class="form-group col-lg-12 mb-3">
+                                    <label>Page <label class="text-danger">*</label></label>
+                                    <select class="form-select select2 p-2" name="route" required>
+                                        <option></option>
+                                        {% if data.route_has_pages %}
+
+                                        {% for route in routes %}
+                                        {% if route.id == data.route %}
+                                        <option value="{{ route.id }}" selected>{{ route.name }}</option>
+                                        {% else %}
+                                        <option value="{{ route.id }}">{{ route.name }}</option>
+                                        {% endif %}
+                                        {% endfor %}
+
+                                        {% else %}
+                                        <option value="{{ data.route }}" selected>{{ data.route_name }}</option>
+                                        {% endif %}
+                                    </select>
+
+                                </div>
+                                <div class="form-group col-lg-12 mb-3">
+                                    <label>Title <label class="text-danger">*</label></label>
+                                    <input type="text" class="form-control p-2" name="title" value="{{ data.title }}" required {% if not data.route_has_pages %} readonly {% endif %}>
+                                </div>
+                                <div class="form-group col-lg-12">
+                                    <label>Content <label class="text-danger">*</label></label>
+                                    <textarea name="content" id="route-content" class="form-control p-2" required>{{ data.content|safe }}</textarea>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-success" type="submit">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(document).ready(function () {
+        CKEDITOR.replace('route-content');
+        $('#updateRouteContentForm').on('submit', (e) => {
+            e.preventDefault();
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to update this content?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    const formData = $('#updateRouteContentForm').serialize();
+                    const url = $('#updateRouteContentForm').attr('action');
+                    $.ajax({
+                        type: 'POST',
+                        url: url,
+                        data: formData,
+                        cache: false,
+                        success: (result) => {
+                            Swal.fire({
+                                title: "Good job!",
+                                html:  'Content has been successfully updated.',
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then(() => {
+                                $('#updateRouteContentForm').trigger('reset');
+                            });
+                        },
+                        error: (result) => {
+                            const statusMsg = result['responseJSON']['statusMsg'];
+                            Swal.fire({
+                                title: "Oops!",
+                                html:  statusMsg,
+                                icon: "error",
+                                allowOutsideClick: false,
+                            });
+
+                        }
+                    });
+                },
+            });
+        });
+    });
+</script>
+{% endblock %}

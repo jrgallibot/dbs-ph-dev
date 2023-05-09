@@ -36,11 +36,11 @@ if DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'tejcgaocuicwpehg',
-            'USER': 'kulhdxtnejgbxlav',
-            'PASSWORD': 'jwdehyqclqjdrdih',
+            'NAME': 'gzpyktjanxcfqpdy',
+            'USER': 'wyuuwakhzgwpvsfq',
+            'PASSWORD': 'uwjufyzeoaztjfwi',
             'HOST': '143.198.172.45',
-            'PORT': '8010',
+            'PORT': '8003',
             'OPTIONS': {
                 'connect_timeout': 60,
             },

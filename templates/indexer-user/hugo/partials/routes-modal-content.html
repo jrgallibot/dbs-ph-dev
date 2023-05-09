@@ -9,7 +9,7 @@
             <h3>Add Route</h3>
         </div>
         <div class="card-body">
-            <form action="/hugo-client/routes/{{ website_id }}/" method="POST" id="addRoutesForm">
+            <form action="/client/routes/{{ website_id }}/" method="POST" id="addRoutesForm">
                 {% csrf_token %}
                 <div class="row mb-3">
                     <div class="form-group col-lg-4">
@@ -36,40 +36,18 @@
         <table id="routesTable" class="table table-striped fs-6" style="width:100%">
             <thead>
                 <tr>
-                    <th>UUID</th>
-                    <th>Website Title</th>
-                    <th>Route Name</th>
-                    <th>In Navbar</th>
-                    <th>Has Pages</th>
-                    <th>Contents</th>
+                    <th>Content</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in data %}
-                <tr>
-                    <td>{{ row.id|truncatechars:10 }}</td>
-                    <td>{{ row.website }}</td>
-                    <td>{{ row.name }}</td>
-                    <td>{{ row.in_navbar }}</td>
-                    <td>{{ row.has_pages }}</td>
-                    <td>
-                        <div class="dropdown">
-                          <a class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                            Select Account
-                          </a>
-                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            {% for content in row.contents %}
-                              <li><a class="dropdown-item active" href="#" onClick="contentButton('{{ content.id }}', '{{ content.route }}')">{{ content.title }}</a></li>
-                            {% endfor %}
-                          </ul>
-                        </div>
-                    </td>
-                    <td>
-                        <a class="badge badge-success text-success" href="#" onClick="routeContentsButton('{{ row.id }}', 'forward')" id="site-routes-contents-btn-{{row.id}}">Contents</a> |
-                        <a href="/hugo-client/route-delete/{{ row.id }}" class="badge badge-danger text-danger">Delete</a>
-                    </td>
-                </tr>
+                {% for content in row.contents %}
+                    <tr class="cursor-pointer" onClick="contentButton('{{ content.id }}', '{{ content.route }}')">
+                        <td>{{ row.name }}/{{ content.title }}</td>
+                        <td>{{ row.name }}</td>
+                    </tr>
+                {% endfor %}
                 {% endfor %}
             </tbody>
         </table>

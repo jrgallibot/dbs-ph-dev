@@ -8,10 +8,5 @@ class ClientSettings(models.Model):
 
 
 class CloudflareWebsites(models.Model):
-	website_id = models.UUIDField(blank=True, null=True)
-	page_name = models.CharField(max_length=50, blank=True, null=True, unique=True)
-	cloudfare = models.ForeignKey(CloudflareModel, on_delete=models.CASCADE)
-
-	class Meta:
-		managed = False
-		db_table = 'Cloudflare_websites'
+	website_id = models.CharField(max_length=255, blank=True, null=True)
+	cloudflare = models.ForeignKey(CloudflareModel, on_delete=models.CASCADE)

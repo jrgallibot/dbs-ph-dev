@@ -24,7 +24,6 @@ def cloud_fare_api(request):
 	token = client_settings.access_token
 	if request.method == 'POST':
 		try:
-			print(request.POST.get('keys'))
 			cf = CloudFlare(email=request.POST.get('email'), token=request.POST.get('keys'))
 			zones = cf.zones.get(params = {'per_page':100})
 			sites = ''

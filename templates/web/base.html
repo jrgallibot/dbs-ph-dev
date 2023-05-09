@@ -28,13 +28,14 @@
 			<meta property="og:description" content="{{ description }}" />
 			<meta property="og:site_name" content="{{ project_meta.NAME }}" />
 			<link rel="canonical" href="{% if page_canonical_url %}{{ page_canonical_url }}{% else %}{{ page_url }}{% endif %}">
-			
+
 	{% endwith %}
 	{% endwith %}
 	{% endwith %}
 {% endif %}
 {% include 'web/components/favicon.html' %}
 		<link rel="stylesheet" href="{% static 'css/site-base.css' %}">
+		<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.css" />
 		<link rel="stylesheet" href="{% static 'css/site-bootstrap.css' %}">
 		<!--     Fonts and icons     -->
 		<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
@@ -101,5 +102,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
     <link rel="stylesheet" href="{% static 'ckeditor/ckeditor/contents.css' %}">
+	{% block script %}
+
+	{% endblock %}
 </body>
 </html>

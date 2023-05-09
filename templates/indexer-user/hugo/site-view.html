@@ -1,0 +1,158 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load static %}
+{% block app %}
+  <div class="d-flex justify-content-between mb-4">
+        <h1 class="pg-title">Dashboard <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="indicator"><span class="visually-hidden">Loading...</span></div></h1>
+        <div>
+            <div class="spinner-border spinner-border-sm fs-1 mb-2 client-spinner" hidden role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <!--
+            <div class="btn-group" role="group" aria-label="Basic example">
+              <button type="button" class="btn btn-primary active website-btn">Websites</button>
+              <button type="button" class="btn btn-primary cloudflare-btn">Cloudflare</button>
+            </div>
+            -->
+        </div>
+  </div>
+
+<section id="hugo-body">
+    {% include 'indexer-user/hugo/partials/site.html' %}
+</section>
+<div id="htmxModal">
+
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    const updateCloudflare = (pk) => {
+        $(`.cloudflare-update-btn-${pk}`).html('<div class="spinner-border spinner-border-sm fs-1" role="status"><span class="visually-hidden">Loading...</span></div>')
+        $('#actionsModalContent').load(`/hugo-client/update-cloudflare/${pk}/`, function(response, status, jqXhr){
+            if(status == "success"){
+                $(`.cloudflare-update-btn-${pk}`).html('Update');
+                $('#actionsModalContent').empty().append(response);
+                $('#actionsModal').modal('toggle');
+            }else if(status == "error"){
+                alert('error')
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        localStorage.removeItem('website_id');
+        $('#cloudflareTable').DataTable();
+        $('#websiteTable').DataTable();
+        $('.cloudflare-btn').on('click', (e) => {
+            $('.client-spinner').attr('hidden', false);
+            $('.client-card').load(`/hugo-client/cloudflare/`, function(response, status, jqXhr){
+                $('.client-card').empty().append(response);
+                $('.client-spinner').attr('hidden', true);
+                $('.website-btn').removeClass('active')
+                $('.cloudflare-btn').addClass('active')
+            });
+        });
+
+        $('.website-btn').on('click', (e) => {
+            $('.client-spinner').attr('hidden', false);
+            $('.client-card').load(`/hugo-client/website/`, function(response, status, jqXhr){
+                $('.client-card').empty().append(response);
+                $('.client-spinner').attr('hidden', true);
+                $('.cloudflare-btn').removeClass('active')
+                $('.website-btn').addClass('active')
+            });
+        });
+
+
+        $('#addCloudflareAccountForm').on('submit', (e) => {
+            e.preventDefault();
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to add this account?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    const formData = $('#addCloudflareAccountForm').serialize();
+                    const url = $('#addCloudflareAccountForm').attr('action');
+                    $.ajax({
+                        type: 'POST',
+                        url: url,
+                        data: formData,
+                        cache: false,
+                        success: (result) => {
+                            Swal.fire({
+                                title: "Good job!",
+                                html:  'You has been successfully added an account.',
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then((result) => {
+                                if (result.isConfirmed){
+                                    $('#addCloudflareAccountForm').trigger('reset');
+                                }
+                            });
+                        },
+                        error: (result) => {
+                            const statusMsg = result['responseJSON']['statusMsg'];
+                            Swal.fire({
+                                title: "Oops!",
+                                html:  statusMsg,
+                                icon: "error",
+                                allowOutsideClick: false,
+                            });
+
+                        }
+                    });
+                },
+            });
+        })
+
+        $('#publishForm').on('submit', (e) => {
+            e.preventDefault();
+            Swal.fire({
+                title: "Are you sure",
+                text: "You want to publish this website?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                allowOutsideClick: false,
+                showLoaderOnConfirm: true,
+                preConfirm: function (){
+                    const formData = $('#publishForm').serialize();
+                    const url = $('#publishForm').attr('action');
+                    $.ajax({
+                        type: 'POST',
+                        url: url,
+                        data: formData,
+                        cache: false,
+                        success: (result) => {
+                            Swal.fire({
+                                title: "Good job!",
+                                html:  'You has been successfully published a website, it will take sometime to take effect.',
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then((result) => {
+                                if (result.isConfirmed){
+                                    $('#publishForm').trigger('reset');
+                                }
+                            });
+                        },
+                        error: (result) => {
+                            const statusMsg = result['responseJSON']['statusMsg'];
+                            Swal.fire({
+                                title: "Oops!",
+                                html:  statusMsg,
+                                icon: "error",
+                                allowOutsideClick: false,
+                            });
+
+                        }
+                    });
+                },
+            });
+        })
+
+    });
+</script>
+{% endblock %}

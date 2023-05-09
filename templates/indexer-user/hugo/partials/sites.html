@@ -1,64 +1,42 @@
 {% load tags %}
 {% load static %}
 {% csrf_token %}
-<div class="card-header d-flex justify-content-between">
-  <h3>Websites</h3>
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addWebsiteModal">Add Website</button>
-</div>
-<div class="card-body">
-    <div class="table-responsive p-2">
-        <table id="websiteTable" class="table table-striped fs-6" style="width:100%">
-            <thead>
-                <tr>
-                    <th>UUID</th>
-                    <th>Title</th>
-                    <th>Sub Domain</th>
-                    <th>Theme</th>
-                    <th>Date Created</th>
-                    <th>Is Published</th>
-                    <th>Publish</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in data %}
-                <tr>
-                    <td>{{ row.id|truncatechars:10 }}</td>
-                    <td>{{ row.title }}</td>
-                    {% json_parser row.page_details as page_details %}
-                    <td>{% if page_details %} <a href="http://{{ page_details.result.subdomain }}">{{ page_details.result.subdomain }}</a>{% endif %}</td>
-                    <td>{{ row.theme }}</td>
-                    <td>{{ row.date_created }}</td>
-                    <td>{{ row.is_published }}</td>
-                    <td>
-                        <div class="dropdown">
-                          <a class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                            Select Account
-                          </a>
-                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            {% for cloudflare in cloudflares %}
-                                {% for data in cloudflare_model %}
-                                    {% if data.email == cloudflare.email %}
-                                    <li><a class="dropdown-item active" href="#" onClick="publishSite('{{ row.id }}', '{{ cloudflare.id }}', '{{ data.email }}', '{{ row.title }}')">{{ data.email }}</a></li>
-                                    {% else %}
-                                    <li><a class="dropdown-item active" href="#" onClick="publishSite('{{ row.id }}', '{{ cloudflare.id }}', '{{ cloudflare.email }}', '{{ row.title }}')">{{ cloudflare.email }}</a></li>
-                                    {% endif%}
-                                {% endfor %}
-                            {% endfor %}
-                          </ul>
-                        </div>
-                    </td>
-                    <td>
-                        <a class="badge badge-success text-success" href="#" onClick="routesButton('{{ row.id }}', 'forward')" id="site-routes-btn-{{row.id}}">Routes</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+      <h3>Websites</h3>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addWebsiteModal">Add Website</button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive p-2">
+            <table id="websiteTable" class="table table-striped fs-6" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>UUID</th>
+                        <th>Title</th>
+                        <th>Sub Domain</th>
+                        <th>Date Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr class="cursor-pointer" hx-get="/hugo-client/website/{{row.id}}/" hx-swap="innerHTML" hx-trigger="click" hx-target="#hugo-body" hx-indicator="#indicator">
+                        <td>{{ row.id|truncatechars:10 }}</td>
+                        <td>{{ row.title }}</td>
+                        {% json_parser row.page_details as page_details %}
+                        <td>{% if page_details %} <a href="http://{{ page_details.result.subdomain }}">{{ page_details.result.subdomain }}</a>{% endif %}</td>
+                        <td>{{ row.date_created }}</td>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+{% block script %}
 <script>
     $(document).ready(function () {
         $('#websiteTable').DataTable();
     });
 </script>
+{% endblock %}

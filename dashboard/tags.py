@@ -3,6 +3,7 @@ from django.db import transaction
 from indexer.models import *
 from apps.users.models import *
 from Cloudflare.models import *
+from client.models import CloudflareWebsites
 from django.db.models import Q, Func, F, Value, CharField, Count
 from datetime import datetime
 import json
@@ -34,3 +35,11 @@ def json_parser(data):
 def getpage_rule(pk):
 	data = CloudflarePageRule.objects.filter(resp_url_id = pk)
 	return data.first() if data else ''
+
+
+@register.simple_tag
+def get_cloudflare_website(pk):
+	if pk:
+		return CloudflareWebsites.objects.filter(website_id=pk).first()
+	else:
+		return None
