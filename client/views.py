@@ -80,9 +80,8 @@ def index_page(request, action=None, pk=None):
                                                    headers={'Authorization': f'Bearer {token}'}).json()
                     context['themes'] = requests.get("http://95.217.184.122/api/themes/",
                                                      headers={'Authorization': f'Bearer {token}'}).json()
-                    context['cloudflares'] = requests.get("http://95.217.184.122/api/cloudflare/",
-                                                          headers={'Authorization': f'Bearer {token}'}).json()
-                    context['cloudflare_model'] = CloudflareModel.objects.filter(status=1)
+                    context['active_tab'] = 'hugo'
+                    print('here')
                     return render(request, 'indexer-user/hugo/partials/sites.html', context)
 
             elif action is not None and pk is not None:
@@ -207,6 +206,7 @@ def index_page(request, action=None, pk=None):
                                                headers={'Authorization': f'Bearer {token}'})
                         routes = requests.get(f"http://95.217.184.122/api/website-routes/{content.json()['website_id']}/",
                                               headers={'Authorization': f'Bearer {token}'})
+
                         context['routes'] = routes.json()
                         context['data'] = content.json()
                         context['content_id'] = pk
@@ -216,7 +216,8 @@ def index_page(request, action=None, pk=None):
                         data = {
                             'route': request.POST.get('route'),
                             'title': request.POST.get('title'),
-                            'content': request.POST.get('content')
+                            'content': request.POST.get('content'),
+                            'is_active': True if request.POST.get('is_active') == "on" else False,
                         }
                         req = requests.post(f"http://95.217.184.122/api/update-content/{pk}/",
                                             headers={'Authorization': f'Bearer {token}'}, json=data)

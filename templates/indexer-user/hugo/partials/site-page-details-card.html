@@ -25,7 +25,7 @@
             {% csrf_token %}
             <div class="row mb-3">
                 <div class="form-group col-lg-4">
-                    <label>Route Name</label>
+                    <label>Route Name <span class="text-danger">*</span></label>
                     <input type="text" name="route_name" class="form-control p-2" required>
                 </div>
                 <div class="form-group col-lg-4">
@@ -47,6 +47,7 @@
                 <thead>
                     <tr>
                         <th>Page</th>
+                        <th>Is Active</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,11 +55,13 @@
                     {% if row.has_pages %}
                     <tr>
                         <td>{{ row.name }} | <small class="text-danger">This is a route page, cannot be edit.</small></td>
+                        <td></td>
                     </tr>
                     {% endif %}
                     {% for content in row.contents %}
                     <tr class="cursor-pointer" hx-get="/hugo-client/update-route-content/{{content.id}}/" hx-trigger="click" hx-target="#htmxModal" hx-indicator="#page-details-indicator" _="on htmx:afterOnLoad wait 10ms then add .show to #modal then add .show to #modal-backdrop">
                         <td>{{ row.name }}/{{ content.title }}.html/</td>
+                        <td><label class="text-{% if content.is_active %}success{% else %}danger{% endif %}">{{ content.is_active }}</label></td>
                     </tr>
                     {% endfor %}
                     {% endfor %}

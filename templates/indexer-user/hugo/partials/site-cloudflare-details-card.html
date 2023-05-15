@@ -21,7 +21,7 @@
             {% endif %}
             {% csrf_token %}
             <div class="mb-3">
-                <label>Account <label class="text-danger">*</label></label>
+                <label>Account <span class="text-danger">*</span></label>
                 <select class="form-select select2 p-2" name="cloudflare" required>
                     <option></option>
                     {% for row in cloudflare %}
@@ -34,8 +34,13 @@
                 </select>
             </div>
             <div class="form-group mb-3">
-                <label>Page Name <label class="text-danger">*</label></label>
+                <label>Page Name <span class="text-danger">*</span></label>
                 <input type="text" class="form-control p-2" name="title" value="{{ data.page_name }}" placeholder="Title" required readonly>
+            </div>
+            <div class="form-group mb-3">
+                {% json_parser data.page_details as page_details %}
+                <label>Sub Domain</label>
+                <input type="url" class="form-control p-2" value="{% if page_details %} http://{{ page_details.result.subdomain }} {% endif %}" readonly>
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span>Publish</button>
