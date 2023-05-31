@@ -3,12 +3,12 @@
         <h3>Pages <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="page-details-indicator"><span class="visually-hidden">Loading...</span></div></h3>
         <div>
             <div class="btn-group" role="group" aria-label="Basic example">
-              <button type="button" class="btn btn-success" hx-get="/hugo-client/route-content/{{ data.id }}/" hx-trigger="click" hx-target="#htmxModal" hx-indicator="#page-details-indicator" _="on htmx:afterOnLoad wait 10ms then add .show to #modal then add .show to #modal-backdrop">Add Content</button>
+              <button type="button" class="btn btn-success" hx-get="/hugo-client/route-content/{{ data.website.id }}/" hx-trigger="click" hx-target="#htmxModal" hx-indicator="#page-details-indicator" _="on htmx:afterOnLoad wait 10ms then add .show to #modal then add .show to #modal-backdrop">Add Content</button>
             </div>
         </div>
     </div>
     <div class="card-body">
-        <form hx-post="/hugo-client/routes/{{ data.id }}/" hx-target="#page-details" hx-swap="innerHTML" hx-indicator="#page-details-indicator" hx-confirm="Please Confirm">
+        <form hx-post="/hugo-client/routes/{{ data.website.id }}/" hx-target="#page-details" hx-swap="innerHTML" hx-indicator="#page-details-indicator" hx-confirm="Please Confirm">
             {% if messages %}
             {% for message in messages %}
                 {% if message.tags == "success" %}
@@ -51,7 +51,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in data.routes %}
+                    {% for row in data.website.routes %}
                     {% if row.has_pages %}
                     <tr>
                         <td>{{ row.name }} | <small class="text-danger">This is a route page, cannot be edit.</small></td>

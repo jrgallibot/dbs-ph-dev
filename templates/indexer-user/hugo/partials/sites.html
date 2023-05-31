@@ -18,7 +18,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in data %}
+                    {% for row in data.websites %}
                     <tr class="cursor-pointer" hx-get="/hugo-client/website/{{row.id}}/" hx-swap="innerHTML" hx-trigger="click" hx-target="#hugo-body" hx-indicator="#indicator">
                         <td>{{ row.id|truncatechars:10 }}</td>
                         <td>{{ row.title }}</td>

@@ -6,7 +6,7 @@
         <h3>{{ data.title }}</h3>
         <div>
             <button class="btn btn-success" hx-get="/hugo-client/websites/" hx-swap="innerHTML" hx-trigger="click" hx-target="#hugo-body" hx-indicator="#indicator">HOME</button>
-            <button class="btn btn-success" hx-get="/hugo-client/website/{{data.id}}/" hx-swap="innerHTML" hx-trigger="click" hx-target="#hugo-body" hx-indicator="#indicator">RELOAD</button>
+            <button class="btn btn-success" hx-get="/hugo-client/website/{{data.website.id}}/" hx-swap="innerHTML" hx-trigger="click" hx-target="#hugo-body" hx-indicator="#indicator">RELOAD</button>
         </div>
     </div>
     <div class="card-body">

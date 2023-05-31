@@ -45,7 +45,7 @@
                         <label>Theme <label class="text-danger">*</label></label>
                         <select class="form-select select2" name="theme" required>
                             <option></option>
-                            {% for row in themes %}
+                            {% for row in data.themes %}
                             <option value="{{ row.id }}">{{ row.name }}</option>
                             {% endfor %}
                         </select>

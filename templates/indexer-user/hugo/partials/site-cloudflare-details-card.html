@@ -1,11 +1,11 @@
 {% load tags %}
-{% get_cloudflare_website data.id as cloudflare_website %}
+{% get_cloudflare_website data.website.id as cloudflare_website %}
 <div class="card">
     <div class="card-header d-flex justify-content-between">
       <h3>Cloudflare <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="cloudflare-details-indicator"><span class="visually-hidden">Loading...</span></div></h3>
     </div>
     <div class="card-body">
-        <form hx-post="/hugo-client/publish-website/{{ data.id }}/" hx-confirm="Are you sure to publish this website?" hx-target="#cloudflare-details" hx-indicator="#cloudflare-details-indicator" hx-swap="innerHTML">
+        <form hx-post="/hugo-client/publish-website/{{ data.website.id }}/" hx-confirm="Are you sure to publish this website?" hx-target="#cloudflare-details" hx-indicator="#cloudflare-details-indicator" hx-swap="innerHTML">
             {% if messages %}
             {% for message in messages %}
                 {% if message.tags == "success" %}
@@ -35,10 +35,10 @@
             </div>
             <div class="form-group mb-3">
                 <label>Page Name <span class="text-danger">*</span></label>
-                <input type="text" class="form-control p-2" name="title" value="{{ data.page_name }}" placeholder="Title" required readonly>
+                <input type="text" class="form-control p-2" name="title" value="{{ data.website.page_name }}" placeholder="Title" required readonly>
             </div>
             <div class="form-group mb-3">
-                {% json_parser data.page_details as page_details %}
+                {% json_parser data.website.page_details as page_details %}
                 <label>Sub Domain</label>
                 <input type="url" class="form-control p-2" value="{% if page_details %} http://{{ page_details.result.subdomain }} {% endif %}" readonly>
             </div>

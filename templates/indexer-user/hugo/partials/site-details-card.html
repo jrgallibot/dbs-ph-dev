@@ -3,27 +3,40 @@
       <h3>Details <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="site-details-indicator"><span class="visually-hidden">Loading...</span></div></h3>
     </div>
     <div class="card-body">
-        <form hx-post="/hugo-client/publish-website/{{ data.id }}/" hx-confirm="Are you sure to publish this website?" hx-target="#cloudflare-details" hx-indicator="#cloudflare-details-indicator" hx-swap="innerHTML">
+        <form hx-post="/hugo-client/update-website/{{ data.website.id }}/" hx-confirm="Are you sure to update this website?" hx-target="#site-details" hx-indicator="#site-details-indicator" hx-swap="innerHTML">
+            {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == "success" %}
+                <p class="text-success">
+                  {{ message }}
+                </p>
+                {% elif message.tags == "error" %}
+                <p class="text-danger">
+                  {{ message }}
+                </p>
+                {% endif %}
+            {% endfor %}
+            {% endif %}
             {% csrf_token %}
             <div class="row">
                 <div class="form-group mb-3 col-lg-6">
                     <label>Title <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control p-2" name="title" value="{{ data.title }}" placeholder="Title" required>
+                    <input type="text" class="form-control p-2" name="title" value="{{ data.website.title }}" placeholder="Title" required>
                 </div>
                 <div class="form-group mb-3 col-lg-6">
                     <label>Base URL</label>
-                    <input type="text" class="form-control p-2" name="base_url" value="{{ data.base_url }}" placeholder="Base URL">
+                    <input type="text" class="form-control p-2" name="base_url" value="{{ data.website.base_url }}" placeholder="Base URL">
                 </div>
                 <div class="form-group mb-3 col-lg-6">
                     <label>Language Code <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control p-2" name="language_code" value="{{ data.language_code }}" placeholder="Language Code" required>
+                    <input type="text" class="form-control p-2" name="language_code" value="{{ data.website.language_code }}" placeholder="Language Code" required>
                 </div>
                 <div class="mb-3 col-lg-6">
                     <label>Theme <span class="text-danger">*</span></label>
                     <select class="form-select select2 p-2" name="theme"required>
                         <option></option>
-                        {% for row in themes %}
-                        {% if data.theme == row.id %}
+                        {% for row in data.themes %}
+                        {% if data.website.theme == row.id %}
                         <option value="{{ row.id }}" selected>{{ row.name }}</option>
                         {% else %}
                         <option value="{{ row.id }}">{{ row.name }}</option>
