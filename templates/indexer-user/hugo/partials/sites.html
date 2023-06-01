@@ -14,16 +14,18 @@
                         <th>UUID</th>
                         <th>Title</th>
                         <th>Sub Domain</th>
+                        <th>Domain/Site URL</th>
                         <th>Date Created</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in data.websites %}
-                    <tr class="cursor-pointer" hx-get="/hugo-client/website/{{row.id}}/" hx-swap="innerHTML" hx-trigger="click" hx-target="#hugo-body" hx-indicator="#indicator">
-                        <td>{{ row.id|truncatechars:10 }}</td>
+                    <tr class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">
+                        <td title="{{ row.id }}">{{ row.id|truncatechars:10 }}</td>
                         <td>{{ row.title }}</td>
                         {% json_parser row.page_details as page_details %}
-                        <td>{% if page_details %} <a href="http://{{ page_details.result.subdomain }}">{{ page_details.result.subdomain }}</a>{% endif %}</td>
+                        <td>{{ page_details.result.subdomain }}</td>
+                        <td>{{ row.base_url }}</td>
                         <td>{{ row.date_created }}</td>
                         </td>
                     </tr>

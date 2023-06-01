@@ -42,6 +42,10 @@
                 <label>Sub Domain</label>
                 <input type="url" class="form-control p-2" value="{% if page_details %} http://{{ page_details.result.subdomain }} {% endif %}" readonly>
             </div>
+            <div class="form-group mb-3">
+                <label>Domain/Base URL</label>
+                <input type="text" class="form-control p-2" value="{{ data.website.base_url }}" name="domain">
+            </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span>Publish</button>
             </div>

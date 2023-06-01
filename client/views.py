@@ -119,6 +119,7 @@ def index_page(request, action=None, pk=None):
                             'account_token': cloudflare.account_token,
                             'api_key': cloudflare.key,
                             'email': cloudflare.email,
+                            'domain': request.POST.get('domain')
                         }
                         req = requests.post(
                             f"http://95.217.184.122/api/publish-website/{pk}/",
@@ -143,7 +144,7 @@ def index_page(request, action=None, pk=None):
                                                         headers={'Authorization': f'Bearer {token}'}).json()
                             }
                             context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
-                            messages.error(request, 'Internal Server Error')
+                            messages.error(request, req.json()['statusMsg'])
                             return render(request, 'indexer-user/hugo/partials/site-cloudflare-details-card.html', context)
                     except Exception as e:
                         return JsonResponse({'statusMsg': str(e)}, status=404)
