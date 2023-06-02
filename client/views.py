@@ -30,6 +30,7 @@ def index_page(request, action=None, pk=None):
                         'base_url': request.POST.get('base_url'),
                         'language_code': request.POST.get('language_code'),
                         'theme': request.POST.get('theme'),
+                        'description': request.POST.get('description')
                     }
                     req = requests.post("http://95.217.184.122/api/website/",
                                         headers={'Authorization': f'Bearer {token}'}, json=data)
@@ -88,11 +89,14 @@ def index_page(request, action=None, pk=None):
                         'title': request.POST.get('title'),
                         'base_url': request.POST.get('base_url'),
                         'language_code': request.POST.get('language_code'),
-                        'theme': request.POST.get('theme')
+                        'theme': request.POST.get('theme'),
+                        'description': request.POST.get('description')
                     }
+                    print(data)
                     req = requests.post(
                         f"http://95.217.184.122/api/update-website/{pk}/",
                         headers={'Authorization': f'Bearer {token}'}, data=data)
+                    print(req.text)
                     if req.status_code == 200 or req.status_code == 201:
                         messages.success(request, 'You have successfully updated the website.')
                         context['data'] = requests.get(f"http://95.217.184.122/api/site-page/{pk}/",
