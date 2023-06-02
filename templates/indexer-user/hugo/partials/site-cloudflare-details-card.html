@@ -39,7 +39,7 @@
             </div>
             <div class="form-group mb-3">
                 {% json_parser data.website.page_details as page_details %}
-                <label>Sub Domain</label>
+                <label>Sub Domain {% if page_details %}(<a target="_blank" href="{% if page_details %} http://{{ page_details.result.subdomain }} {% endif %}">{% if page_details %} http://{{ page_details.result.subdomain }} {% endif %}</a>){% endif %}</label>
                 <input type="url" class="form-control p-2" value="{% if page_details %} http://{{ page_details.result.subdomain }} {% endif %}" readonly>
             </div>
             <div class="form-group mb-3">
