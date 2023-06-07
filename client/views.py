@@ -92,11 +92,9 @@ def index_page(request, action=None, pk=None):
                         'theme': request.POST.get('theme'),
                         'description': request.POST.get('description')
                     }
-                    print(data)
                     req = requests.post(
                         f"http://95.217.184.122/api/update-website/{pk}/",
                         headers={'Authorization': f'Bearer {token}'}, data=data)
-                    print(req.text)
                     if req.status_code == 200 or req.status_code == 201:
                         messages.success(request, 'You have successfully updated the website.')
                         context['data'] = requests.get(f"http://95.217.184.122/api/site-page/{pk}/",
@@ -166,17 +164,19 @@ def index_page(request, action=None, pk=None):
                             'name': request.POST.get('route_name'),
                             'in_navbar': True if request.POST.get('in_navbar') == "on" else False,
                             'has_pages': True if request.POST.get('has_pages') == "on" else False,
+                            'description': request.POST.get('description')
                         }
                         req = requests.post("http://95.217.184.122/api/route/",
                                             headers={'Authorization': f'Bearer {token}'}, json=data)
                         if req.status_code == 200 or req.status_code == 201:
-                            context['data']['website'] = requests.get(f"http://95.217.184.122/api/websites/{pk}/",
+
+                            context['data'] = requests.get(f"http://95.217.184.122/api/site-page/{pk}/",
                                                            headers={'Authorization': f'Bearer {token}'}).json()
                             context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                             messages.success(request, 'Route successfully added.')
                             return render(request, 'indexer-user/hugo/partials/site-page-details-card.html', context)
                         else:
-                            context['data']['website'] = requests.get(f"http://95.217.184.122/api/websites/{pk}/",
+                            context['data'] = requests.get(f"http://95.217.184.122/api/site-page/{pk}/",
                                                            headers={'Authorization': f'Bearer {token}'}).json()
                             context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                             messages.error(request, 'Invalid/Duplicate Information')
@@ -195,7 +195,8 @@ def index_page(request, action=None, pk=None):
                         data = {
                             'route': pk,
                             'title': request.POST.get('title'),
-                            'content': ''
+                            'content': '',
+                            'description': request.POST.get('description')
                         }
                         req = requests.post(f"http://95.217.184.122/api/content/",
                                             headers={'Authorization': f'Bearer {token}'}, data=data)
@@ -220,7 +221,8 @@ def index_page(request, action=None, pk=None):
                         data = {
                             'route': request.POST.get('route'),
                             'title': request.POST.get('title'),
-                            'content': request.POST.get('content')
+                            'content': request.POST.get('content'),
+                            'description': request.POST.get('description')
                         }
                         req = requests.post(f"http://95.217.184.122/api/content/",
                                             headers={'Authorization': f'Bearer {token}'}, json=data)
@@ -247,6 +249,7 @@ def index_page(request, action=None, pk=None):
                             'title': request.POST.get('title'),
                             'content': request.POST.get('content'),
                             'is_active': True if request.POST.get('is_active') == "on" else False,
+                            'description': request.POST.get('description')
                         }
                         req = requests.post(f"http://95.217.184.122/api/update-content/{pk}/",
                                             headers={'Authorization': f'Bearer {token}'}, json=data)
