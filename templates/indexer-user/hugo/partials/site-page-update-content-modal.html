@@ -14,7 +14,7 @@
                     <div class="card-body">
                         <form action="/hugo-client/update-route-content/{{ data.id }}/" method="POST" id="updateRouteContentForm">
                             {% if not data.route_has_pages %}
-                            <label class="text-danger"><strong>Note:</strong> This is a Single Page Only</label>
+                            <label class="text-danger"><strong>Note:</strong> This is a Single/Section Page Only</label>
                             {% endif %}
                             {% csrf_token %}
                             <div class="row mb-3">
@@ -48,7 +48,7 @@
                                 </div>
                                 <div class="form-group col-lg-12 mb-3">
                                     <label>Description</label>
-                                    <textarea class="form-control" name="description">{{ data.description }}</textarea>
+                                    <textarea class="form-control" name="description">{% if data.description %} {{ data.description }} {% endif %}</textarea>
                                 </div>
                                 <div class="form-group col-lg-12 mb-3">
                                     <label>Is Active</label>

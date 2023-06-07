@@ -1,9 +1,22 @@
 {% load tags %}
 {% load static %}
 {% csrf_token %}
+{% if messages %}
+{% for message in messages %}
+    {% if message.tags == "success" %}
+    <p class="text-success">
+      {{ message }}
+    </p>
+    {% elif message.tags == "error" %}
+    <p class="text-danger">
+      {{ message }}
+    </p>
+    {% endif %}
+{% endfor %}
+{% endif %}
 <div class="card">
     <div class="card-header d-flex justify-content-between">
-      <h3>Websites</h3>
+      <h3>Websites <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="sites-indicator"><span class="visually-hidden">Loading...</span></div></h3>
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addWebsiteModal">Add Website</button>
     </div>
     <div class="card-body">
@@ -16,18 +29,19 @@
                         <th>Sub Domain</th>
                         <th>Domain/Site URL</th>
                         <th>Date Created</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in data.websites %}
-                    <tr class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">
-                        <td title="{{ row.id }}">{{ row.id|truncatechars:10 }}</td>
-                        <td>{{ row.title }}</td>
+                    <tr>
+                        <td title="{{ row.id }}" class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ row.id|truncatechars:10 }}</td>
+                        <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ row.title }}</td>
                         {% json_parser row.page_details as page_details %}
-                        <td>{{ page_details.result.subdomain }}</td>
-                        <td>{{ row.base_url }}</td>
-                        <td>{{ row.date_created }}</td>
-                        </td>
+                        <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ page_details.result.subdomain }}</td>
+                        <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ row.base_url }}</td>
+                        <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ row.date_created }}</td>
+                        <td><a href="javascript:void(0)" hx-get="/hugo-client/delete-website/{{ row.id }}/" hx-target="#hugo-body" hx-swap="innerHTML" hx-indicator="#sites-indicator" hx-confirm="Please Confirm">Delete</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>

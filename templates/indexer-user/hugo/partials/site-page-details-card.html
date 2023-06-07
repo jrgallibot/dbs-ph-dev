@@ -64,7 +64,7 @@
                     {% endif %}
                     {% for content in row.contents %}
                     <tr class="cursor-pointer" hx-get="/hugo-client/update-route-content/{{content.id}}/" hx-trigger="click" hx-target="#htmxModal" hx-indicator="#page-details-indicator" _="on htmx:afterOnLoad wait 10ms then add .show to #modal then add .show to #modal-backdrop">
-                        <td>{{ row.name }}/{{ content.title }}.html/</td>
+                        <td>{{ row.name }}/{{ content.title }}/</td>
                         <td><label class="text-{% if content.is_active %}success{% else %}danger{% endif %}">{{ content.is_active }}</label></td>
                     </tr>
                     {% endfor %}
