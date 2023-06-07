@@ -1,12 +1,30 @@
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from . models import ClientSettings, CloudflareWebsites
+from . models import ClientSettings, CloudflareWebsites, MaintenanceStatus, ClientComments
 from Cloudflare.models import CloudflareModel
 from datetime import datetime
 import requests
 
+def maintenance_mode_enabled():
+    data = MaintenanceStatus.objects.get(pk = 1)
+    return True if data.status == 0 else False
 
+
+def maintenance_mode(original_function):
+    def wrapper(*args, **kwargs):
+        # Check if maintenance mode is enabled
+        if maintenance_mode_enabled():
+            # Handle maintenance mode logic
+            print("Service is currently under maintenance. Please try again later.")
+            return HttpResponse("Service is currently under maintenance. Please try again later.")
+        else:
+            # Execute the original function
+            return original_function(*args, **kwargs)
+    
+    return wrapper
+
+@maintenance_mode
 def index_page(request, action=None, pk=None):
     try:
         client_settings = ClientSettings.objects.get(user=request.user)
@@ -107,6 +125,20 @@ def index_page(request, action=None, pk=None):
                         context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                         messages.error(request, 'Internal Server Error')
                         return render(request, 'indexer-user/hugo/partials/site-details-card.html', context)
+
+                elif action == "client-comments":
+                   if request.method == "POST":
+                        comments = ClientComments(
+                            client_site = request.POST.get('client_site'),
+                            comments = request.POST.get('notes'),
+                            user_id = request.user.id,
+                            web_id = pk
+                        )
+                        comments.save()
+                        messages.success(request, 'You have successfully saved the comments.')
+                        context['cl_comments'] = ClientComments.objects.filter(user_id=request.user.id, web_id=pk).all()
+                        return render(request, 'indexer-user/hugo/partials/site-page-comments.html', context)
+
                 elif action == "build-website" and request.method == "GET":
                     req = requests.post(f"http://95.217.184.122/api/build-website/{pk}/",
                                         headers={'Authorization': f'Bearer {token}'})
@@ -321,6 +353,7 @@ def index_page(request, action=None, pk=None):
                     context['data'] = requests.get(f"http://95.217.184.122/api/site-page/{pk}/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
                     context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
+                    context['cl_comments'] = ClientComments.objects.filter(user_id=request.user.id, web_id=pk).all()
                     return render(request, 'indexer-user/hugo/partials/site.html', context)
                 elif action == "website-view":
                     context['data'] = requests.get("http://95.217.184.122/api/home-page/",
@@ -331,6 +364,7 @@ def index_page(request, action=None, pk=None):
             context['data'] = requests.get("http://95.217.184.122/api/home-page/",
                                            headers={'Authorization': f'Bearer {token}'}).json()
             context['active_tab'] = 'hugo'
+            context['cl_comments'] = ClientComments.objects.filter(user_id=request.user.id, web_id=pk).all()
             return render(request, 'indexer-user/hugo/index.html', context)
         else:
             context['active_tab'] = 'hugo'
