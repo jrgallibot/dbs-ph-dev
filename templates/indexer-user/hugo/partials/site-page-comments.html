@@ -1,0 +1,62 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <h3>Comments <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="page-comments"><span class="visually-hidden">Loading...</span></div></h3>
+    </div>
+    <div class="card-body">
+        <form hx-post="/hugo-client/client-comments/{{ data.website.id }}/" hx-confirm="Please Confirm" hx-target="#comments-details" hx-indicator="#page-comments" hx-swap="innerHTML">
+            {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == "success" %}
+                <p class="text-success">
+                {{ message }}
+                </p>
+                {% elif message.tags == "error" %}
+                <p class="text-danger">
+                {{ message }}
+                </p>
+                {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% csrf_token %}
+            <div class="row">
+                <div class="form-group mb-3 col-lg-12">
+                    <label>Client Site <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control p-2" name="client_site"  placeholder="Client Site" required>
+                </div>
+                <div class="form-group mb-3 col-lg-12">
+                    <label>Notes <span class="text-danger">*</span></label>
+                    <textarea class="form-control p-2" name="notes" rows="10"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span> Save changes</button>
+            </div>
+        </form>
+        <hr>
+        <div class="table-responsive p-2">
+            <table id="comments-table" class="table table-striped fs-6" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Client Site</th>
+                        <th>Comments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in cl_comments %}
+                    <tr>
+                        <td>{{ row.client_site }}</td>
+                        <td>{{ row.comments }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $(document).ready(function () {
+        $('#comments-table').DataTable();
+    });
+</script>
+{% endblock %}
