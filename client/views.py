@@ -222,7 +222,10 @@ def index_page(request, action=None, pk=None):
                             'route': request.POST.get('route'),
                             'title': request.POST.get('title'),
                             'content': request.POST.get('content'),
-                            'description': request.POST.get('description')
+                            'description': request.POST.get('description'),
+                            'tags': request.POST.get('tags'),
+                            'categories': request.POST.get('categories'),
+                            'keywords': request.POST.get('keywords')
                         }
                         req = requests.post(f"http://95.217.184.122/api/content/",
                                             headers={'Authorization': f'Bearer {token}'}, json=data)
@@ -249,7 +252,11 @@ def index_page(request, action=None, pk=None):
                             'title': request.POST.get('title'),
                             'content': request.POST.get('content'),
                             'is_active': True if request.POST.get('is_active') == "on" else False,
-                            'description': request.POST.get('description')
+                            'description': request.POST.get('description'),
+                            'slug': request.POST.get('slug'),
+                            'tags': request.POST.get('tags'),
+                            'categories': request.POST.get('categories'),
+                            'keywords': request.POST.get('keywords')
                         }
                         req = requests.post(f"http://95.217.184.122/api/update-content/{pk}/",
                                             headers={'Authorization': f'Bearer {token}'}, json=data)

@@ -52,6 +52,7 @@
                     <tr>
                         <th>Page</th>
                         <th>Is Active</th>
+                        <th>Date Published</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,13 +61,23 @@
                     <tr>
                         <td>{{ row.name }} | <small class="text-danger">This is a route page, cannot be edit.</small></td>
                         <td></td>
+                        <td></td>
                     </tr>
                     {% endif %}
                     {% for content in row.contents %}
+                    {% if row.name != 'home' %}
                     <tr class="cursor-pointer" hx-get="/hugo-client/update-route-content/{{content.id}}/" hx-trigger="click" hx-target="#htmxModal" hx-indicator="#page-details-indicator" _="on htmx:afterOnLoad wait 10ms then add .show to #modal then add .show to #modal-backdrop">
-                        <td>{{ row.name }}/{{ content.title }}/</td>
+                        <td>{{ row.name }}/{{ content.slug }}/</td>
                         <td><label class="text-{% if content.is_active %}success{% else %}danger{% endif %}">{{ content.is_active }}</label></td>
+                        <td>{{ row.date_published }}</td>
                     </tr>
+                    {% else %}
+                    <tr class="cursor-pointer" hx-get="/hugo-client/update-route-content/{{content.id}}/" hx-trigger="click" hx-target="#htmxModal" hx-indicator="#page-details-indicator" _="on htmx:afterOnLoad wait 10ms then add .show to #modal then add .show to #modal-backdrop">
+                        <td>{{ row.name }}</td>
+                        <td><label class="text-{% if content.is_active %}success{% else %}danger{% endif %}">{{ content.is_active }}</label></td>
+                        <td>{{ row.date_published }}</td>
+                    </tr>
+                    {% endif %}
                     {% endfor %}
                     {% endfor %}
                 </tbody>

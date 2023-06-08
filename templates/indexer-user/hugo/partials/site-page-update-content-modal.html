@@ -14,7 +14,7 @@
                     <div class="card-body">
                         <form action="/hugo-client/update-route-content/{{ data.id }}/" method="POST" id="updateRouteContentForm">
                             {% if not data.route_has_pages %}
-                            <label class="text-danger"><strong>Note:</strong> This is a Single/Section Page Only</label>
+                            <label class="text-danger"><strong>Note:</strong> This is a Single Page Only</label>
                             {% endif %}
                             {% csrf_token %}
                             <div class="row mb-3">
@@ -25,9 +25,9 @@
                                         {% if data.route_has_pages %}
 
                                         {% for route in routes %}
-                                        {% if route.id == data.route %}
+                                        {% if route.id == data.route and route.has_pages %}
                                         <option value="{{ route.id }}" selected>{{ route.name }}</option>
-                                        {% else %}
+                                        {% elif route.has_pages %}
                                         <option value="{{ route.id }}">{{ route.name }}</option>
                                         {% endif %}
                                         {% endfor %}
@@ -45,6 +45,22 @@
                                 <div class="form-group col-lg-12 mb-3">
                                     <label>Content <span class="text-danger">*</span></label>
                                     <textarea name="content" id="route-content" class="form-control p-2" required>{{ data.content|safe }}</textarea>
+                                </div>
+                                <div class="form-group col-lg-12 mb-3">
+                                    <label>Slug <span class="text-danger">*</span></label>
+                                    <input type="text" name="slug" id="route-slug" class="form-control p-2" value="{{ data.slug }}" required>
+                                </div>
+                                <div class="form-group col-lg-12 mb-3">
+                                    <label>Tags <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+                                    <input type="text" name="tags" id="route-tags" class="form-control p-2" value="{% if data.tags %}{{ data.tags }}{% endif %}">
+                                </div>
+                                <div class="form-group col-lg-12 mb-3">
+                                    <label>Categories <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+                                    <input type="text" name="categories" id="route-categories" class="form-control p-2" value="{% if data.categories %}{{ data.categories }}{% endif %}">
+                                </div>
+                                <div class="form-group col-lg-12 mb-3">
+                                    <label>Keywords <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+                                    <input type="text" name="keywords" id="route-keywords" class="form-control p-2" value="{% if data.keywords %}{{ data.keywords }}{% endif %}">
                                 </div>
                                 <div class="form-group col-lg-12 mb-3">
                                     <label>Description</label>
