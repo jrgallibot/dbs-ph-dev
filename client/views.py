@@ -158,6 +158,7 @@ def index_page(request, action=None, pk=None):
                         req = requests.post(
                             f"http://95.217.184.122/api/publish-website/{pk}/",
                             headers={'Authorization': f'Bearer {token}'}, data=data)
+                        print(req.text)
                         if req.status_code == 200 or req.status_code == 201:
                             cfw = CloudflareWebsites.objects.filter(website_id=pk).first()
                             if cfw:
