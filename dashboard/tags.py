@@ -43,3 +43,9 @@ def get_cloudflare_website(pk):
 		return CloudflareWebsites.objects.filter(website_id=pk).first()
 	else:
 		return None
+
+	
+@register.simple_tag
+def json_to_datetime(data):	
+	if data:
+		return datetime.strptime(data[0:10], '%Y-%m-%d').date()
