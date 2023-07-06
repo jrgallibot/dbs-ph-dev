@@ -3,10 +3,11 @@ from django.db import transaction
 from indexer.models import *
 from apps.users.models import *
 from Cloudflare.models import *
-from client.models import CloudflareWebsites
+from client.models import *
 from django.db.models import Q, Func, F, Value, CharField, Count
 from datetime import datetime
 import json
+from urllib.parse import urlparse
 
 register = template.Library()
 now = timezone.now()
@@ -27,9 +28,27 @@ def getapikey_format(data):
 
 @register.simple_tag
 def json_parser(data):
-    if data:
-        return json.loads(data)
-    return None
+	if data:
+		return json.loads(data)
+	return None
+
+
+@register.simple_tag
+def check_sitemap_exist(data):
+	data = f'https://{data}/sitemap.xml'
+	print(data)
+	sitemap = Sitemap.objects.filter(website=data)
+	print('sitemap', sitemap)
+	return sitemap
+
+
+@register.simple_tag
+def get_domain(data):
+	if data:
+		domain = urlparse(data).hostname
+		return domain
+	return None
+
 
 @register.simple_tag
 def getpage_rule(pk):
@@ -43,8 +62,20 @@ def get_cloudflare_website(pk):
 		return CloudflareWebsites.objects.filter(website_id=pk).first()
 	else:
 		return None
-
 	
+
+@register.simple_tag
+def get_latest_comments(pk):
+	data = ClientComments.objects.filter(web_id = pk)
+	return data.last().comments if data else ''
+
+
+@register.simple_tag
+def get_post_sched_user(user_id , pk):
+	data = ClientPostSched.objects.filter(user_id=user_id, web_id=pk).all()
+	return data if data else None
+
+
 @register.simple_tag
 def json_to_datetime(data):	
 	if data:

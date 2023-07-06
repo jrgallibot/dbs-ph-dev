@@ -1,10 +1,16 @@
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from . models import ClientSettings, CloudflareWebsites, MaintenanceStatus, ClientComments
+from . models import ClientSettings, CloudflareWebsites, MaintenanceStatus, ClientComments, ClientPostSched
+from indexer.models import IndexApi
 from Cloudflare.models import CloudflareModel
-from datetime import datetime
+from datetime import datetime, date
 import requests
+import csv
+from django.views.decorators.csrf import csrf_exempt
+from io import TextIOWrapper
 
 def maintenance_mode_enabled():
     data = MaintenanceStatus.objects.get(pk = 1)
@@ -24,6 +30,7 @@ def maintenance_mode(original_function):
     
     return wrapper
 
+@login_required
 @maintenance_mode
 def index_page(request, action=None, pk=None):
     try:
@@ -99,6 +106,47 @@ def index_page(request, action=None, pk=None):
                                                    headers={'Authorization': f'Bearer {token}'}).json()
                     context['active_tab'] = 'hugo'
                     return render(request, 'indexer-user/hugo/partials/sites.html', context)
+
+                elif action == "upload-csv":
+                    if request.method == "POST":
+                        print('pk', pk)
+                        try:
+                            today = date.today()
+                            error_count = 0
+                            success_count = 0
+                            data_arr = ''
+                            csv_file = request.FILES['csvFile']
+                            csv_file = TextIOWrapper(csv_file.file, encoding='utf-8')
+                            print('csv_file', csv_file)
+                            # Assuming the CSV file has columns: Title, Content, Slug, and Date
+                            reader = csv.DictReader(csv_file)
+                            for row in reader:
+                                title = row['Title']
+                                content = row['Content']
+                                slug = row['Slug']
+                                date_str = row['Date']
+                                date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+                                if date_obj >= today:
+                                    # Create an instance of YourModel and save the data to the database
+                                    your_model = ClientPostSched(title=title,
+                                        route_id = request.POST.get('route'),
+                                        content=content, 
+                                        slug=slug, 
+                                        date=date_str, 
+                                        web_id=request.POST.get('pk'), 
+                                        user_id=request.user.id,
+                                        status='Queued')
+                                    your_model.save()
+                                    success_count += 1
+                                else:
+                                    data_arr += title + ", "
+                                    error_count += 1
+                            if error_count == 0:
+                                return JsonResponse({'data': 'success'})
+                            else:
+                                return JsonResponse({'data': 'error', 'msg': f'Failed to upload <b>{error_count}</b> entries with title named "<b>{data_arr}</b>". Invalid dates or dates earlier than today.'})
+                        except Exception as e:
+                            return JsonResponse({'data': 'error', 'msg': f"HTTP error occurred: {e}"})
 
             elif action is not None and pk is not None:
                 if action == "update-website" and request.method == "POST":
@@ -364,7 +412,19 @@ def index_page(request, action=None, pk=None):
                                                    headers={'Authorization': f'Bearer {token}'}).json()
                     context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                     context['cl_comments'] = ClientComments.objects.filter(user_id=request.user.id, web_id=pk).all()
+                    context['index_api'] = IndexApi.objects.filter(method_id = 1, user_id=request.user.id, is_validated=1).all()
+                    routes = requests.get(f"http://95.217.184.122/api/website-routes/{pk}/",
+                                              headers={'Authorization': f'Bearer {token}'})
+                    context['rts'] = routes.json()
+                    context['website_id'] = pk
                     return render(request, 'indexer-user/hugo/partials/site.html', context)
+                elif action == 'view_post':
+                    context['post'] = ClientPostSched.objects.filter(web_id=pk).all()
+                    context['website_id'] = pk
+                    routes = requests.get(f"http://95.217.184.122/api/website-routes/{pk}/",
+                                              headers={'Authorization': f'Bearer {token}'})
+                    context['rts'] = routes.json()
+                    return render(request, 'indexer-user/hugo/partials/site-view-post-data.html', context)
                 elif action == "website-view":
                     context['data'] = requests.get("http://95.217.184.122/api/home-page/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
@@ -375,6 +435,7 @@ def index_page(request, action=None, pk=None):
                                            headers={'Authorization': f'Bearer {token}'}).json()
             context['active_tab'] = 'hugo'
             context['cl_comments'] = ClientComments.objects.filter(user_id=request.user.id, web_id=pk).all()
+            context['index_api'] = IndexApi.objects.filter(method_id = 1, user_id=request.user.id, is_validated=1).all()
             return render(request, 'indexer-user/hugo/index.html', context)
         else:
             context['active_tab'] = 'hugo'
