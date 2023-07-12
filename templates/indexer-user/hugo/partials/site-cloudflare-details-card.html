@@ -35,7 +35,7 @@
             </div>
             <div class="form-group mb-3">
                 <label>Page Name <span class="text-danger">*</span></label>
-                <input type="text" class="form-control p-2" name="title" value="{{ data.website.page_name }}" placeholder="Title" required readonly>
+                <input type="text" class="form-control p-2" name="page_name" value="{{ data.website.page_name }}" placeholder="Title" required>
             </div>
             <div class="form-group mb-3">
                 {% json_parser data.website.page_details as page_details %}
