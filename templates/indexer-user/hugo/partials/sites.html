@@ -29,6 +29,7 @@
                         <th>Sub Domain</th>
                         <th>Domain/Site URL</th>
                         <th>Date Created</th>
+                        <th>Date Published</th>
                         <th>Notes</th>
                         <th>Actions</th>
                     </tr>
@@ -39,9 +40,12 @@
                         <td title="{{ row.id }}" class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ row.id|truncatechars:10 }}</td>
                         <td style="white-space: normal;" class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ row.title }}</td>
                         {% json_parser row.page_details as page_details %}
+                        {% json_to_datetime row.date_created as date_created %}
+                        {% json_to_datetime row.date_published as date_published %}
                         <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ page_details.result.subdomain }}</td>
                         <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ row.base_url }}</td>
-                        <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ row.date_created }}</td>
+                        <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ date_created|date:'N j, Y g:iA' }}</td>
+                        <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ date_published|date:'N j, Y g:iA' }}</td>
                         <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{% get_latest_comments row.id %}</td>
                         <td style="white-space: normal;">
                             <a href="javascript:void(0)" hx-get="/hugo-client/delete-website/{{ row.id }}/" hx-target="#hugo-body" hx-swap="innerHTML" hx-indicator="#sites-indicator" hx-confirm="Please Confirm">Delete</a>

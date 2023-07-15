@@ -204,7 +204,7 @@ def index_page(request, action=None, pk=None):
                             'api_key': cloudflare.key,
                             'email': cloudflare.email,
                             'domain': request.POST.get('domain'),
-                            'page_name': request.POST.get('page_name')
+                            'page_name': request.POST.get('page_name'),
                         }
                         req = requests.post(
                             f"http://95.217.184.122/api/publish-website/{pk}/",

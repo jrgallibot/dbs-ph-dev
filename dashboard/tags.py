@@ -77,6 +77,13 @@ def get_post_sched_user(user_id , pk):
 
 
 @register.simple_tag
+def json_to_date(data):	
+	if data:
+		return datetime.strptime(data[0:10], '%Y-%m-%d')
+
+
+
+@register.simple_tag
 def json_to_datetime(data):	
 	if data:
-		return datetime.strptime(data[0:10], '%Y-%m-%d').date()
+		return datetime.strptime(f"{data[0:10]} {data[11:19]}", '%Y-%m-%d %H:%M:%S')

@@ -44,7 +44,7 @@
                                     <input type="text" class="form-control p-2" name="title" value="{{ data.title }}" required>
                                 </div>
                                 <div class="form-group col-lg-12 mb-3">
-                                    <label>Date Published {% json_to_datetime data.date_published as date_published %}<span class="text-danger">*</span></label>
+                                    <label>Date Published {% json_to_date data.date_published as date_published %}<span class="text-danger">*</span></label>
                                     <input type="date" class="form-control p-2" name="date_published" value="{{ date_published|date:'Y-m-d' }}" required>
                                 </div>
                                 <div class="form-group col-lg-12 mb-3">

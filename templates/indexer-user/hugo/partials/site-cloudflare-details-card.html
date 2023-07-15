@@ -33,6 +33,16 @@
                     {% endfor %}
                 </select>
             </div>
+            <!--
+            <div class="mb-3">
+                <label>Branch <span class="text-danger">*</span></label>
+                <select class="form-select select2 p-2" name="branch" required>
+                    <option></option>
+                    <option value="main" {% if data.branch == 'main' %} selected {% endif %}>Main</option>
+                    <option value="master" {% if data.branch == 'master' %} selected {% endif %}>Master</option>
+                </select>
+            </div>
+            -->
             <div class="form-group mb-3">
                 <label>Page Name <span class="text-danger">*</span></label>
                 <input type="text" class="form-control p-2" name="page_name" value="{{ data.website.page_name }}" placeholder="Title" required>
