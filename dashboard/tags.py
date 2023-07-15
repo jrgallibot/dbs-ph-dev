@@ -5,7 +5,7 @@ from apps.users.models import *
 from Cloudflare.models import *
 from client.models import *
 from django.db.models import Q, Func, F, Value, CharField, Count
-from datetime import datetime
+from datetime import datetime, date
 import json
 from urllib.parse import urlparse
 
@@ -87,3 +87,11 @@ def json_to_date(data):
 def json_to_datetime(data):	
 	if data:
 		return datetime.strptime(f"{data[0:10]} {data[11:19]}", '%Y-%m-%d %H:%M:%S')
+	
+	
+
+@register.simple_tag
+def get_color_group(web):
+	if web:
+		group = ClientWebsitePbnGroup.objects.filter(web_id=web).first()
+		return group if group else ''

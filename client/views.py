@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from . models import ClientSettings, CloudflareWebsites, MaintenanceStatus, ClientComments, ClientPostSched
+from . models import ClientSettings, CloudflareWebsites, MaintenanceStatus, ClientComments, ClientPostSched, , ClientPbnGroup, ClientWebsitePbnGroup
 from indexer.models import IndexApi
 from Cloudflare.models import CloudflareModel
 from datetime import datetime, date
@@ -11,6 +11,7 @@ import requests
 import csv
 from django.views.decorators.csrf import csrf_exempt
 from io import TextIOWrapper
+import re
 
 def maintenance_mode_enabled():
     data = MaintenanceStatus.objects.get(pk = 1)
@@ -63,6 +64,27 @@ def index_page(request, action=None, pk=None):
                     if req.status_code == 200 or req.status_code == 201:
                         return redirect('/hugo-client/')
 
+                elif action == "add-website-group":
+                    if request.method == "POST":
+                        try:
+                            checkedid = request.POST.get('checkid')
+                            idcheck = re.split(',', checkedid)
+                            for row in idcheck:
+                                print(row)
+                                checked = ClientWebsitePbnGroup.objects.filter(web_id=row).first()
+                                if checked:
+                                    checked.group_id = request.POST.get('group')
+                                    checked.save()
+                                else:
+                                    group = ClientWebsitePbnGroup(
+                                        web_id = row,
+                                        group_id = request.POST.get('group')
+                                    )
+                                    group.save()
+                            return JsonResponse({'data': 'success', 'msg': 'Website successfully grouped.'})
+                        except Exception as e:
+                            return JsonResponse({'data': 'error', 'msg': f"HTTP error occurred: {e}"})
+
                 elif action == "add-account" and request.method == "POST":
                     try:
                         check = CloudflareModel.objects.filter(account_token=request.POST.get('token'))
@@ -106,6 +128,7 @@ def index_page(request, action=None, pk=None):
                     context['data'] = requests.get("http://95.217.184.122/api/home-page/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
                     context['active_tab'] = 'hugo'
+                    context['group_pbn'] = ClientPbnGroup.objects.filter(status=1, user_id=request.user.id).all()
                     return render(request, 'indexer-user/hugo/partials/sites.html', context)
 
                 elif action == "upload-csv":
@@ -420,6 +443,7 @@ def index_page(request, action=None, pk=None):
                                               headers={'Authorization': f'Bearer {token}'})
                     context['rts'] = routes.json()
                     context['website_id'] = pk
+                    context['group_pbn'] = ClientPbnGroup.objects.filter(status=1, user_id=request.user.id).all()
                     return render(request, 'indexer-user/hugo/partials/site.html', context)
                 elif action == 'view_post':
                     context['post'] = ClientPostSched.objects.filter(web_id=pk).all()
@@ -438,6 +462,7 @@ def index_page(request, action=None, pk=None):
                                            headers={'Authorization': f'Bearer {token}'}).json()
             context['active_tab'] = 'hugo'
             context['cl_comments'] = ClientComments.objects.filter(user_id=request.user.id, web_id=pk).all()
+            context['group_pbn'] = ClientPbnGroup.objects.filter(status=1, user_id=request.user.id).all()
             context['index_api'] = IndexApi.objects.filter(method_id = 1, user_id=request.user.id, is_validated=1).all()
             return render(request, 'indexer-user/hugo/index.html', context)
         else:

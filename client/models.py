@@ -49,3 +49,25 @@ class ClientPostSched(models.Model):
 	class Meta:
 		managed = False
 		db_table = 'client_post_sched'
+
+
+class ClientPbnGroup(models.Model):
+	name = models.CharField(max_length=255, blank=True, null=True)
+	color = models.CharField(max_length=255, blank=True, null=True)
+	status = models.IntegerField(blank=True, null=True)
+	user = models.ForeignKey(settings.AUTH_USER_MODEL, models.RESTRICT)
+
+	class Meta:
+		managed = False
+		db_table = 'client_pbn_group'
+
+
+
+class ClientWebsitePbnGroup(models.Model):
+	web_id = models.TextField(null=True)
+	group = models.ForeignKey(ClientPbnGroup, on_delete=models.CASCADE)
+	dateadded = models.DateTimeField(blank=True, null=True, default=timezone.now)
+
+	class Meta:
+		managed = False
+		db_table = 'client_group_pbn_websites'
