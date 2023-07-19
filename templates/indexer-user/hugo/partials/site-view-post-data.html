@@ -31,6 +31,7 @@
             <table class="table table-hover" id="post_list" width="100%">
                 <thead>
                     <tr>
+                        <th>Action</th>
                         <th class="cell text-start">Route Id</th>
                         <th class="cell">Web Id</th>
                         <th class="cell">Title</th>
@@ -43,6 +44,11 @@
                 <tbody>
                     {% for row in post %}
                     <tr>
+                        <td>
+                            {% if row.status == 'Error' %}
+                            <a href="javascript:void(0);" data-role="view_error_result" data-id="{{row.error_results}}" style="cursor:pointer;" class="text-primary">View Error Results</a>
+                            {% endif %}
+                        </td>
                         <td class="cursor-pointer">{{row.route_id|truncatechars:10}}</td>
                         <td class="cursor-pointer">{{row.web_id|truncatechars:10}}</td>
                         <td class="cursor-pointer">{{row.title}}</td>
@@ -69,6 +75,13 @@
 				{% csrf_token %}
                 <input type="hidden" name="pk" id="pk">
 				<div class="modal-body">
+                    <div class="alert alert-primary text-white">
+                        <i class="fas fa-info-circle"></i> <strong>IMPORTANT NOTE</strong> before uploading <br><br>
+                        <ul style="margin-left: 15px;">
+                            <li>Only <strong>CSV</strong> file is allowed. If you have xlsx format please do convert it to csv file.</li>
+                            <li><strong>Date Column</strong> must be in format 'yyyy-mm-dd'. </li>
+                        </ul>
+                    </div>
                     <div class="form-group col-lg-12 mb-3">
                         <label>Page <span class="text-danger">*</span></label>
                         <select class="form-select select2 p-2" name="route" required>
@@ -86,10 +99,25 @@
 					</div>
 				</div>
 				<div class="modal-footer">
+                    <a class="btn btn-success" href="{% static 'admin/Articles.csv' %}" target="_blank">Download Format</a>
 					<button type="submit" class="btn btn-primary">Upload</button>
 					<button type="button" class="btn btn-secondary" id="close-upload-modal" data-bs-dismiss="modal">Cancel</button>
 				</div>
 			</form>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="viewModalError" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			  <div class="modal-header">
+				<h5 class="modal-title"><i class="fas fa-times-circle-o text-danger me-2" style="zoom:0.85"></i>VIEW ERROR RESULT</h5>
+				<button type="button" class="btn-close text-dark" data-bs-dismiss="modal" id="close-editindex-modal" aria-label="Close"><i class="fas fa-times"></i></button>
+			  </div>
+			  <div class="modal-body">
+                <h5 class="error_results"></h5>
+              </div>
 		</div>
 	</div>
 </div>
@@ -99,6 +127,15 @@
     $(document).ready(function () {
         $('#post_list').DataTable();
     });
+
+    $(document).on('click', 'a[data-role=view_error_result]', function(){
+        var id = $(this).data('id');
+        $('.error_results').text(id)
+        console.log(id);
+        var viewModal = new bootstrap.Modal(document.getElementById('viewModalError'), {});
+        viewModal.show();
+    });
+
 
     $(document).on('click', 'a[data-role=upload_csv]', function(){
         var id = $(this).data('id');

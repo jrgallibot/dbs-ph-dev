@@ -30,10 +30,10 @@
             <table id="websiteTable" class="table table-striped fs-6" style="width:100%">
                 <thead>
                     <tr>
-                         <th class="cell text-center">
+                        <th class="cell text-center">
                             Select
                         </th>
-                         <th>Group</th>
+                        <th>Group</th>
                         <th>Title</th>
                         <!-- <th>Sub Domain</th> -->
                         <th>Domain/Site URL</th>
@@ -74,6 +74,7 @@
         </div>
     </div>
 </div>
+
 
 <div class="modal" id="update-group" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg">
@@ -166,7 +167,7 @@
             Swal.fire("Information", 'No record seleted !', "info");
         }
     });
-    
+
     $(document).ready(function () {
         $('#websiteTable').DataTable({
             'order': [[ 4, 'desc' ]],
