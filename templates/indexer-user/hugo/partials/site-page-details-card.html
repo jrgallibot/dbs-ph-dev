@@ -80,14 +80,14 @@
                     <tr class="cursor-pointer" hx-get="/hugo-client/update-route-content/{{content.id}}/" hx-trigger="click" hx-target="#htmxModal" hx-indicator="#page-details-indicator" _="on htmx:afterOnLoad wait 10ms then add .show to #modal then add .show to #modal-backdrop">
                         <td>{{ row.name }}/{{ content.slug }}/</td>
                         <td><label class="text-{% if content.is_active %}success{% else %}danger{% endif %}">{{ content.is_active }}</label></td>
-                        <td>{{ row.date_published }}</td>
+                        <td>{{ content.date_published }}</td>
                         <td></td>
                     </tr>
                     {% else %}
                     <tr class="cursor-pointer" hx-get="/hugo-client/update-route-content/{{content.id}}/" hx-trigger="click" hx-target="#htmxModal" hx-indicator="#page-details-indicator" _="on htmx:afterOnLoad wait 10ms then add .show to #modal then add .show to #modal-backdrop">
                         <td>{{ row.name }}</td>
                         <td><label class="text-{% if content.is_active %}success{% else %}danger{% endif %}">{{ content.is_active }}</label></td>
-                        <td>{{ row.date_published }}</td>
+                        <td>{{ content.date_published }}</td>
                         <td><a class="cursor-pointer" hx-get="/hugo-client/delete-route-content/{{ content.id }}/" hx-trigger="click" hx-target="#page-details" hx-swap="innerHTML" hx-confirm="Please Confirm">Delete</a></td>
                     </tr>
                     {% endif %}
