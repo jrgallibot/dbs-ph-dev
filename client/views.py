@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from . models import ClientSettings, CloudflareWebsites, MaintenanceStatus, ClientComments, ClientPostSched, , ClientPbnGroup, ClientWebsitePbnGroup
+from . models import ClientSettings, CloudflareWebsites, MaintenanceStatus, ClientComments, ClientPostSched, ClientPbnGroup, ClientWebsitePbnGroup
 from indexer.models import IndexApi
 from Cloudflare.models import CloudflareModel
 from datetime import datetime, date
@@ -46,7 +46,7 @@ def index_page(request, action=None, pk=None):
             if action is not None and pk is None:
                 if action == "create-hugo-account":
                     data = {
-                        'username': 'admin1',
+                        'username': 'admin1',   
                         'password': 'admin123!'
                     }
                     req = requests.post("http://95.217.184.122/api/token/", json=data)
@@ -61,6 +61,7 @@ def index_page(request, action=None, pk=None):
                     }
                     req = requests.post("http://95.217.184.122/api/website/",
                                         headers={'Authorization': f'Bearer {token}'}, json=data)
+                    print(req.text)
                     if req.status_code == 200 or req.status_code == 201:
                         return redirect('/hugo-client/')
 
@@ -228,6 +229,7 @@ def index_page(request, action=None, pk=None):
                             'email': cloudflare.email,
                             'domain': request.POST.get('domain'),
                             'page_name': request.POST.get('page_name'),
+                            'production_branch': request.POST.get('production_branch')
                         }
                         req = requests.post(
                             f"http://95.217.184.122/api/publish-website/{pk}/",

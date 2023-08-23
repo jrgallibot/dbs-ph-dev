@@ -56,6 +56,14 @@
                 <label>Domain/Base URL</label>
                 <input type="text" class="form-control p-2" value="{{ data.website.base_url }}" name="domain">
             </div>
+            <div class="mb-3">
+                <label>Production Branch <span class="text-danger">*</span></label>
+                <select class="form-select select2 p-2" name="production_branch" required>
+                    <option></option>
+                    <option value="main" selected>Main</option>
+                    <option value="master">Master</option>
+                </select>
+            </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span>Publish</button>
             </div>
