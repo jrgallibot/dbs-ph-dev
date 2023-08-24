@@ -229,8 +229,8 @@ def index_page(request, action=None, pk=None):
                             'email': cloudflare.email,
                             'domain': request.POST.get('domain'),
                             'page_name': request.POST.get('page_name'),
-                            'production_branch': request.POST.get('production_branch')
                         }
+                        print(data)
                         req = requests.post(
                             f"http://95.217.184.122/api/publish-website/{pk}/",
                             headers={'Authorization': f'Bearer {token}'}, data=data)

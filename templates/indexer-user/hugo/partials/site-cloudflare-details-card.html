@@ -58,19 +58,7 @@
             </div>
             <div class="mb-3">
                 <label>Production Branch <span class="text-danger">*</span></label>
-                <select class="form-select select2 p-2" name="production_branch" required>
-                    <option></option>
-                    {% if data.website.production_branch == 'main' %}
-                    <option value="main" selected>Main</option>
-                    <option value="master">Master</option>
-                    {% elif data.website.production_branch == 'master' %}
-                    <option value="main">Main</option>
-                    <option value="master" selected>Master</option>
-                    {% else %}
-                    <option value="main">Main</option>
-                    <option value="master">Master</option>
-                    {% endif %}
-                </select>
+                <input type="text" class="form-control p-2" value="{% if page_details %} {{ page_details.result.production_branch }} {% endif %}">
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span>Publish</button>
