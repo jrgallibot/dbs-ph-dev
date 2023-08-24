@@ -49,7 +49,7 @@ def index_page(request, action=None, pk=None):
                         'username': 'admin1',   
                         'password': 'admin123!'
                     }
-                    req = requests.post("http://127.0.0.1:7000/api/token/", json=data)
+                    req = requests.post("http://95.217.184.122/api/token/", json=data)
                 elif action == "add-website" and request.method == "POST":
                     data = {
                         'title': request.POST.get('title'),
@@ -59,7 +59,7 @@ def index_page(request, action=None, pk=None):
                         'description': request.POST.get('description'),
                         'page_name': request.POST.get('page_name')
                     }
-                    req = requests.post("http://127.0.0.1:7000/api/website/",
+                    req = requests.post("http://95.217.184.122/api/website/",
                                         headers={'Authorization': f'Bearer {token}'}, json=data)
                     print(req.text)
                     if req.status_code == 200 or req.status_code == 201:
@@ -109,7 +109,7 @@ def index_page(request, action=None, pk=None):
                                 CloudflareWebsites.objects.create(
                                     cloudfare_id=request.POST.get('cloudflare')
                                 )
-                            req = requests.post("http://127.0.0.1:7000/api/cloudflare/",
+                            req = requests.post("http://95.217.184.122/api/cloudflare/",
                                                 headers={'Authorization': f'Bearer {token}'},
                                                 json=data)
                             if req.status_code == 200 or req.status_code == 201:
@@ -120,13 +120,13 @@ def index_page(request, action=None, pk=None):
                         return JsonResponse({'statusMsg': str(e)}, status=404)
 
                 elif action == "cloudflare":
-                    data = requests.get("http://127.0.0.1:7000/api/cloudflare/",
+                    data = requests.get("http://95.217.184.122/api/cloudflare/",
                                         headers={'Authorization': f'Bearer {token}'})
                     context['data'] = data.json()
                     return render(request, 'indexer-user/hugo/partials/cloudflares.html', context)
 
                 elif action == "websites":
-                    context['data'] = requests.get("http://127.0.0.1:7000/api/home-page/",
+                    context['data'] = requests.get("http://95.217.184.122/api/home-page/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
                     context['active_tab'] = 'hugo'
                     context['group_pbn'] = ClientPbnGroup.objects.filter(status=1, user_id=request.user.id).all()
@@ -185,16 +185,16 @@ def index_page(request, action=None, pk=None):
                         'is_custom': request.POST.get('is_custom')
                     }
                     req = requests.post(
-                        f"http://127.0.0.1:7000/api/update-website/{pk}/",
+                        f"http://95.217.184.122/api/update-website/{pk}/",
                         headers={'Authorization': f'Bearer {token}'}, json=data)
                     if req.status_code == 200 or req.status_code == 201:
                         messages.success(request, 'You have successfully updated the website.')
-                        context['data'] = requests.get(f"http://127.0.0.1:7000/api/site-page/{pk}/",
+                        context['data'] = requests.get(f"http://95.217.184.122/api/site-page/{pk}/",
                                                        headers={'Authorization': f'Bearer {token}'}).json()
                         context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                         return render(request, 'indexer-user/hugo/partials/site-details-card.html', context)
                     else:
-                        context['data'] = requests.get(f"http://127.0.0.1:7000/api/site-page/{pk}/",
+                        context['data'] = requests.get(f"http://95.217.184.122/api/site-page/{pk}/",
                                                        headers={'Authorization': f'Bearer {token}'}).json()
                         context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                         messages.error(request, 'Internal Server Error')
@@ -214,7 +214,7 @@ def index_page(request, action=None, pk=None):
                         return render(request, 'indexer-user/hugo/partials/site-page-comments.html', context)
 
                 elif action == "build-website" and request.method == "GET":
-                    req = requests.post(f"http://127.0.0.1:7000/api/build-website/{pk}/",
+                    req = requests.post(f"http://95.217.184.122/api/build-website/{pk}/",
                                         headers={'Authorization': f'Bearer {token}'})
                     if req.status_code == 200:
                         return redirect('/hugo-client/')
@@ -232,7 +232,7 @@ def index_page(request, action=None, pk=None):
                             'production_branch': request.POST.get('production_branch')
                         }
                         req = requests.post(
-                            f"http://127.0.0.1:7000/api/publish-website/{pk}/",
+                            f"http://95.217.184.122/api/publish-website/{pk}/",
                             headers={'Authorization': f'Bearer {token}'}, data=data)
                         print(req.text)
                         if req.status_code == 200 or req.status_code == 201:
@@ -244,14 +244,14 @@ def index_page(request, action=None, pk=None):
                                 CloudflareWebsites.objects.create(website_id=pk, cloudflare=cloudflare)
                             messages.success(request, 'You have successfully published a website.')
                             context['data'] = {
-                                'website': requests.get(f"http://127.0.0.1:7000/api/websites/{pk}/",
+                                'website': requests.get(f"http://95.217.184.122/api/websites/{pk}/",
                                                            headers={'Authorization': f'Bearer {token}'}).json()
                             }
                             context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                             return render(request, 'indexer-user/hugo/partials/site-cloudflare-details-card.html', context)
                         else:
                             context['data'] = {
-                                'website': requests.get(f"http://127.0.0.1:7000/api/websites/{pk}/",
+                                'website': requests.get(f"http://95.217.184.122/api/websites/{pk}/",
                                                         headers={'Authorization': f'Bearer {token}'}).json()
                             }
                             context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
@@ -262,7 +262,7 @@ def index_page(request, action=None, pk=None):
 
                 elif action == "routes":
                     if request.method == "GET":
-                        routes = requests.get(f"http://127.0.0.1:7000/api/website-routes/{pk}/",
+                        routes = requests.get(f"http://95.217.184.122/api/website-routes/{pk}/",
                                               headers={'Authorization': f'Bearer {token}'})
                         context['data'] = routes.json()
                         context['website_id'] = pk
@@ -275,28 +275,28 @@ def index_page(request, action=None, pk=None):
                             'has_pages': True if request.POST.get('has_pages') == "on" else False,
                             'description': request.POST.get('description')
                         }
-                        req = requests.post("http://127.0.0.1:7000/api/route/",
+                        req = requests.post("http://95.217.184.122/api/route/",
                                             headers={'Authorization': f'Bearer {token}'}, json=data)
                         if req.status_code == 200 or req.status_code == 201:
 
-                            context['data'] = requests.get(f"http://127.0.0.1:7000/api/site-page/{pk}/",
+                            context['data'] = requests.get(f"http://95.217.184.122/api/site-page/{pk}/",
                                                            headers={'Authorization': f'Bearer {token}'}).json()
                             context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                             messages.success(request, 'Route successfully added.')
                             return render(request, 'indexer-user/hugo/partials/site-page-details-card.html', context)
                         else:
-                            context['data'] = requests.get(f"http://127.0.0.1:7000/api/site-page/{pk}/",
+                            context['data'] = requests.get(f"http://95.217.184.122/api/site-page/{pk}/",
                                                            headers={'Authorization': f'Bearer {token}'}).json()
                             context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                             messages.error(request, 'Invalid/Duplicate Information')
                             return render(request, 'indexer-user/hugo/partials/site-page-details-card.html', context)
 
                 elif action == "route-contents":
-                    route = requests.get(f"http://127.0.0.1:7000/api/routes/{pk}/",
+                    route = requests.get(f"http://95.217.184.122/api/routes/{pk}/",
                                          headers={'Authorization': f'Bearer {token}'})
                     context['route'] = route.json()
                     if request.method == "GET":
-                        contents = requests.get(f"http://127.0.0.1:7000/api/route-contents/{pk}/",
+                        contents = requests.get(f"http://95.217.184.122/api/route-contents/{pk}/",
                                                 headers={'Authorization': f'Bearer {token}'})
                         context['data'] = contents.json()
                         return render(request, 'indexer-user/hugo/partials/routes-contents-modal-content.html', context)
@@ -307,11 +307,11 @@ def index_page(request, action=None, pk=None):
                             'content': '',
                             'description': request.POST.get('description')
                         }
-                        req = requests.post(f"http://127.0.0.1:7000/api/content/",
+                        req = requests.post(f"http://95.217.184.122/api/content/",
                                             headers={'Authorization': f'Bearer {token}'}, data=data)
 
                         if req.status_code == 200 or req.status_code == 201:
-                            contents = requests.get(f"http://127.0.0.1:7000/api/route-contents/{pk}/",
+                            contents = requests.get(f"http://95.217.184.122/api/route-contents/{pk}/",
                                                     headers={'Authorization': f'Bearer {token}'})
                             context['data'] = contents.json()
                             return render(request, 'indexer-user/hugo/partials/routes-contents-modal-content.html',
@@ -320,7 +320,7 @@ def index_page(request, action=None, pk=None):
                             return JsonResponse({'statusMsg': req.text}, status=404)
                 elif action == "route-content":
                     if request.method == "GET":
-                        routes = requests.get(f"http://127.0.0.1:7000/api/website-routes/{pk}/",
+                        routes = requests.get(f"http://95.217.184.122/api/website-routes/{pk}/",
                                               headers={'Authorization': f'Bearer {token}'})
                         context['routes'] = routes.json()
                         context['website_id'] = pk
@@ -336,7 +336,7 @@ def index_page(request, action=None, pk=None):
                             'categories': request.POST.get('categories'),
                             'keywords': request.POST.get('keywords'),
                         }
-                        req = requests.post(f"http://127.0.0.1:7000/api/content/",
+                        req = requests.post(f"http://95.217.184.122/api/content/",
                                             headers={'Authorization': f'Bearer {token}'}, json=data)
                         if req.status_code == 200 or req.status_code == 201:
                             return JsonResponse({'statusMsg': 'Content successfully added.'}, status=200)
@@ -345,9 +345,9 @@ def index_page(request, action=None, pk=None):
 
                 elif action == "update-route-content":
                     if request.method == "GET":
-                        content = requests.get(f"http://127.0.0.1:7000/api/contents/{pk}/",
+                        content = requests.get(f"http://95.217.184.122/api/contents/{pk}/",
                                                headers={'Authorization': f'Bearer {token}'})
-                        routes = requests.get(f"http://127.0.0.1:7000/api/website-routes/{content.json()['website_id']}/",
+                        routes = requests.get(f"http://95.217.184.122/api/website-routes/{content.json()['website_id']}/",
                                               headers={'Authorization': f'Bearer {token}'})
 
                         context['routes'] = routes.json()
@@ -369,7 +369,7 @@ def index_page(request, action=None, pk=None):
                             'date_published': request.POST.get('date_published')
                         }
                         print(request.POST.get('date_published'))
-                        req = requests.post(f"http://127.0.0.1:7000/api/update-content/{pk}/",
+                        req = requests.post(f"http://95.217.184.122/api/update-content/{pk}/",
                                             headers={'Authorization': f'Bearer {token}'}, json=data)
                         if req.status_code == 200 or req.status_code == 201:
                             return JsonResponse({'statusMsg': 'Content successfully updated.'}, status=200)
@@ -378,11 +378,11 @@ def index_page(request, action=None, pk=None):
 
                 elif action == "delete-route-content":
                     if request.method == "GET":
-                        content = requests.get(f"http://127.0.0.1:7000/api/delete-route-content/{pk}/",
+                        content = requests.get(f"http://95.217.184.122/api/delete-route-content/{pk}/",
                                                headers={'Authorization': f'Bearer {token}'})
                 elif action == "update-cloudflare":
                     if request.method == "GET":
-                        content = requests.get(f"http://127.0.0.1:7000/api/cloudflare/{pk}/",
+                        content = requests.get(f"http://95.217.184.122/api/cloudflare/{pk}/",
                                                headers={'Authorization': f'Bearer {token}'})
                         context['data'] = content.json()
                         context['content_id'] = pk
@@ -421,7 +421,7 @@ def index_page(request, action=None, pk=None):
                                 if not check_cl_web:
                                     CloudflareWebsites.objects.create(
                                         cloudfare_id=create_clf.id)
-                            account = requests.post(f"http://127.0.0.1:7000/api/cloudflare/{pk}/",
+                            account = requests.post(f"http://95.217.184.122/api/cloudflare/{pk}/",
                                                     headers={'Authorization': f'Bearer {token}'}, json=data)
                             context['data'] = account.json()
                             return render(request, 'indexer-user/hugo/partials/cloudflare-modal-content.html', context)
@@ -429,9 +429,9 @@ def index_page(request, action=None, pk=None):
                             return JsonResponse({'statusMsg': str(e)}, status=404)
 
                 elif action == "delete-website":
-                    req = requests.post(f"http://127.0.0.1:7000/api/delete-website/{pk}/",
+                    req = requests.post(f"http://95.217.184.122/api/delete-website/{pk}/",
                                            headers={'Authorization': f'Bearer {token}'})
-                    context['data'] = requests.get("http://127.0.0.1:7000/api/home-page/",
+                    context['data'] = requests.get("http://95.217.184.122/api/home-page/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
                     if req.status_code == 200 or req.status_code == 201:
                         messages.success(request, 'Website Successfully Deleted.')
@@ -440,12 +440,12 @@ def index_page(request, action=None, pk=None):
                         messages.error(request, 'Something went wrong.')
                         return render(request, 'indexer-user/hugo/partials/sites.html', context)
                 elif action == "website":
-                    context['data'] = requests.get(f"http://127.0.0.1:7000/api/site-page/{pk}/",
+                    context['data'] = requests.get(f"http://95.217.184.122/api/site-page/{pk}/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
                     context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                     context['cl_comments'] = ClientComments.objects.filter(user_id=request.user.id, web_id=pk).all()
                     context['index_api'] = IndexApi.objects.filter(method_id = 1, user_id=request.user.id, is_validated=1).all()
-                    routes = requests.get(f"http://127.0.0.1:7000/api/website-routes/{pk}/",
+                    routes = requests.get(f"http://95.217.184.122/api/website-routes/{pk}/",
                                               headers={'Authorization': f'Bearer {token}'})
                     context['rts'] = routes.json()
                     context['website_id'] = pk
@@ -454,17 +454,17 @@ def index_page(request, action=None, pk=None):
                 elif action == 'view_post':
                     context['post'] = ClientPostSched.objects.filter(web_id=pk).all()
                     context['website_id'] = pk
-                    routes = requests.get(f"http://127.0.0.1:7000/api/website-routes/{pk}/",
+                    routes = requests.get(f"http://95.217.184.122/api/website-routes/{pk}/",
                                               headers={'Authorization': f'Bearer {token}'})
                     context['rts'] = routes.json()
                     return render(request, 'indexer-user/hugo/partials/site-view-post-data.html', context)
                 elif action == "website-view":
-                    context['data'] = requests.get("http://127.0.0.1:7000/api/home-page/",
+                    context['data'] = requests.get("http://95.217.184.122/api/home-page/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
                     context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                     return render(request, 'indexer-user/hugo/site-view.html', context)
     
-            context['data'] = requests.get("http://127.0.0.1:7000/api/home-page/",
+            context['data'] = requests.get("http://95.217.184.122/api/home-page/",
                                            headers={'Authorization': f'Bearer {token}'}).json()
             context['active_tab'] = 'hugo'
             context['cl_comments'] = ClientComments.objects.filter(user_id=request.user.id, web_id=pk).all()
