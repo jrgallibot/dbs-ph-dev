@@ -1,0 +1,62 @@
+\\{% extends "pegasus/examples/examples_base.html" %}\
+{% load static %}
+{% load tags %}
+{% block app %}
+  <div class="d-flex justify-content-between mb-4">
+		<h1 class="pg-title"><i class="fas fa-globe text-success me-2" style="zoom:0.85"></i> PBN Manager  <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="indicator"><span class="visually-hidden">Loading...</span></div></h1>
+		<div>
+			<div class="spinner-border spinner-border-sm fs-1 mb-2 client-spinner" hidden role="status">
+			  <span class="visually-hidden">Loading...</span>
+			</div>
+			<!--
+			<div class="btn-group" role="group" aria-label="Basic example">
+			  <button type="button" class="btn btn-primary active website-btn">Websites</button>
+			  <button type="button" class="btn btn-primary cloudflare-btn">Cloudflare</button>
+			</div>
+			-->
+		</div>
+  </div>
+
+<section id="hugo-body">
+	<div class="d-flex justify-content-end">
+		<div class="btn-group float-right" role="group" aria-label="Basic example" id="btn-groups">
+			<a type="button" class="btn btn-secondary" href="#site-details">Site Details</a>
+			<a type="button" class="btn btn-secondary" href="#cloudflare">Cloudflare</a>
+			<a type="button" class="btn btn-secondary" href="#pages" data-target="#pages">Pages</a>
+		</div>
+	</div>
+	<div class="details row" data-spy="scoll" data-target="btn-groups" data-offset="0" class="scrollspy-example">
+		<div class="col-lg-12 mb-3">
+			<div class="pages card" id="pages">
+				<div class="card-header d-flex justify-content-between">
+					<h3>Pages <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="pages-indicator"><span class="visually-hidden">Loading...</span></div></h3>
+				</div>
+				<div class="card-body" id="site-page-details-card-body">
+					{% include 'hugo_v2/partials/site-page-details-card.html' %}
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6 mb-3">
+			<div class="card" id="cloudflare-details">
+				<div class="card-header">
+					<h3>Cloudflare <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="cloudflare-details-indicator"><span class="visually-hidden">Loading...</span></div></h3>
+				</div>
+				<div class="card-body" id="cloudflare-details-card-body">
+					
+					{% include 'hugo_v2/partials/site-cloudflare-details-card.html' %}
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6 mb-3">
+			<div class="card" id="site-details">
+				<div class=card-header>
+					<h3>Site Details <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="site-details-indicator"><span class="visually-hidden">Loading...</span></div></h3>
+				</div>
+				<div class="card-body">
+					{% include 'hugo_v2/partials/site-details-card.html' %}
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %}

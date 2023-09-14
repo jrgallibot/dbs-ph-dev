@@ -454,7 +454,7 @@ def index_page(request, action=None, pk=None):
                 elif action == 'view_post':
                     context['post'] = ClientPostSched.objects.filter(web_id=pk).all()
                     context['website_id'] = pk
-                    routes = requests.get(f"http://95.217.184.122/api/website-routes/{pk}/",
+                    routes = requests.get(f"http://95.217.184.122/api/website-routes/{pk}/",    
                                               headers={'Authorization': f'Bearer {token}'})
                     context['rts'] = routes.json()
                     return render(request, 'indexer-user/hugo/partials/site-view-post-data.html', context)
@@ -463,7 +463,7 @@ def index_page(request, action=None, pk=None):
                                                    headers={'Authorization': f'Bearer {token}'}).json()
                     context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
                     return render(request, 'indexer-user/hugo/site-view.html', context)
-    
+            print(token)
             context['data'] = requests.get("http://95.217.184.122/api/home-page/",
                                            headers={'Authorization': f'Bearer {token}'}).json()
             context['active_tab'] = 'hugo'

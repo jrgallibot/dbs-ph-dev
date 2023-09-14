@@ -1,0 +1,54 @@
+<form hx-post="/hugo-client/update-website/{{ data.website.id }}/" hx-confirm="Are you sure to update this website?" hx-target="#site-details" hx-indicator="#site-details-indicator" hx-swap="innerHTML">
+    {% if messages %}
+    {% for message in messages %}
+        {% if message.tags == "success" %}
+        <p class="text-success">
+            {{ message }}
+        </p>
+        {% elif message.tags == "error" %}
+        <p class="text-danger">
+            {{ message }}
+        </p>
+        {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% csrf_token %}
+    <div class="row">
+        <div class="form-group mb-3 col-lg-12">
+            <label>Title <span class="text-danger">*</span></label>
+            <input type="text" class="form-control p-2" name="title" value="{{ data.website.title }}" placeholder="Title" required>
+        </div>
+        <input type="hidden" class="form-control p-2" name="page_name" value="{{ data.website.page_name }}" placeholder="Page Name" required>
+        <!---
+        <div class="form-group mb-3 col-lg-12">
+            <label>Is Custom</label>
+            <input type="checkbox" name="is_custom">
+        </div>
+        -->
+        <div class="form-group mb-3 col-lg-12">
+            <label>Description <span class="text-danger">*</span></label>
+            <textarea class="form-control p-2" name="description">{{ data.website.description }}</textarea>
+        </div>
+        <input type="hidden" class="form-control p-2" name="base_url" value="{{ data.website.base_url }}" placeholder="Base URL">
+        <div class="form-group mb-3 col-lg-6">
+            <label>Language Code <span class="text-danger">*</span></label>
+            <input type="text" class="form-control p-2" name="language_code" value="{{ data.website.language_code }}" placeholder="Language Code" required>
+        </div>
+        <div class="mb-3 col-lg-6">
+            <label>Theme <span class="text-danger">*</span></label>
+            <select class="form-select select2 p-2" name="theme"required>
+                <option></option>
+                {% for row in data.themes %}
+                {% if data.website.theme == row.id %}
+                <option value="{{ row.id }}" selected>{{ row.name }}</option>
+                {% else %}
+                <option value="{{ row.id }}">{{ row.name }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span> Save changes</button>
+    </div>
+</form>

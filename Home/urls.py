@@ -61,6 +61,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('users/', include('apps.users.urls')),
     path('hugo-client/', include('client.urls')),
+    path('hugo-client-v2/', include('hugo_client_v2.urls')),
     path('cloudflare/', include('Cloudflare.urls')),
     path('subscriptions/', include('apps.subscriptions.urls')),
     path('teams/', include('apps.teams.urls')),

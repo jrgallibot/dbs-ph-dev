@@ -147,7 +147,8 @@ PROJECT_APPS = [
     'mobile_friendly',
     'image_optimizer',
     'open_ai',
-    'client'
+    'client',
+    'hugo_client_v2'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PEGASUS_APPS + PROJECT_APPS + WAGTAIL_APPS

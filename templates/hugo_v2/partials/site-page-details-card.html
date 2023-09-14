@@ -1,0 +1,62 @@
+{% load tags %}
+{% load static %}
+<div id="add-page-form-div">
+    {% include 'hugo_v2/partials/site-add-page-form.html' %}
+</div>
+<div class="table-responsive p-2">
+    <table id="pages-table" class="table table-striped fs-6" style="width:100%">
+        <thead>
+            <tr>
+                <th>Page</th>
+                <th>Date Published</th>
+				<th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data.website.pages %}
+            <tr id="{{ row.id }}">
+                <td>{% if content.slug == '' or content.slug is None %}{{ row.page }}{% else %}{{ row.page }}{{ row.slug }}{% endif %}</td>
+                {% json_to_datetime row.date_published as date_published %}
+                <td>{{ date_published|date:'N j, Y' }}</td>
+				<td><a class="cursor-pointer text-danger" hx-get="/hugo-client-v2/update-page/{{website_id}}/?page_id={{row.id}}&page={{row.page}}&slug={{row.slug}}&title={{row.title}}&tags={{row.tags}}&categories={{row.categories}}&keywords={{row.keywords}}&content={{row.content}}&description={{row.description}}&date_published={{row.date_published}}&in_navbar={{row.in_navbar}}" hx-trigger="click" hx-target="#add-page-form-div">Update</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% block script %}
+<script>
+	const formatDate = (inputDate) => {
+		const date = new Date(inputDate);
+		const options = { year: 'numeric', month: 'short', day: 'numeric' };
+		const formattedDate = date.toLocaleDateString('en-US', options);
+
+		const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+		const parts = formattedDate.split(' ');
+		const monthIndex = monthNames.indexOf(parts[0]);
+		
+		if (monthIndex !== -1) {
+			parts[0] = monthNames[monthIndex];
+		}
+
+		return parts.join(' ');
+	}
+
+	const updatePage = (website_id, page_id, page, slug, title, tags, categories, keywords, content, description, date_published, in_navbar) => {
+		console.log(website_id)
+		$.ajax({
+			type: 'GET',
+			url: `/hugo-client-v2/update-page/${website_id}/`,
+			data: {'page_id': page_id, 'page': page, 'slug': slug, 'title': title, 'tags': tags, 'categories': categories, 'keywords': keywords, 'content': content, 'description': description, 'date_published': date_published, 'in_navbar': in_navbar},
+			success: (result) => {
+				$('#add-page-form-div').html(result)
+			}	
+		})
+	}
+	
+    $(document).ready(function () {
+        $('#pages-table').DataTable();
+		CKEDITOR.replace('content');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% load tags %}
+{% load static %}
+{% csrf_token %}
+{% if messages %}
+{% for message in messages %}
+    {% if message.tags == "success" %}
+    <p class="text-success">
+      {{ message }}
+    </p>
+    {% elif message.tags == "error" %}
+    <p class="text-danger">
+      {{ message }}
+    </p>
+    {% endif %}
+{% endfor %}
+{% endif %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+      <h3>Websites <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="sites-indicator"><span class="visually-hidden">Loading...</span></div></h3>
+        <div class="col-auto">
+            <button class="btn btn-primary" id="btncheck_group"><i class="fa fa-check" aria-hidden="true"></i> Select Group</button>
+            <div class="btn-group">
+                <!-- <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWebsiteModal"><i class="fa fa-filter" aria-hidden="true"></i> Filter By Groups</button> -->
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addWebsiteModal">Add Website</button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive p-2">
+            <table id="websiteTable" class="table table-striped fs-6" style="width:100%">
+                <thead>
+                    <tr>
+                        <th class="cell text-center">
+                            Select
+                        </th>
+                        <th>Group</th>
+                        <th>Title</th>
+                        <!-- <th>Sub Domain</th> -->
+                        <th>Domain/Site URL</th>
+                        <th>Date Created</th>
+                        <th>Date Published</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data.websites %}
+                    <tr>
+                        <td class="cursor-pointer text-center"><input type='checkbox' name='check' class='checkbox' id={{row.id}}></td>
+                        {% get_color_group row.id as group_color %}
+                        <td title="{{ row.id }}" class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');"> 
+                            {% if group_color %}
+                            <span style="color: {{group_color.group.color}};">{{group_color.group.name}}</span>
+                            {% else %}
+                            {{ row.id|truncatechars:10 }}
+                            {% endif %}
+                        </td>
+                        <td style="white-space: normal;" class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');">{{ row.title }}</td>
+                        {% json_parser row.page_details as page_details %}
+                        {% json_to_datetime row.date_created as date_created %}
+                        {% json_to_datetime row.date_published as date_published %}
+                        <!-- <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ page_details.result.subdomain }}</td> -->
+                        <td class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');">{{ row.base_url }}</td>
+                        <td class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');">{{ date_created|date:'N j, Y g:iA' }}</td>
+                        <td class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');">{{ date_published|date:'N j, Y g:iA' }}</td>
+                        <td class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');">{% get_latest_comments row.id %}</td>
+                        <td style="white-space: normal;">
+                            <a href="javascript:void(0)" hx-get="/hugo-client/delete-website/{{ row.id }}/" hx-target="#hugo-body" hx-swap="innerHTML" hx-indicator="#sites-indicator" hx-confirm="Please Confirm">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" id="update-group" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-group text-success me-2" style="zoom:0.85"></i> UPDATE GROUP NAME</h5>
+                <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" id="close-editindex-modal" aria-label="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="updategroupForm" method="POST">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="form-group">
+                        <input type="hidden" name="checkid" id="checkid">
+                        <label>Group Name</label>
+                        <select class="form-select select2" id="group" name="group" required>
+                            <option></option>
+                            {% for row in group_pbn %}
+                            <option value="{{row.id}}">{{row.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white btn-sm" data-bs-dismiss="modal"> Close</button>
+                <button type="submit" class="btn btn-primary btn-sm">Save changes</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% block script %}
+<script>
+    $('#updategroupForm').on('submit', function(e){
+        var form = new FormData(this);
+        Swal.fire({
+            title: "Are you sure",
+            text: "Are you sure you want to group this website?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function (){
+                return $.post({
+                    url : '/hugo-client/add-website-group/',
+                    data: form,
+                    success : function (response){
+                        if(response.data == "success"){
+                            Swal.fire({
+                                title: "Good job!",
+                                html:  response.msg,
+                                icon: "success",
+                                allowOutsideClick: false,
+                            }).then((result) => {
+                                if (result.isConfirmed){
+                                    window.location.reload();
+                                }
+                            });
+                        }else{
+                            Swal.fire({
+                                title: "Oops!",
+                                html:  response.msg,
+                                icon: "error",
+                                allowOutsideClick: false,
+                            });
+                        }
+                    },
+                    cache       : false,
+                    contentType : false,
+                    processData : false,
+                });
+            },
+        });
+        e.preventDefault();
+    });
+
+
+    $('#btncheck_group').click(function(){
+        var dataArr = new Array();
+        if($('input[class=checkbox]:checked').length > 0){
+            $("#update-group").modal('toggle');
+            $('input[class=checkbox]:checked').each(function(){
+                dataArr.push($(this).attr('id'));
+            });
+            $('#checkid').val(dataArr);
+            console.log(dataArr);
+        }else{
+            Swal.fire("Information", 'No record seleted !', "info");
+        }
+    });
+
+    $(document).ready(function () {
+        $('#websiteTable').DataTable({
+            'order': [[ 4, 'desc' ]],
+        });
+    });
+</script>
+{% endblock %}
