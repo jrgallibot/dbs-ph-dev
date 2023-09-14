@@ -65,7 +65,6 @@
                         <td class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');">{{ date_published|date:'N j, Y g:iA' }}</td>
                         <td class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');">{% get_latest_comments row.id %}</td>
                         <td style="white-space: normal;">
-                            <a href="javascript:void(0)" hx-get="/hugo-client/delete-website/{{ row.id }}/" hx-target="#hugo-body" hx-swap="innerHTML" hx-indicator="#sites-indicator" hx-confirm="Please Confirm">Delete</a>
                         </td>
                     </tr>
                     {% endfor %}

@@ -15,7 +15,7 @@
         <tbody>
             {% for row in data.website.pages %}
             <tr id="{{ row.id }}">
-                <td>{% if content.slug == '' or content.slug is None %}{{ row.page }}{% else %}{{ row.page }}{{ row.slug }}{% endif %}</td>
+                <td>{% if row.slug == '' or row.slug is None %}{{ row.page }}{% else %}{{ row.page }}{{ row.slug }}{% endif %}</td>
                 {% json_to_datetime row.date_published as date_published %}
                 <td>{{ date_published|date:'N j, Y' }}</td>
 				<td><a class="cursor-pointer text-danger" hx-get="/hugo-client-v2/update-page/{{website_id}}/?page_id={{row.id}}&page={{row.page}}&slug={{row.slug}}&title={{row.title}}&tags={{row.tags}}&categories={{row.categories}}&keywords={{row.keywords}}&content={{row.content}}&description={{row.description}}&date_published={{row.date_published}}&in_navbar={{row.in_navbar}}" hx-trigger="click" hx-target="#add-page-form-div">Update</a></td>
