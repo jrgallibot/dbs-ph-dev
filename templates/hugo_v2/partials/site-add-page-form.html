@@ -1,0 +1,142 @@
+<form action="/hugo-client-v2/add-page/{{ website_id }}/" id="addPageForm">
+    {% if messages %}
+    {% for message in messages %}
+        {% if message.tags == "success" %}
+        <p class="text-success">
+            {{ message }}
+        </p>
+        {% elif message.tags == "error" %}
+        <p class="text-danger">
+            {{ message }}
+        </p>
+        {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% csrf_token %}
+    <div class="row mb-3">
+        <div class="form-group col-lg-6 mb-3">
+            <label>Page <span class="text-danger">*</span> <small class="text-warning">(Ex: /about/)</small></label>
+            <input type="text" name="page" class="form-control p-2" required>
+            <!--
+            <input type="text" id="page_field" name="page_field" class="form-control p-2" oninput="generateSlug()" required>
+            <input type="hidden" id="page" name="page" class="form-control p-2" required readonly>
+            -->
+        </div>
+        <div class="form-group col-lg-6 mb-3">
+            <label>Slug <small class="text-warning">(Note: Leave empty if its a single page.)</small></label>
+            <input type="text" name="slug" id="route-slug" class="form-control p-2">
+        </div>
+        <div class="form-group col-lg-6 mb-3">
+            <label>Title <span class="text-danger">*</span></label>
+            <input type="text" class="form-control p-2" name="title" required>
+        </div>
+        <div class="form-group col-lg-6 mb-3">
+            <label>Tags <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+            <input type="text" name="tags" id="tags" class="form-control p-2">
+        </div>
+        <div class="form-group col-lg-6 mb-3">
+            <label>Categories <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+            <input type="text" name="categories" id="categories" class="form-control p-2">
+        </div>
+        <div class="form-group col-lg-6 mb-3">
+            <label>Keywords <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+            <input type="text" name="keywords" id="keywords" class="form-control p-2">
+        </div>
+        <div class="form-group col-lg-12 mb-3">
+            <label>Content <span class="text-danger">*</span></label>
+            <textarea name="content" id="content" class="form-control p-2" required></textarea>
+        </div>
+        <div class="form-group col-lg-12 mb-3">
+            <label>Description</label>
+            <textarea class="form-control" name="description"></textarea>
+        </div>
+        <div class="form-group col-lg-4 mb-3">
+            <label>In Navbar</label>
+            <input type="checkbox" name="in_navbar">
+        </div>
+    </div>
+    <div class="d-flex justify-content-end">
+        <button class="btn btn-success" type="submit" id="addFormBtn">Save</button>
+    </div>
+</form>
+<hr>
+{% block script %}
+<script>
+    $('#addFormBtn').click(function (event) {
+		event.preventDefault();
+		addPageFormAndRefreshTable();
+	});
+
+	function addPageFormAndRefreshTable() {
+		// Serialize form data
+		$('#content').val(CKEDITOR.instances.content.getData())
+		const formData = $('#addPageForm').serialize(); // Serialize form data
+		const url = $('#addPageForm').attr('action');
+
+		// Show a SweetAlert confirmation dialog with a loader animation
+		Swal.fire({
+			title: 'Add Page?',
+			text: 'Please confirm submission',
+			icon: 'question',
+			showCancelButton: false,
+			showLoaderOnConfirm: true, // Display loader when confirm button is clicked
+			allowOutsideClick: false,
+			allowEscapeKey: false,
+			preConfirm: () => {
+				return $.ajax({
+					type: 'POST',
+					url: url,
+					data: formData,
+					success: function (response) {
+						const data = JSON.parse(response['data']);
+						const website_id = response['website_id']
+
+						// Handle success or display a success message
+						Swal.fire({
+							title: 'Success!',
+							text: 'Your page has been added successfully.',
+							icon: 'success'
+						});
+
+						// Create a new <tr> element and append it to the table
+						const newRow = $('<tr>');
+                        newRow.attr('id', data['id']);
+
+						const td1 = $('<td>');
+						td1.text(data['slug'] != '' ? `${data['page']}${data['slug']}` : data['page']);
+						newRow.append(td1);
+
+						const td2 = $('<td>');	
+						td2.text(formatDate(data['date_published']));
+						newRow.append(td2);
+                        
+                        const td3 = $('<td>');
+                        const a = $('<a>');
+                        a.attr('onclick', `updatePage('${website_id}', '${data['id']}', '${data['page']}', '${data['slug']}', '${data['title']}', '${data['tags']}', '${data['categories']}', '${data['keywords']}', '${data['content']}', '${data['description']}', '${data['date_published']}', '${data['in_navbar']}')`);
+						a.attr('class', 'cursor-pointer text-danger');
+                        a.text('Update');
+                        td3.append(a);
+                        newRow.append(td3);
+                        
+                        $('#pages-table tbody').append(newRow);
+						$('#addPageForm')[0].reset();
+						CKEDITOR.instances.content.setData('');
+					},
+					error: function (error) {
+						// Display an error message
+						Swal.fire({
+							title: 'Error!',
+							text: 'An error occurred while submitting the form.',
+							icon: 'error'
+						});
+						console.error('Error:', error);
+					}
+				});
+			}
+		});
+	}
+    $(document).ready(function () {
+		CKEDITOR.replace('content');
+    });
+</script>
+{% endblock %}
