@@ -18,7 +18,7 @@
                 <td>{% if row.slug == '' or row.slug is None %}{{ row.page }}{% else %}{{ row.page }}{{ row.slug }}{% endif %}</td>
                 {% json_to_datetime row.date_published as date_published %}
                 <td>{{ date_published|date:'N j, Y' }}</td>
-				<td><a class="cursor-pointer text-danger" hx-get="/hugo-client-v2/update-page/{{website_id}}/?page_id={{row.id}}&page={{row.page}}&slug={{row.slug}}&title={{row.title}}&tags={{row.tags}}&categories={{row.categories}}&keywords={{row.keywords}}&content={{row.content}}&description={{row.description}}&date_published={{row.date_published}}&in_navbar={{row.in_navbar}}" hx-trigger="click" hx-target="#add-page-form-div">Update</a></td>
+				<td><a class="cursor-pointer text-danger" hx-get="/hugo-client-v2/update-page/{{website_id}}/?page_id={{row.id}}" hx-trigger="click" hx-target="#add-page-form-div">Update</a></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -42,18 +42,67 @@
 		return parts.join(' ');
 	}
 
-	const updatePage = (website_id, page_id, page, slug, title, tags, categories, keywords, content, description, date_published, in_navbar) => {
-		console.log(website_id)
+	const updatePage = (website_id, page_id) => {
 		$.ajax({
 			type: 'GET',
 			url: `/hugo-client-v2/update-page/${website_id}/`,
-			data: {'page_id': page_id, 'page': page, 'slug': slug, 'title': title, 'tags': tags, 'categories': categories, 'keywords': keywords, 'content': content, 'description': description, 'date_published': date_published, 'in_navbar': in_navbar},
+			data: {'page_id': page_id, },
 			success: (result) => {
 				$('#add-page-form-div').html(result)
 			}	
 		})
 	}
+
+	function cancelPage(website_id){
+        $('#add-page-form-div').load(`/hugo-client-v2/cancel-page/${website_id}`);
+    }
 	
+	function deletePageAndRefreshTable(website_id, page_id) {
+        Swal.fire({
+			title: 'Delete Page?',
+			text: 'Please confirm deletion',
+			icon: 'warning',
+			showCancelButton: false,
+			showLoaderOnConfirm: true, // Display loader when confirm button is clicked
+			allowOutsideClick: false,
+			allowEscapeKey: false,
+			preConfirm: () => {
+				return $.ajax({
+					type: 'GET',
+					url: `/hugo-client-v2/delete-page/${website_id}/${page_id}/`,
+					success: function (response) {
+                        var table = $('#pages-table').DataTable();
+
+                        var row = table.rows().nodes().to$().filter(function() {
+                            return $(this).attr('id') === page_id;
+                        });
+
+                        if (row.length > 0) {
+                            table.row(row).remove().draw();
+                        }
+
+                        $('#add-page-form-div').html(response);
+
+						Swal.fire({
+							title: 'Success!',
+							text: 'Your page has been deleted successfully.',
+							icon: 'success'
+						});
+					},
+					error: function (error) {
+						// Display an error message
+						Swal.fire({
+							title: 'Error!',
+							text: 'An error occurred while submitting the form.',
+							icon: 'error'
+						});
+						console.error('Error:', error);
+					}
+				});
+			}
+		});
+    }
+
     $(document).ready(function () {
         $('#pages-table').DataTable();
 		CKEDITOR.replace('content');

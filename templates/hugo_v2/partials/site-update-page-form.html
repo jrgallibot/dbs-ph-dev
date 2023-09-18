@@ -18,7 +18,7 @@
         <div class="form-group col-lg-6 mb-3">
             <label>Page <span class="text-danger">*</span> <small class="text-warning">(Ex: /about/)</small></label>
             <input type="text" name="page" class="form-control p-2" value="{{ page }}" required>
-            <input type="hidden" name="page_id" id="route-slug" value="{{ page_id }}" class="form-control p-2">
+            <input type="hidden" name="page_id" id="route-slug" value="{{ id }}" class="form-control p-2">
             <!--
             <input type="text" id="page_field" name="page_field" class="form-control p-2" oninput="generateSlug()" required>
             <input type="hidden" id="page" name="page" class="form-control p-2" required readonly>
@@ -26,7 +26,7 @@
         </div>
         <div class="form-group col-lg-6 mb-3">
             <label>Slug <small class="text-warning">(Note: Leave empty if its a single page.)</small></label>
-            <input type="text" name="slug" id="route-slug" value="{% if slug != 'None' %} {{ slug }} {% endif %}" class="form-control p-2">
+            <input type="text" name="slug" id="route-slug" value="{% if slug != 'None' or slug is not None or slug != ' None ' %} {{ slug }} {% endif %}" class="form-control p-2">
         </div>
         <div class="form-group col-lg-6 mb-3">
             <label>Title <span class="text-danger">*</span></label>
@@ -34,15 +34,15 @@
         </div>
         <div class="form-group col-lg-6 mb-3">
             <label>Tags <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
-            <input type="text" name="tags" id="tags" class="form-control p-2" value="{% if tags != 'None' %} {{ tags }} {% endif %}">
+            <input type="text" name="tags" id="tags" class="form-control p-2" value="{% if tags != 'None' or tags is not None or tags != ' None '%} {{ tags }} {% endif %}">
         </div>
         <div class="form-group col-lg-6 mb-3">
             <label>Categories <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
-            <input type="text" name="categories" id="categories" value="{% if categories != 'None' %} {{ categories }} {% endif %}" class="form-control p-2">
+            <input type="text" name="categories" id="categories" value="{% if categories != 'None' or categories is not None or categories != ' None ' %} {{ categories }} {% endif %}" class="form-control p-2">
         </div>
         <div class="form-group col-lg-6 mb-3">
             <label>Keywords <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
-            <input type="text" name="keywords" id="keywords" value="{% if keywords != 'None' %} {{ keywords }} {% endif %}" class="form-control p-2">
+            <input type="text" name="keywords" id="keywords" value="{% if keywords != 'None' or keywords is not None or keywords != ' None ' %} {{ keywords }} {% endif %}" class="form-control p-2">
         </div>
         <div class="form-group col-lg-12 mb-3">
             <label>Content <span class="text-danger">*</span></label>
@@ -64,9 +64,9 @@
     <div class="d-flex justify-content-end">
         <button type="submit" class="btn btn-success" id="updateFormBtn">Save</button>
         &nbsp;&nbsp;
-        <button class="btn btn-danger" hx-get="/hugo-client-v2/cancel-page/{{ website_id }}" hx-indicator="#pages-indicator" hx-target="#add-page-form-div" hx-swap="innerHTML">Cancel</button>
+        <button class="btn btn-danger" type="button" onclick="cancelPage('{{website_id}}')">Cancel</button>
         &nbsp;&nbsp;
-        <button class="btn btn-danger" type="button" onclick="deletePageAndRefreshTable('{{website_id}}', '{{page_id}}')">Delete</button>
+        <button class="btn btn-danger" type="button" onclick="deletePageAndRefreshTable('{{website_id}}', '{{id}}')">Delete</button>
     </div>
 </form>
 <hr>
@@ -78,51 +78,6 @@
 		updatePageFormAndRefreshTable();
 	});
 
-    function deletePageAndRefreshTable(website_id, page_id) {
-        Swal.fire({
-			title: 'Delete Page?',
-			text: 'Please confirm deletion',
-			icon: 'warning',
-			showCancelButton: false,
-			showLoaderOnConfirm: true, // Display loader when confirm button is clicked
-			allowOutsideClick: false,
-			allowEscapeKey: false,
-			preConfirm: () => {
-				return $.ajax({
-					type: 'GET',
-					url: `/hugo-client-v2/delete-page/${website_id}/${page_id}/`,
-					success: function (response) {
-                        var table = $('#pages-table').DataTable();
-
-                        var row = table.rows().nodes().to$().filter(function() {
-                            return $(this).attr('id') === page_id;
-                        });
-
-                        if (row.length > 0) {
-                            table.row(row).remove().draw();
-                        }
-
-                        $('#add-page-form-div').html(response);
-
-						Swal.fire({
-							title: 'Success!',
-							text: 'Your page has been deleted successfully.',
-							icon: 'success'
-						});
-					},
-					error: function (error) {
-						// Display an error message
-						Swal.fire({
-							title: 'Error!',
-							text: 'An error occurred while submitting the form.',
-							icon: 'error'
-						});
-						console.error('Error:', error);
-					}
-				});
-			}
-		});
-    }
     function updatePageFormAndRefreshTable() {
 		// Serialize form data
 		$('#content').val(CKEDITOR.instances.content.getData())
@@ -147,18 +102,25 @@
 						const website_id = response['website_id']
                         var table = $('#pages-table').DataTable();
 
-
-                        var targetID = data['id']; 
-                        console.log(targetID)
+                        var targetID = data['id'];
                         var row = table.rows().nodes().to$().filter(function() {
                             return $(this).attr('id') === targetID;
                         });
 
                         if (row.length > 0) {
-                            console.log('asdasd')
-                            row.find('td:eq(' + 0 + ')').text(data['slug'] != '' ? `${data['page']}${data['slug']}` : data['page']);
-                            row.find('td:eq(' + 1 + ')').text(formatDate(data['date_published']));
-                            row.find('td:eq(' + 2 + ')').attr('onclick', `updatePage('${website_id}', '${data['id']}', '${data['page']}', '${data['slug']}', '${data['title']}', '${data['tags']}', '${data['categories']}', '${data['keywords']}', '${data['content']}', '${data['description']}', '${data['date_published']}', '${data['in_navbar']}')`).attr('class', 'cursor-pointer text-danger').text('Update');
+                            // Update the data in the cells of the found row
+                            row.find('td:eq(0)').text(data['slug'] !== '' ? `${data['page']}${data['slug']}` : data['page']);
+                            row.find('td:eq(1)').text(formatDate(data['date_published']));
+
+                            // Update the onclick event and class of a specific cell (e.g., the third cell)
+                            var cellIndexToUpdate = 2;
+                            var updateCell = row.find('td:eq(' + cellIndexToUpdate + ')');
+                            updateCell.attr('onclick', `updatePage('${website_id}', '${data['id']}')`)
+                                    .attr('class', 'cursor-pointer text-danger')
+                                    .text('Update');
+                            
+                            // Redraw the DataTable to reflect the changes
+                            table.draw();
                         }
 
 

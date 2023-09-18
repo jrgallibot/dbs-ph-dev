@@ -99,26 +99,30 @@
 						});
 
 						// Create a new <tr> element and append it to the table
-						const newRow = $('<tr>');
+                        const newRow = $('<tr>');
                         newRow.attr('id', data['id']);
 
-						const td1 = $('<td>');
-						td1.text(data['slug'] != '' ? `${data['page']}${data['slug']}` : data['page']);
-						newRow.append(td1);
+                        // Create and append the cells (columns) to the row
+                        const td1 = $('<td>');
+                        td1.text(data['slug'] !== '' ? `${data['page']}${data['slug']}` : data['page']);
+                        newRow.append(td1);
 
-						const td2 = $('<td>');	
-						td2.text(formatDate(data['date_published']));
-						newRow.append(td2);
-                        
+                        const td2 = $('<td>');
+                        td2.text(formatDate(data['date_published']));
+                        newRow.append(td2);
+
                         const td3 = $('<td>');
                         const a = $('<a>');
-                        a.attr('onclick', `updatePage('${website_id}', '${data['id']}', '${data['page']}', '${data['slug']}', '${data['title']}', '${data['tags']}', '${data['categories']}', '${data['keywords']}', '${data['content']}', '${data['description']}', '${data['date_published']}', '${data['in_navbar']}')`);
-						a.attr('class', 'cursor-pointer text-danger');
+                        a.attr('onclick', `updatePage('${website_id}', '${data['id']}')`);
+                        a.attr('class', 'cursor-pointer text-danger');
                         a.text('Update');
                         td3.append(a);
                         newRow.append(td3);
-                        
-                        $('#pages-table tbody').append(newRow);
+
+                        // Append the new row to the DataTable
+                        const table = $('#pages-table').DataTable();
+                        table.row.add(newRow).draw();
+
 						$('#addPageForm')[0].reset();
 						CKEDITOR.instances.content.setData('');
 					},
@@ -136,7 +140,7 @@
 		});
 	}
     $(document).ready(function () {
-		CKEDITOR.replace('content');
+        CKEDITOR.replace('content');
     });
 </script>
 {% endblock %}

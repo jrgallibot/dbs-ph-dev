@@ -45,7 +45,6 @@ def add_website_page(request):
             'page_name': request.POST.get('page_name')
         }
         req = requests.post("http://127.0.0.1:7000/api/website-v2/", headers={'Authorization': f'Bearer {token}'}, json=data)
-        print(req.status_code)
         if req.status_code == 200 or req.status_code == 201:
             return redirect('/hugo-client-v2/')
     except Exception as e:
@@ -54,12 +53,18 @@ def add_website_page(request):
 def website_page(request, pk):
     try:
         token = get_token(request)
+        data = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
+                                                   headers={'Authorization': f'Bearer {token}'}).json()
+
+        if 'sites' not in request.session:
+            request.session['sites'] = data['website']['pages']
+            request.session.save()
+
         context = {
             'title': 'Hugo Client', 
             'module_name': 'Hugo',
             'website_id': str(pk),
-            'data': requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
-                                                   headers={'Authorization': f'Bearer {token}'}).json(),
+            'data': data,
             'cloudflare': CloudflareModel.objects.filter(user=request.user).all(),
         }
         return render(request, 'hugo_v2/partials/site.html', context)
@@ -85,6 +90,18 @@ def add_page(request, pk):
         }
         req = requests.post(f"http://127.0.0.1:7000/api/add-page-v2/",
                             headers={'Authorization': f'Bearer {token}'}, json=data)
+
+        temp_sites = None
+        if 'sites' not in request.session:
+            temp_sites = req.json()
+        else:
+            temp_sites = request.session.get('sites')
+            temp_sites.append(req.json())
+
+        request.session['sites'] = temp_sites
+        request.session.save()
+
+
         if req.status_code == 200 or req.status_code == 201:
             return JsonResponse({'data': req.text, 'website_id': str(pk)}, status=200)
         else:
@@ -104,11 +121,11 @@ def publish_website_page(request, wid):
             'domain': request.POST.get('domain'),
             'page_name': request.POST.get('page_name'),
         }
-        print(data)
+
         req = requests.post(
             f"http://127.0.0.1:7000/api/publish-website-v2/{wid}/",
             headers={'Authorization': f'Bearer {token}'}, data=data)
-        print(req.text)
+    
         context = {}
         if req.status_code == 200 or req.status_code == 201:
             cfw = CloudflareWebsites.objects.filter(website_id=wid).first()
@@ -127,7 +144,6 @@ def publish_website_page(request, wid):
             context['data'] = {
                 'website': req.json()['data']
             }
-            print(req)
             context['cloudflare'] = CloudflareModel.objects.filter(user=request.user).all()
             messages.error(request, req.json()['statusMsg'])
             return render(request, 'hugo_v2/partials/site-cloudflare-details-card.html', context)
@@ -136,8 +152,8 @@ def publish_website_page(request, wid):
         return JsonResponse({'statusMsg': str(e)}, status=404)
 
 def update_page(request, wid):
-    try:
-        if request.method == "POST":
+    if request.method == "POST":
+        try:
             token = get_token(request)
             data = {   
                 'website': str(wid),
@@ -150,29 +166,45 @@ def update_page(request, wid):
                 'keywords': request.POST.get('keywords'),
                 'content': request.POST.get('content'),
                 'description': request.POST.get('description'),
-                'in_navbar': True if request.POST.get('in_navbar') == "on" else False,
+                'in_navbar': request.POST.get('in_navbar') == "on",
                 'date_published': request.POST.get('date_published')
             }
-            req = requests.post(f"http://127.0.0.1:7000/api/update-page-v2/{str(wid)}/{request.POST.get('page_id')}/", headers={'Authorization': f'Bearer {token}'}, json=data)
-            if req.status_code == 200 or req.status_code == 201:
+            req = requests.post(
+                f"http://127.0.0.1:7000/api/update-page-v2/{str(wid)}/{request.POST.get('page_id')}/",
+                headers={'Authorization': f'Bearer {token}'},
+                json=data
+            )
+            if req.status_code in {200, 201}:
+                for row in request.session.get('sites'):
+                    if row['id'] == request.POST.get('page_id'):
+                        row.update({   
+                            'website': str(wid),
+                            'page_id': request.POST.get('page_id'),
+                            'page': request.POST.get('page'),
+                            'slug': request.POST.get('slug'),
+                            'title': request.POST.get('title'),
+                            'tags': request.POST.get('tags'),
+                            'categories': request.POST.get('categories'),
+                            'keywords': request.POST.get('keywords'),
+                            'content': request.POST.get('content'),
+                            'description': request.POST.get('description'),
+                            'in_navbar': request.POST.get('in_navbar') == "on",
+                            'date_published': request.POST.get('date_published')
+                        })
+                        request.session.modified = True
+                        break
                 return JsonResponse({'data': req.text, 'website_id': str(wid)}, status=200)
-        context = {
-            'website_id': str(wid),
-            'page_id': request.GET.get('page_id'),
-            'page': request.GET.get('page'),
-            'slug': request.GET.get('slug'),
-            'title': request.GET.get('title'),
-            'tags': request.GET.get('tags'),
-            'categories': request.GET.get('categories'),
-            'keywords': request.GET.get('keywords'),
-            'content': request.GET.get('content'),
-            'description': request.GET.get('description'),
-            'in_navbar': request.GET.get('in_navbar'),
-            'date_published': request.GET.get('date_published')
-        }
-        return render(request, 'hugo_v2/partials/site-update-page-form.html', context)
-    except Exception as e:
-        print(e)
+        except Exception as e:
+            print(e)
+
+    data = None
+    for row in request.session.get('sites', []):
+        if row.get('id') == request.GET.get('page_id'):
+            row.update({'website_id': str(wid)})
+            data = row
+            break  # Break out of the loop when a match is found
+    return render(request, 'hugo_v2/partials/site-update-page-form.html', data)
+
 
 
 def cancel_page(request, pk):
@@ -180,7 +212,11 @@ def cancel_page(request, pk):
 
 
 def delete_page(request, wid, pk):
-    token = get_token(request)
-    req = requests.post(f"http://127.0.0.1:7000/api/delete-page-v2/{wid}/{pk}/", headers={'Authorization': f'Bearer {token}'})
-    if req.status_code == 200 or req.status_code == 201:
-        return render(request, 'hugo_v2/partials/site-add-page-form.html', {'website_id': str(wid)})
+    
+    try:
+        token = get_token(request)
+        req = requests.post(f"http://127.0.0.1:7000/api/delete-page-v2/{wid}/{pk}/", headers={'Authorization': f'Bearer {token}'})
+        if req.status_code == 200 or req.status_code == 201:
+            return render(request, 'hugo_v2/partials/site-add-page-form.html', {'website_id': str(wid)})
+    except Exception as e:
+        print(e)

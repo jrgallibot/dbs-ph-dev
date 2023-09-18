@@ -61,7 +61,6 @@ def index_page(request, action=None, pk=None):
                     }
                     req = requests.post("http://95.217.184.122/api/website/",
                                         headers={'Authorization': f'Bearer {token}'}, json=data)
-                    print(req.text)
                     if req.status_code == 200 or req.status_code == 201:
                         return redirect('/hugo-client/')
 
@@ -134,7 +133,6 @@ def index_page(request, action=None, pk=None):
 
                 elif action == "upload-csv":
                     if request.method == "POST":
-                        print('pk', pk)
                         try:
                             today = date.today()
                             error_count = 0
@@ -142,7 +140,6 @@ def index_page(request, action=None, pk=None):
                             data_arr = ''
                             csv_file = request.FILES['csvFile']
                             csv_file = TextIOWrapper(csv_file.file, encoding='utf-8')
-                            print('csv_file', csv_file)
                             # Assuming the CSV file has columns: Title, Content, Slug, and Date
                             reader = csv.DictReader(csv_file)
                             for row in reader:
@@ -230,11 +227,9 @@ def index_page(request, action=None, pk=None):
                             'domain': request.POST.get('domain'),
                             'page_name': request.POST.get('page_name'),
                         }
-                        print(data)
                         req = requests.post(
                             f"http://95.217.184.122/api/publish-website/{pk}/",
                             headers={'Authorization': f'Bearer {token}'}, data=data)
-                        print(req.text)
                         if req.status_code == 200 or req.status_code == 201:
                             cfw = CloudflareWebsites.objects.filter(website_id=pk).first()
                             if cfw:
