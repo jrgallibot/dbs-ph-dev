@@ -24,7 +24,7 @@ def index_page(request):
     try:
         token = get_token(request)
         context = {'title': 'Hugo Client', 'module_name': 'Hugo',
-                   'data': requests.get("http://127.0.0.1:7000/api/home-page/",
+                   'data': requests.get("http://127.0.0.1:7000/api/home-page-v2/",
                                         headers={'Authorization': f'Bearer {token}'}).json(), 'active_tab': 'hugo_v2'}
 
         return render(request, 'hugo_v2/index.html', context)
@@ -56,15 +56,16 @@ def website_page(request, pk):
         data = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
 
-        if 'sites' not in request.session:
-            request.session['sites'] = data['website']['pages']
+        if str(pk) not in request.session:
+            request.session[str(pk)] = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
+                                                   headers={'Authorization': f'Bearer {token}'}).json()
             request.session.save()
-
+        
         context = {
             'title': 'Hugo Client', 
             'module_name': 'Hugo',
             'website_id': str(pk),
-            'data': data,
+            'data': request.session.get(str(pk)),
             'cloudflare': CloudflareModel.objects.filter(user=request.user).all(),
         }
         return render(request, 'hugo_v2/partials/site.html', context)
@@ -92,13 +93,13 @@ def add_page(request, pk):
                             headers={'Authorization': f'Bearer {token}'}, json=data)
 
         temp_sites = None
-        if 'sites' not in request.session:
+        if str(pk) not in request.session:
             temp_sites = req.json()
         else:
-            temp_sites = request.session.get('sites')
+            temp_sites = request.session.get(str(pk))['website']['pages']
             temp_sites.append(req.json())
 
-        request.session['sites'] = temp_sites
+        request.session[str(pk)]['website']['pages'] = temp_sites
         request.session.save()
 
 
@@ -175,7 +176,7 @@ def update_page(request, wid):
                 json=data
             )
             if req.status_code in {200, 201}:
-                for row in request.session.get('sites'):
+                for row in request.session.get(str(wid))['website']['pages']:
                     if row['id'] == request.POST.get('page_id'):
                         row.update({   
                             'website': str(wid),
@@ -198,8 +199,8 @@ def update_page(request, wid):
             print(e)
 
     data = None
-    for row in request.session.get('sites', []):
-        if row.get('id') == request.GET.get('page_id'):
+    for row in request.session.get(str(wid), [])['website']['pages']:
+        if row['id'] == request.GET.get('page_id'):
             row.update({'website_id': str(wid)})
             data = row
             break  # Break out of the loop when a match is found
