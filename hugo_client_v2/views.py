@@ -15,11 +15,31 @@ import requests
 import csv
 
 
+def maintenance_mode_enabled():
+    data = MaintenanceStatus.objects.filter(Q(id = 1) & Q(name = 'pbn')).first()
+    return True if data.status == 0 else False
+
+
+def maintenance_mode(original_function):
+    def wrapper(*args, **kwargs):
+        # Check if maintenance mode is enabled
+        if maintenance_mode_enabled():
+            # Handle maintenance mode logic
+            print("Service is currently under maintenance. Please try again later.")
+            return HttpResponse("Service is currently under maintenance. Please try again later.")
+        else:
+            # Execute the original function
+            return original_function(*args, **kwargs)
+    
+    return wrapper
+
 def get_token(request):
     client_settings = ClientSettings.objects.get(user=request.user)
     return client_settings.access_token
 
 
+@login_required
+@maintenance_mode
 def index_page(request):
     try:
         token = get_token(request)
@@ -32,6 +52,8 @@ def index_page(request):
         print(e)
 
 
+@login_required
+@maintenance_mode
 @require_POST
 def add_website_page(request):
     try:
@@ -50,6 +72,9 @@ def add_website_page(request):
     except Exception as e:
         print(e)
 
+
+@login_required
+@maintenance_mode
 def website_page(request, pk):
     try:
         token = get_token(request)
@@ -73,6 +98,8 @@ def website_page(request, pk):
         print(e)
 
 
+@login_required
+@maintenance_mode
 @require_POST
 def add_page(request, pk):
     try:
@@ -110,6 +137,9 @@ def add_page(request, pk):
     except Exception as e:
         print(e) 
 
+
+@login_required
+@maintenance_mode
 def publish_website_page(request, wid):
     try:
         token = get_token(request)
@@ -152,6 +182,9 @@ def publish_website_page(request, wid):
         print(e)
         return JsonResponse({'statusMsg': str(e)}, status=404)
 
+
+@login_required
+@maintenance_mode
 def update_page(request, wid):
     if request.method == "POST":
         try:
@@ -208,12 +241,16 @@ def update_page(request, wid):
 
 
 
+@login_required
+@maintenance_mode
 def cancel_page(request, pk):
     return render(request, 'hugo_v2/partials/site-add-page-form.html', {'website_id': str(pk)})
 
 
+
+@login_required
+@maintenance_mode
 def delete_page(request, wid, pk):
-    
     try:
         token = get_token(request)
         req = requests.post(f"http://127.0.0.1:7000/api/delete-page-v2/{wid}/{pk}/", headers={'Authorization': f'Bearer {token}'})
