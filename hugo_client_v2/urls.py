@@ -10,5 +10,6 @@ urlpatterns = [
     path('add-page/<slug:pk>/', add_page),
     path('update-page/<slug:wid>/', update_page),
     path('cancel-page/<slug:pk>/', cancel_page),
-    path('delete-page/<slug:wid>/<slug:pk>/', delete_page)
+    path('delete-page/<slug:wid>/<slug:pk>/', delete_page),
+    path('page_comments/<slug:pk>/', page_comments),
 ]

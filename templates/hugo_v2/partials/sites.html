@@ -18,9 +18,10 @@
     <div class="card-header d-flex justify-content-between">
       <h3>Websites <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="sites-indicator"><span class="visually-hidden">Loading...</span></div></h3>
         <div class="col-auto">
+            <a class="btn btn-secondary" href="/indexer/user/pbn-groups/"> Crete Group</a>
             <button class="btn btn-primary" id="btncheck_group"><i class="fa fa-check" aria-hidden="true"></i> Select Group</button>
             <div class="btn-group">
-                <!-- <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWebsiteModal"><i class="fa fa-filter" aria-hidden="true"></i> Filter By Groups</button> -->
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filter-group-modal"><i class="fa fa-filter" aria-hidden="true"></i> Filter By Groups</button>
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addWebsiteModal">Add Website</button>
             </div>
         </div>
@@ -46,8 +47,11 @@
                 <tbody>
                     {% for row in data.websites %}
                     <tr>
-                        <td class="cursor-pointer text-center"><input type='checkbox' name='check' class='checkbox' id={{row.id}}></td>
                         {% get_color_group row.id as group_color %}
+                        {% json_parser row.page_details as page_details %}
+                        {% json_to_datetime row.date_created as date_created %}
+                        {% json_to_datetime row.date_published as date_published %}
+                        <td class="cursor-pointer text-center"><input type='checkbox' name='check' class='checkbox' id={{row.id}}></td>
                         <td title="{{ row.id }}" class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');"> 
                             {% if group_color %}
                             <span style="color: {{group_color.group.color}};">{{group_color.group.name}}</span>
@@ -56,9 +60,6 @@
                             {% endif %}
                         </td>
                         <td style="white-space: normal;" class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');">{{ row.title }}</td>
-                        {% json_parser row.page_details as page_details %}
-                        {% json_to_datetime row.date_created as date_created %}
-                        {% json_to_datetime row.date_published as date_published %}
                         <!-- <td class="cursor-pointer" onClick="window.open('/hugo-client/website/{{row.id}}/', '_blank');">{{ page_details.result.subdomain }}</td> -->
                         <td class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');">{{ row.base_url }}</td>
                         <td class="cursor-pointer" onClick="window.open('/hugo-client-v2/website/{{row.id}}/', '_blank');">{{ date_created|date:'N j, Y g:iA' }}</td>
@@ -106,8 +107,43 @@
         </div>
     </div>
 </div>
+
+<div class="modal" id="filter-group-modal" role="dialog" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-filter text-success me-2" style="zoom:0.85"></i> Filter by group</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>    
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="form-group">
+                        <label>Group Name</label>
+                        <select class="form-select select2" id="filtergroup" name="filtergroup" required>
+                            <option></option>
+                            {% for row in group_pbn %}
+                            <option value="{{row.name}}">{{row.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-filter-modal">Close</button>
+                <button type="button" id="filter-group" class="btn btn-primary">Filter</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% block script %}
 <script>
+    $('#filter-group').on('click', function(){
+		var group = $('#filtergroup').val();
+		$('#websiteTable').DataTable().search(group).draw();
+        $('#close-filter-modal').click();
+    });
+
+
     $('#updategroupForm').on('submit', function(e){
         var form = new FormData(this);
         Swal.fire({
@@ -169,7 +205,7 @@
 
     $(document).ready(function () {
         $('#websiteTable').DataTable({
-            'order': [[ 4, 'desc' ]],
+            'order': [[ 4, 'asc' ]],
         });
     });
 </script>

@@ -1,0 +1,55 @@
+<form hx-post="/hugo-client-v2/page_comments/{{ website_id }}/" hx-confirm="Please Confirm" hx-target="#comments" hx-indicator="#comments-details-indicator" hx-swap="innerHTML">
+    {% if messages %}
+    {% for message in messages %}
+        {% if message.tags == "success" %}
+        <p class="text-success">
+            {{ message }}
+        </p>
+        {% elif message.tags == "error" %}
+        <p class="text-danger">
+            {{ message }}
+        </p>
+        {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% csrf_token %}
+    <div class="row">
+        <div class="form-group mb-3 col-lg-12">
+            <label>Client Site <span class="text-danger">*</span></label>
+            <input type="text" class="form-control p-2" name="client_site"  placeholder="Client Site" required>
+        </div>
+        <div class="form-group mb-3 col-lg-12">
+            <label>Notes <span class="text-danger">*</span></label>
+            <textarea class="form-control p-2" name="notes" rows="10"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary"><span class="loading open-circle" style="display:none;"></span> Save changes</button>
+    </div>
+</form>
+<hr>
+<div class="table-responsive p-2">
+    <table id="comments-table" class="table table-striped fs-6" style="width:100%">
+        <thead>
+            <tr>
+                <th>Client Site</th>
+                <th>Comments</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in cl_comments %}
+            <tr>
+                <td>{{ row.client_site }}</td>
+                <td>{{ row.comments }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% block script %}
+<script>
+    $(document).ready(function () {
+        $('#comments-table').DataTable();
+    });
+</script>
+{% endblock %}

@@ -1,4 +1,4 @@
-\\{% extends "pegasus/examples/examples_base.html" %}\
+{% extends "pegasus/examples/examples_base.html" %}
 {% load static %}
 {% load tags %}
 {% block app %}
@@ -23,6 +23,7 @@
 			<a type="button" class="btn btn-secondary" href="#site-details">Site Details</a>
 			<a type="button" class="btn btn-secondary" href="#cloudflare-details">Cloudflare</a>
 			<a type="button" class="btn btn-secondary" href="#pages-details" data-target="#pages">Pages</a>
+			<a type="button" class="btn btn-secondary" href="#comments" data-target="#comments">Comments</a>
 		</div>
 	</div>
 	<div class="details row" data-spy="scoll" data-target="btn-groups" data-offset="0" class="scrollspy-example">
@@ -54,6 +55,16 @@
 				</div>
 				<div class="card-body">
 					{% include 'hugo_v2/partials/site-details-card.html' %}
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6 mb-3">
+			<div class="card" id="comments">
+				<div class=card-header>
+					<h3>Comments <div class="spinner-border spinner-border-sm htmx-indicator mb-1" role="status" id="comments-details-indicator"><span class="visually-hidden">Loading...</span></div></h3>
+				</div>
+				<div class="card-body">
+					{% include 'hugo_v2/partials/site-page-comments.html' %}
 				</div>
 			</div>
 		</div>
