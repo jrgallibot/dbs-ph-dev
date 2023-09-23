@@ -15,7 +15,7 @@ import requests
 import csv
 
 
-def maintenance_mode_enabled():
+"""def maintenance_mode_enabled():
     data = MaintenanceStatus.objects.filter(Q(id = 1) & Q(name = 'pbn')).first()
     return True if data.status == 0 else False
 
@@ -31,7 +31,7 @@ def maintenance_mode(original_function):
             # Execute the original function
             return original_function(*args, **kwargs)
     
-    return wrapper
+    return wrapper"""
 
 def get_token(request):
     client_settings = ClientSettings.objects.get(user=request.user)
@@ -39,13 +39,12 @@ def get_token(request):
 
 
 @login_required
-@maintenance_mode
 def index_page(request):
     try:
         token = get_token(request)
         group_pbn = ClientPbnGroup.objects.filter(status=1, user_id=request.user.id).all()
         context = {'title': 'Hugo Client', 'module_name': 'Hugo', 'group_pbn': group_pbn,
-                   'data': requests.get("http://95.217.184.122/api/home-page-v2/",
+                   'data': requests.get("http://127.0.0.1:7000/api/home-page-v2/",
                                         headers={'Authorization': f'Bearer {token}'}).json(), 'active_tab': 'hugo_v2'}
 
         return render(request, 'hugo_v2/index.html', context)
@@ -54,7 +53,6 @@ def index_page(request):
 
 
 @login_required
-@maintenance_mode
 @require_POST
 def add_website_page(request):
     try:
@@ -67,7 +65,7 @@ def add_website_page(request):
             'description': request.POST.get('description'),
             'page_name': request.POST.get('page_name')
         }
-        req = requests.post("http://95.217.184.122/api/website-v2/", headers={'Authorization': f'Bearer {token}'}, json=data)
+        req = requests.post("http://127.0.0.1:7000/api/website-v2/", headers={'Authorization': f'Bearer {token}'}, json=data)
         if req.status_code == 200 or req.status_code == 201:
             return redirect('/hugo-client-v2/')
     except Exception as e:
@@ -75,18 +73,17 @@ def add_website_page(request):
 
 
 @login_required
-@maintenance_mode
 def website_page(request, pk):
     try:
         token = get_token(request)
-        data = requests.get(f"http://95.217.184.122/api/site-page-v2/{pk}/",
+        data = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
 
         if str(pk) not in request.session:
-            request.session[str(pk)] = requests.get(f"http://95.217.184.122/api/site-page-v2/{pk}/",
+            request.session[str(pk)] = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
             request.session.save()
-        
+        print(request.session.get(str))
         context = {
             'title': 'Hugo Client', 
             'module_name': 'Hugo',
@@ -102,7 +99,6 @@ def website_page(request, pk):
 
 
 @login_required
-@maintenance_mode
 @require_POST
 def add_page(request, pk):
     try:
@@ -114,14 +110,14 @@ def add_page(request, pk):
             'title': request.POST.get('title'),
             'content': request.POST.get('content'),
             'description': request.POST.get('description'),
-            'tags': request.POST.get('tags'),
-            'categories': request.POST.get('categories'),
-            'keywords': request.POST.get('keywords'),
+            'tags': request.POST.getlist('tags[]'),
+            'categories': request.POST.getlist('categories[]'),
+            'keywords': request.POST.getlist('keywords[]'),
             'in_navbar': True if request.POST.get('in_navbar') == "on" else False,
         }
-        req = requests.post(f"http://95.217.184.122/api/add-page-v2/",
+        req = requests.post(f"http://127.0.0.1:7000/api/add-page-v2/",
                             headers={'Authorization': f'Bearer {token}'}, json=data)
-
+        
         temp_sites = None
         if str(pk) not in request.session:
             temp_sites = req.json()
@@ -142,7 +138,6 @@ def add_page(request, pk):
 
 
 @login_required
-@maintenance_mode
 def publish_website_page(request, wid):
     try:
         token = get_token(request)
@@ -157,7 +152,7 @@ def publish_website_page(request, wid):
         }
 
         req = requests.post(
-            f"http://95.217.184.122/api/publish-website-v2/{wid}/",
+            f"http://127.0.0.1:7000/api/publish-website-v2/{wid}/",
             headers={'Authorization': f'Bearer {token}'}, data=data)
     
         context = {}
@@ -187,10 +182,11 @@ def publish_website_page(request, wid):
 
 
 @login_required
-@maintenance_mode
 def update_page(request, wid):
     if request.method == "POST":
         try:
+            if request.POST.get('page')[0] != '/' or request.POST.get('page')[-1] != '/':
+                return JsonResponse({'statusMsg': 'Invalid Directory.'}, status=404)
             token = get_token(request)
             data = {   
                 'website': str(wid),
@@ -198,16 +194,16 @@ def update_page(request, wid):
                 'page': request.POST.get('page'),
                 'slug': request.POST.get('slug'),
                 'title': request.POST.get('title'),
-                'tags': request.POST.get('tags'),
-                'categories': request.POST.get('categories'),
-                'keywords': request.POST.get('keywords'),
+                'tags': request.POST.getlist('tags[]'),
+                'categories': request.POST.getlist('categories[]'),
+                'keywords': request.POST.getlist('keywords[]'),
                 'content': request.POST.get('content'),
                 'description': request.POST.get('description'),
                 'in_navbar': request.POST.get('in_navbar') == "on",
                 'date_published': request.POST.get('date_published')
             }
             req = requests.post(
-                f"http://95.217.184.122/api/update-page-v2/{str(wid)}/{request.POST.get('page_id')}/",
+                f"http://127.0.0.1:7000/api/update-page-v2/{str(wid)}/{request.POST.get('page_id')}/",
                 headers={'Authorization': f'Bearer {token}'},
                 json=data
             )
@@ -220,9 +216,9 @@ def update_page(request, wid):
                             'page': request.POST.get('page'),
                             'slug': request.POST.get('slug'),
                             'title': request.POST.get('title'),
-                            'tags': request.POST.get('tags'),
-                            'categories': request.POST.get('categories'),
-                            'keywords': request.POST.get('keywords'),
+                            'tags': request.POST.getlist('tags[]'),
+                            'categories': request.POST.getlist('categories[]'),
+                            'keywords': request.POST.getlist('keywords[]'),
                             'content': request.POST.get('content'),
                             'description': request.POST.get('description'),
                             'in_navbar': request.POST.get('in_navbar') == "on",
@@ -245,18 +241,16 @@ def update_page(request, wid):
 
 
 @login_required
-@maintenance_mode
 def cancel_page(request, pk):
     return render(request, 'hugo_v2/partials/site-add-page-form.html', {'website_id': str(pk)})
 
 
 
 @login_required
-@maintenance_mode
 def delete_page(request, wid, pk):
     try:
         token = get_token(request)
-        req = requests.post(f"http://95.217.184.122/api/delete-page-v2/{wid}/{pk}/", headers={'Authorization': f'Bearer {token}'})
+        req = requests.post(f"http://127.0.0.1:7000/api/delete-page-v2/{wid}/{pk}/", headers={'Authorization': f'Bearer {token}'})
         if req.status_code == 200 or req.status_code == 201:
             return render(request, 'hugo_v2/partials/site-add-page-form.html', {'website_id': str(wid)})
     except Exception as e:

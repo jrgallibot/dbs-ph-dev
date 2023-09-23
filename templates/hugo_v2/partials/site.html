@@ -71,3 +71,35 @@
 	</div>
 </section>
 {% endblock %}
+
+{% block script %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+	// Function to slugify a string
+	function slugify(text) {
+		return text.toString().toLowerCase()
+			.replace(/\s+/g, '-')        // Replace spaces with -
+			.replace(/[^\w-]+/g, '')     // Remove all non-word characters
+			.replace(/--+/g, '-')        // Replace multiple - with single -
+			.replace(/^-+/, '')          // Remove leading -
+			.replace(/-+$/, '');         // Remove trailing -
+	}
+
+	// Get references to the input fields
+	var originalInput = document.getElementById('title');
+	var slugInput = document.getElementById('slug');
+
+	// Add a keyup event listener to the original input field
+	originalInput.addEventListener('keyup', function () {
+		// Get the value from the original input field
+		var originalText = originalInput.value;
+
+		// Slugify the text
+		var slugifiedText = slugify(originalText);
+
+		// Update the value of the slug input field
+		slugInput.value = slugifiedText;
+	});
+</script>
+{% endblock %}

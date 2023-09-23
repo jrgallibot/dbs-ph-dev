@@ -25,24 +25,42 @@
             -->
         </div>
         <div class="form-group col-lg-6 mb-3">
-            <label>Child Page <small class="text-warning">(Note: Leave empty if its a single page.)</small></label>
-            <input type="text" name="slug" id="route-slug" value="{% if slug != 'None' or slug is not None or slug != ' None ' %} {{ slug }} {% endif %}" class="form-control p-2">
+            <label>Tags <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+            <select name="tags[]" id="tags" class="form-control p-2" multiple>
+                {% if tags %}
+                    {% for tag in tags %}
+                    <option value="{{ tag }}" selected>{{ tag }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>    
+        </div>
+        <div class="form-group col-lg-6 mb-3">
+            <label>Categories <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+            <select name="categories[]" id="categories" class="form-control p-2" multiple>
+                {% if categories %}
+                    {% for category in categories %}
+                    <option value="{{ category }}" selected>{{ category }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>        
+        </div>
+        <div class="form-group col-lg-6 mb-3">
+            <label>Keywords <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+            <select name="keywords[]" id="keywords" class="form-control p-2" multiple>
+                {% if keywords %}
+                    {% for keyword in keywords %}
+                    <option value="{{ keyword }}" selected>{{ keyword }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>        
         </div>
         <div class="form-group col-lg-6 mb-3">
             <label>Title <span class="text-danger">*</span></label>
             <input type="text" class="form-control p-2" name="title" value="{{ title }}" required>
         </div>
         <div class="form-group col-lg-6 mb-3">
-            <label>Tags <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
-            <input type="text" name="tags" id="tags" class="form-control p-2" value="{% if tags != 'None' or tags is not None or tags != ' None '%} {{ tags }} {% endif %}">
-        </div>
-        <div class="form-group col-lg-6 mb-3">
-            <label>Categories <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
-            <input type="text" name="categories" id="categories" value="{% if categories != 'None' or categories is not None or categories != ' None ' %} {{ categories }} {% endif %}" class="form-control p-2">
-        </div>
-        <div class="form-group col-lg-6 mb-3">
-            <label>Keywords <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
-            <input type="text" name="keywords" id="keywords" value="{% if keywords != 'None' or keywords is not None or keywords != ' None ' %} {{ keywords }} {% endif %}" class="form-control p-2">
+            <label>Child Page <small class="text-warning">(Note: Leave Empty if it's a directory or Parent Page.)</small></label>
+            <input type="text" name="slug" id="route-slug" value="{% if slug != 'None' or slug is not None or slug != ' None ' %} {{ slug }} {% endif %}" class="form-control p-2">
         </div>
         <div class="form-group col-lg-12 mb-3">
             <label>Content <span class="text-danger">*</span></label>
@@ -58,7 +76,7 @@
         </div>
         <div class="form-group col-lg-4 mb-3">
             <label>In Navbar</label>
-            <input type="checkbox" name="in_navbar" {% if in_navbar == 'True' %} checked {% endif %}>
+            <input type="checkbox" name="in_navbar" {% if in_navbar %} checked {% endif %}>
         </div>
     </div>
     <div class="d-flex justify-content-end">
@@ -146,6 +164,24 @@
     
     $(document).ready(function () {
         CKEDITOR.replace('content');
+        
+        $('#tags').select2({
+            tags: true, // Allow creating new tags
+            tokenSeparators: [',', ' '], // Define separators for multiple tags
+            placeholder: 'Select or type tags', // Placeholder text
+        });
+
+        $('#categories').select2({
+            tags: true, // Allow creating new tags
+            tokenSeparators: [',', ' '], // Define separators for multiple tags
+            placeholder: 'Select or type categories', // Placeholder text
+        });
+
+        $('#keywords').select2({
+            tags: true, // Allow creating new tags
+            tokenSeparators: [',', ' '], // Define separators for multiple tags
+            placeholder: 'Select or type keywords', // Placeholder text
+        });
     });
 </script>
 {% endblock %}
