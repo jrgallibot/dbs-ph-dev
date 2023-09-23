@@ -208,9 +208,11 @@ def update_page(request, wid):
                 headers={'Authorization': f'Bearer {token}'},
                 json=data
             )
+            print(req.json())
             if req.status_code in {200, 201}:
                 for row in request.session.get(str(wid))['website']['pages']:
                     if row['id'] == request.POST.get('page_id'):
+                        data = req.json()
                         row.update({   
                             'website': str(wid),
                             'page_id': request.POST.get('page_id'),
@@ -223,7 +225,7 @@ def update_page(request, wid):
                             'content': request.POST.get('content'),
                             'description': request.POST.get('description'),
                             'in_navbar': request.POST.get('in_navbar') == "on",
-                            'date_published': request.POST.get('date_published')
+                            'date_published': data['date_published']
                         })
                         request.session.modified = True
                         break
