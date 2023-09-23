@@ -44,7 +44,7 @@ def index_page(request):
         token = get_token(request)
         group_pbn = ClientPbnGroup.objects.filter(status=1, user_id=request.user.id).all()
         context = {'title': 'Hugo Client', 'module_name': 'Hugo', 'group_pbn': group_pbn,
-                   'data': requests.get("http://127.0.0.1:7000/api/home-page-v2/",
+                   'data': requests.get("http://95.217.184.122/api/home-page-v2/",
                                         headers={'Authorization': f'Bearer {token}'}).json(), 'active_tab': 'hugo_v2'}
 
         return render(request, 'hugo_v2/index.html', context)
@@ -65,7 +65,7 @@ def add_website_page(request):
             'description': request.POST.get('description'),
             'page_name': request.POST.get('page_name')
         }
-        req = requests.post("http://127.0.0.1:7000/api/website-v2/", headers={'Authorization': f'Bearer {token}'}, json=data)
+        req = requests.post("http://95.217.184.122/api/website-v2/", headers={'Authorization': f'Bearer {token}'}, json=data)
         if req.status_code == 200 or req.status_code == 201:
             return redirect('/hugo-client-v2/')
     except Exception as e:
@@ -76,14 +76,13 @@ def add_website_page(request):
 def website_page(request, pk):
     try:
         token = get_token(request)
-        data = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
+        data = requests.get(f"http://95.217.184.122/api/site-page-v2/{pk}/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
 
         if str(pk) not in request.session:
-            request.session[str(pk)] = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
+            request.session[str(pk)] = requests.get(f"http://95.217.184.122/api/site-page-v2/{pk}/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
             request.session.save()
-        print(request.session.get(str))
         context = {
             'title': 'Hugo Client', 
             'module_name': 'Hugo',
@@ -102,6 +101,8 @@ def website_page(request, pk):
 @require_POST
 def add_page(request, pk):
     try:
+        if request.POST.get('page')[0] != '/' or request.POST.get('page')[-1] != '/':
+            return JsonResponse({'statusMsg': 'Invalid Directory.'}, status=404)
         token = get_token(request)
         data = {
             'website': str(pk),
@@ -115,7 +116,7 @@ def add_page(request, pk):
             'keywords': request.POST.getlist('keywords[]'),
             'in_navbar': True if request.POST.get('in_navbar') == "on" else False,
         }
-        req = requests.post(f"http://127.0.0.1:7000/api/add-page-v2/",
+        req = requests.post(f"http://95.217.184.122/api/add-page-v2/",
                             headers={'Authorization': f'Bearer {token}'}, json=data)
         
         temp_sites = None
@@ -152,7 +153,7 @@ def publish_website_page(request, wid):
         }
 
         req = requests.post(
-            f"http://127.0.0.1:7000/api/publish-website-v2/{wid}/",
+            f"http://95.217.184.122/api/publish-website-v2/{wid}/",
             headers={'Authorization': f'Bearer {token}'}, data=data)
     
         context = {}
@@ -203,7 +204,7 @@ def update_page(request, wid):
                 'date_published': request.POST.get('date_published')
             }
             req = requests.post(
-                f"http://127.0.0.1:7000/api/update-page-v2/{str(wid)}/{request.POST.get('page_id')}/",
+                f"http://95.217.184.122/api/update-page-v2/{str(wid)}/{request.POST.get('page_id')}/",
                 headers={'Authorization': f'Bearer {token}'},
                 json=data
             )
@@ -250,7 +251,7 @@ def cancel_page(request, pk):
 def delete_page(request, wid, pk):
     try:
         token = get_token(request)
-        req = requests.post(f"http://127.0.0.1:7000/api/delete-page-v2/{wid}/{pk}/", headers={'Authorization': f'Bearer {token}'})
+        req = requests.post(f"http://95.217.184.122/api/delete-page-v2/{wid}/{pk}/", headers={'Authorization': f'Bearer {token}'})
         if req.status_code == 200 or req.status_code == 201:
             return render(request, 'hugo_v2/partials/site-add-page-form.html', {'website_id': str(wid)})
     except Exception as e:
