@@ -71,6 +71,32 @@
 		addPageFormAndRefreshTable();
 	});
 
+    // Function to slugify a string
+	function slugify(text) {
+		return text.toString().toLowerCase()
+			.replace(/\s+/g, '-')        // Replace spaces with -
+			.replace(/[^\w-]+/g, '')     // Remove all non-word characters
+			.replace(/--+/g, '-')        // Replace multiple - with single -
+			.replace(/^-+/, '')          // Remove leading -
+			.replace(/-+$/, '');         // Remove trailing -
+	}
+
+	// Get references to the input fields
+	var originalInput = document.getElementById('title');
+	var slugInput = document.getElementById('slug');
+
+	// Add a keyup event listener to the original input field
+	originalInput.addEventListener('keyup', function () {
+		// Get the value from the original input field
+		var originalText = originalInput.value;
+
+		// Slugify the text
+		var slugifiedText = slugify(originalText);
+
+		// Update the value of the slug input field
+		slugInput.value = slugifiedText;
+	});
+    
 	function addPageFormAndRefreshTable() {
 		// Serialize form data
 		$('#content').val(CKEDITOR.instances.content.getData())
