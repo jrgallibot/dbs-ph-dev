@@ -16,7 +16,7 @@
     <div class="row mb-3">
         <div class="form-group col-lg-6 mb-3">
             <label>Directory <span class="text-danger">*</span> <small class="text-warning">(Ex: /about/)</small></label>
-            <input name="page" class="form-control p-2" required>
+            <input name="page" id="page" class="form-control p-2" required>
 
             <!--
             <input type="text" id="page_field" name="page_field" class="form-control p-2" oninput="generateSlug()" required>
@@ -46,6 +46,17 @@
             <label>Child Page <small class="text-warning">(Note: Leave Empty if it's a directory or Parent Page.)</small></label>
             <input type="text" name="slug" id="slug" class="form-control p-2">
         </div>
+        <div class="form-group col-lg-3 mb-3">
+            <select class="form-control" id="actions">
+                <option></option>
+                <option value="add_to_directory">Add to Directory</option>
+                <option value="add_to_child_page">Add to Child Page</option>
+                <option value="add_to_both">Add Both</option>
+            </select>
+        </div>
+        <div class="form-group col-lg-3 mb-3">
+            <button class="btn btn-sm btn-success" onclick="save_action_changes()" type="button">Save Changes</button>
+        </div>
         <div class="form-group col-lg-12 mb-3">
             <label>Content <span class="text-danger">*</span></label>
             <textarea name="content" id="content" class="form-control p-2" required></textarea>
@@ -71,7 +82,7 @@
 		addPageFormAndRefreshTable();
 	});
 
-    // Function to slugify a string
+
 	function slugify(text) {
 		return text.toString().toLowerCase()
 			.replace(/\s+/g, '-')        // Replace spaces with -
@@ -81,22 +92,34 @@
 			.replace(/-+$/, '');         // Remove trailing -
 	}
 
-	// Get references to the input fields
-	var originalInput = document.getElementById('title');
-	var slugInput = document.getElementById('slug');
+    function save_action_changes() {
+        const action = $('#actions').val();
+        const originalInput = $('#title').val();
+        const slug_text = slugify(originalInput);
+        const directory = $('#page');
+        const slug = $('#slug');
 
-	// Add a keyup event listener to the original input field
-	originalInput.addEventListener('keyup', function () {
-		// Get the value from the original input field
-		var originalText = originalInput.value;
+        switch (action) {
+            case 'add_to_directory':
+            directory.val(slug_text);
+            slug.val('');
+            break;
+            case 'add_to_child_page':
+            slug.val(slug_text);
+            directory.val('');
+            break;
+            case 'add_to_both':
+            slug.val(slug_text);
+            directory.val(slug_text);
+            break;
+            default:
+            slug.val('');
+            directory.val('');
+            break;
+        }
+    }
 
-		// Slugify the text
-		var slugifiedText = slugify(originalText);
 
-		// Update the value of the slug input field
-		slugInput.value = slugifiedText;
-	});
-    
 	function addPageFormAndRefreshTable() {
 		// Serialize form data
 		$('#content').val(CKEDITOR.instances.content.getData())
@@ -171,6 +194,13 @@
 	}
     $(document).ready(function () {
         CKEDITOR.replace('content');
+
+        $('#actions').select2({
+            tags: true, // Allow creating new tags
+            tokenSeparators: [',', ' '], // Define separators for multiple tags
+            placeholder: 'Select action for the Slug Generator', // Placeholder text,
+            allowClear: true
+        });
 
         $('#tags').select2({
             tags: true, // Allow creating new tags
