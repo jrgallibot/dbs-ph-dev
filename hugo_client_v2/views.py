@@ -265,8 +265,6 @@ def generate_content(request):
     try:
         keywords = request.GET.get('keywords')
         list_urls = request.GET.get('list_urls')
-        print(keywords)
-        print(list_urls)
         data = make_domainsfast_api_request(keywords, list_urls)
         return JsonResponse(data, status=200)
     except Exception as e:
