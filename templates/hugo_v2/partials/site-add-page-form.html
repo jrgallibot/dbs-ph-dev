@@ -68,7 +68,7 @@
             </select>
         </div>
         <div class="form-group col-lg-12 mb-3">
-            <button class="btn btn-sm btn-success" onclick="save_action_changes()" type="button">Save Changes</button>
+            <button class="btn btn-sm btn-success" onclick="save_action_changes()" type="button">Generate Slug</button>
         </div>
         <div class="form-group col-lg-12 mb-3">
             <label>Tags <small class="text-warning"></small></label>
@@ -79,20 +79,6 @@
             <label>Categories <small class="text-warning"></small></label>
             <select name="categories[]" id="categories" class="form-control p-2" multiple>
             </select>
-        </div>
-        <h6><b>Generate Content</b></h6>
-        <div class="form-group col-lg-12 mb-3">
-            <label>Keywords <small class="text-warning"></small></label>
-            <select name="keywords[]" id="keywords" class="form-control p-2" multiple>
-            </select>
-        </div>
-        <div class="form-group col-lg-12 mb-3">
-            <label>List Urls <small class="text-warning"></small></label>
-            <select name="list_urls[]" id="list_urls" class="form-control p-2" multiple>
-            </select>
-        </div>
-        <div class="form-group col-lg-6 mb-3">
-            <button class="btn btn-sm btn-success" onclick="generate_content()" type="button">Generate</button>
         </div>
         <div class="form-group col-lg-12 mb-3">
             <label>Content <span class="text-danger">*</span></label>
@@ -105,6 +91,19 @@
         <div class="form-group col-lg-4 mb-3">
             <label>In Navbar</label>
             <input type="checkbox" name="in_navbar">
+        </div>
+
+        <h6><b>Generate AI Content</b></h6>
+        <div class="form-group col-lg-12 mb-3">
+            <label>Keywords <small class="text-warning"></small></label>
+            <textarea class="form-control p-2" name="keywords" id="keywords" rows="3"></textarea>
+        </div>
+        <div class="form-group col-lg-12 mb-3">
+            <label>List Urls <small class="text-warning"></small></label>
+            <textarea class="form-control p-2" name="list_urls" id="list_urls" rows="3"></textarea>
+        </div>
+        <div class="form-group col-lg-6 mb-3">
+            <button class="btn btn-sm btn-success" onclick="generate_content()" type="button">Generate Content</button>
         </div>
     </div>
     <div class="d-flex justify-content-end">
@@ -156,71 +155,59 @@
         }
     }
 
-    function generate_content(){
-        // Get the selected options from the keywords select element
-        const keywordsSelect = document.getElementById('keywords');
-        const selectedKeywords = Array.from(keywordsSelect.selectedOptions).map(option => option.value);
+    function generate_content() {
+        var keywordsTextarea = document.getElementById('keywords');
+        var listUrlsTextarea = document.getElementById('list_urls');
+        var formData = new FormData();
+        
+        // Add data from the keywords textarea to the FormData
+        formData.append('keywords', keywordsTextarea.value);
 
-        // Get the selected options from the listUrls select element
-        const listUrlsSelect = document.getElementById('list_urls');
-        const selectedListUrls = Array.from(listUrlsSelect.selectedOptions).map(option => option.value);
+        // Add data from the list_urls textarea to the FormData
+        formData.append('list_urls', listUrlsTextarea.value);
 
-        // Construct the URL with query parameters
-        let url = '/hugo-client-v2/generate-content/?';
+        // Convert FormData to query parameters
+        var queryParams = new URLSearchParams(formData).toString();
 
-        // Append the keywords as query parameters
-        for (const keyword of selectedKeywords) {
-            url += `keywords[]=${encodeURIComponent(keyword)}&`;
-        }
-
-        // Append the list_urls as query parameters
-        for (const listUrl of selectedListUrls) {
-            url += `list_urls[]=${encodeURIComponent(listUrl)}&`;
-        }
-
-        // Remove the trailing '&' if it exists
-        if (url.endsWith('&')) {
-            url = url.slice(0, -1);
-        }
+        // Build the URL with the query parameters
+        var url = '/hugo-client-v2/generate-content/?' + queryParams;
 
         // Show a SweetAlert confirmation dialog with a loader animation
-		Swal.fire({
-			title: 'Generate Content?',
-			text: 'Please confirm',
-			icon: 'question',
-			showCancelButton: false,
-			showLoaderOnConfirm: true, // Display loader when confirm button is clicked
-			allowOutsideClick: false,
-			allowEscapeKey: false,
-			preConfirm: () => {
-				return $.ajax({
-					type: 'GET',
-                    url: url,
-					success: function (response) {
-						document.getElementById('title').value = response['header'];
+        Swal.fire({
+            title: 'Generate Content?',
+            text: 'Please confirm',
+            icon: 'question',
+            showCancelButton: false,
+            showLoaderOnConfirm: true, // Display loader when confirm button is clicked
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            preConfirm: () => {
+                return $.ajax({
+                    type: 'GET', // Use GET
+                    url: url, // Use the URL with query parameters
+                    success: function (response) {
+                        document.getElementById('title').value = response['header'];
                         CKEDITOR.instances.content.setData(response['body']);
 
-						// Handle success or display a success message
-						Swal.fire({
-							title: 'Success!',
-							text: 'Generate Success.',
-							icon: 'success'
-						});
-
-					},
-					error: function (error) {
-						// Display an error message
-						Swal.fire({
-							title: 'Error!',
-							text: 'An error occurred while generating a content',
-							icon: 'error'
-						});
-					}
-				});
-			}
-		});
+                        // Handle success or display a success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Generating Content Success.',
+                            icon: 'success'
+                        });
+                    },
+                    error: function (error) {
+                        // Display an error message
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while generating content',
+                            icon: 'error'
+                        });
+                    }
+                });
+            }
+        });
     }
-
 
 
 	function addPageFormAndRefreshTable() {
@@ -304,14 +291,6 @@
             allowClear: true
         });
 
-
-        $('#list_urls').select2({
-            tags: true, // Allow creating new tags
-            tokenSeparators: [',', ' '], // Define separators for multiple tags
-            placeholder: 'Add Urls', // Placeholder text,
-            allowClear: true
-        });
-
         $('#tags').select2({
             tags: true, // Allow creating new tags
             tokenSeparators: [',', ' '], // Define separators for multiple tags
@@ -322,12 +301,6 @@
             tags: true, // Allow creating new tags
             tokenSeparators: [',', ' '], // Define separators for multiple tags
             placeholder: 'Add categories', // Placeholder text
-        });
-
-        $('#keywords').select2({
-            tags: true, // Allow creating new tags
-            tokenSeparators: [',', ' '], // Define separators for multiple tags
-            placeholder: 'Add keywords', // Placeholder text
         });
     });
 </script>

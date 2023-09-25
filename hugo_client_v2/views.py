@@ -80,10 +80,9 @@ def website_page(request, pk):
         data = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
 
-        if str(pk) not in request.session:
-            request.session[str(pk)] = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
-                                                   headers={'Authorization': f'Bearer {token}'}).json()
-            request.session.save()
+        request.session[str(pk)] = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
+                                                headers={'Authorization': f'Bearer {token}'}).json()
+        request.session.save()
         context = {
             'title': 'Hugo Client', 
             'module_name': 'Hugo',
@@ -114,7 +113,7 @@ def add_page(request, pk):
             'description': request.POST.get('description'),
             'tags': request.POST.getlist('tags[]'),
             'categories': request.POST.getlist('categories[]'),
-            'keywords': request.POST.getlist('keywords[]'),
+            'keywords': request.POST.get('keywords'),
             'in_navbar': True if request.POST.get('in_navbar') == "on" else False,
         }
         req = requests.post(f"http://127.0.0.1:7000/api/add-page-v2/",
@@ -198,7 +197,7 @@ def update_page(request, wid):
                 'title': request.POST.get('title'),
                 'tags': request.POST.getlist('tags[]'),
                 'categories': request.POST.getlist('categories[]'),
-                'keywords': request.POST.getlist('keywords[]'),
+                'keywords': request.POST.get('keywords'),
                 'content': request.POST.get('content'),
                 'description': request.POST.get('description'),
                 'in_navbar': request.POST.get('in_navbar') == "on",
@@ -222,7 +221,7 @@ def update_page(request, wid):
                             'title': request.POST.get('title'),
                             'tags': request.POST.getlist('tags[]'),
                             'categories': request.POST.getlist('categories[]'),
-                            'keywords': request.POST.getlist('keywords[]'),
+                            'keywords': request.POST.get('keywords'),
                             'content': request.POST.get('content'),
                             'description': request.POST.get('description'),
                             'in_navbar': request.POST.get('in_navbar') == "on",
@@ -264,8 +263,10 @@ def delete_page(request, wid, pk):
 @login_required()
 def generate_content(request):
     try:
-        keywords = ' '.join(request.GET.getlist('keywords[]'))
-        list_urls = '\n'.join(request.GET.getlist('list_urls[]'))
+        keywords = request.GET.get('keywords')
+        list_urls = request.GET.get('list_urls')
+        print(keywords)
+        print(list_urls)
         data = make_domainsfast_api_request(keywords, list_urls)
         return JsonResponse(data, status=200)
     except Exception as e:

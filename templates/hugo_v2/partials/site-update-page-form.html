@@ -82,13 +82,7 @@
         </div>
         <div class="form-group col-lg-12 mb-3">
             <label>Keywords <small class="text-warning"></small></label>
-            <select name="keywords[]" id="keywords" class="form-control p-2" multiple>
-                {% if keywords %}
-                    {% for keyword in keywords %}
-                    <option value="{{ keyword }}" selected>{{ keyword }}</option>
-                    {% endfor %}
-                {% endif %}
-            </select>        
+            <textarea class="form-control p-2" name="keywords" id="keywords" rows="3">{{ keywords }}</textarea>
         </div>
         <div class="form-group col-lg-12 mb-3">
             <label>Content <span class="text-danger">*</span></label>
@@ -203,12 +197,6 @@
             tags: true, // Allow creating new tags
             tokenSeparators: [',', ' '], // Define separators for multiple tags
             placeholder: 'Add categories', // Placeholder text
-        });
-
-        $('#keywords').select2({
-            tags: true, // Allow creating new tags
-            tokenSeparators: [',', ' '], // Define separators for multiple tags
-            placeholder: 'Add keywords', // Placeholder text
         });
     });
 </script>
