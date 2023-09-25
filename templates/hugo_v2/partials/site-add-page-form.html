@@ -1,3 +1,35 @@
+<style>
+    .select2-selection__rendered {
+        line-height: 37px !important;
+    }
+    .select2-container .select2-selection--single {
+        height: 42px !important;
+    }
+
+    .select2-container .select2-selection--multiple {
+        height: 42px !important;
+    }
+
+    .select2-search__field {
+        height: 42px !important;
+    }
+
+    .select2-selection__choice {
+        height: 28px !important;
+    }
+
+    .select2-select2-selection__rendered{
+        height: 10px !important;
+    }
+
+    .select2-selection__arrow {
+        height: 42px !important;
+    }
+
+    .select2-selection__clear {
+        height: 43px !important;
+    }
+</style>
 <form action="/hugo-client-v2/add-page/{{ website_id }}/" id="addPageForm">
     {% if messages %}
     {% for message in messages %}
@@ -17,36 +49,17 @@
         <div class="form-group col-lg-6 mb-3">
             <label>Directory <span class="text-danger">*</span> <small class="text-warning">(Ex: /about/)</small></label>
             <input name="page" id="page" class="form-control p-2" required>
-
-            <!--
-            <input type="text" id="page_field" name="page_field" class="form-control p-2" oninput="generateSlug()" required>
-            <input type="hidden" id="page" name="page" class="form-control p-2" required readonly>
-            -->
-        </div>
-        <div class="form-group col-lg-6 mb-3">
-            <label>Tags <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
-            <select name="tags[]" id="tags" class="form-control p-2" multiple>
-            </select>
-        </div>
-        <div class="form-group col-lg-6 mb-3">
-            <label>Categories <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
-            <select name="categories[]" id="categories" class="form-control p-2" multiple>
-            </select>
-        </div>
-        <div class="form-group col-lg-6 mb-3">
-            <label>Keywords <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
-            <select name="keywords[]" id="keywords" class="form-control p-2" multiple>
-            </select>
-        </div>
-        <div class="form-group col-lg-6 mb-3">
-            <label>Title <span class="text-danger">*</span></label>
-            <input type="text" class="form-control p-2" name="title" id="title" required>
         </div>
         <div class="form-group col-lg-6 mb-3">
             <label>Child Page <small class="text-warning">(Note: Leave Empty if it's a directory or Parent Page.)</small></label>
             <input type="text" name="slug" id="slug" class="form-control p-2">
         </div>
-        <div class="form-group col-lg-3 mb-3">
+        <div class="form-group col-lg-12 mb-3">
+            <label>Title <span class="text-danger">*</span></label>
+            <input type="text" class="form-control p-2" name="title" id="title" required>
+        </div>
+        <h6><b>Generate Slug</b></h6>
+        <div class="form-group col-lg-12 mb-3">
             <select class="form-control" id="actions">
                 <option></option>
                 <option value="add_to_directory">Add to Directory</option>
@@ -54,8 +67,32 @@
                 <option value="add_to_both">Add Both</option>
             </select>
         </div>
-        <div class="form-group col-lg-3 mb-3">
+        <div class="form-group col-lg-12 mb-3">
             <button class="btn btn-sm btn-success" onclick="save_action_changes()" type="button">Save Changes</button>
+        </div>
+        <div class="form-group col-lg-12 mb-3">
+            <label>Tags <small class="text-warning"></small></label>
+            <select name="tags[]" id="tags" class="form-control p-2" multiple>
+            </select>
+        </div>
+        <div class="form-group col-lg-12 mb-3">
+            <label>Categories <small class="text-warning"></small></label>
+            <select name="categories[]" id="categories" class="form-control p-2" multiple>
+            </select>
+        </div>
+        <h6><b>Generate Content</b></h6>
+        <div class="form-group col-lg-12 mb-3">
+            <label>Keywords <small class="text-warning"></small></label>
+            <select name="keywords[]" id="keywords" class="form-control p-2" multiple>
+            </select>
+        </div>
+        <div class="form-group col-lg-12 mb-3">
+            <label>List Urls <small class="text-warning"></small></label>
+            <select name="list_urls[]" id="list_urls" class="form-control p-2" multiple>
+            </select>
+        </div>
+        <div class="form-group col-lg-6 mb-3">
+            <button class="btn btn-sm btn-success" onclick="generate_content()" type="button">Generate</button>
         </div>
         <div class="form-group col-lg-12 mb-3">
             <label>Content <span class="text-danger">*</span></label>
@@ -118,6 +155,72 @@
             break;
         }
     }
+
+    function generate_content(){
+        // Get the selected options from the keywords select element
+        const keywordsSelect = document.getElementById('keywords');
+        const selectedKeywords = Array.from(keywordsSelect.selectedOptions).map(option => option.value);
+
+        // Get the selected options from the listUrls select element
+        const listUrlsSelect = document.getElementById('list_urls');
+        const selectedListUrls = Array.from(listUrlsSelect.selectedOptions).map(option => option.value);
+
+        // Construct the URL with query parameters
+        let url = '/hugo-client-v2/generate-content/?';
+
+        // Append the keywords as query parameters
+        for (const keyword of selectedKeywords) {
+            url += `keywords[]=${encodeURIComponent(keyword)}&`;
+        }
+
+        // Append the list_urls as query parameters
+        for (const listUrl of selectedListUrls) {
+            url += `list_urls[]=${encodeURIComponent(listUrl)}&`;
+        }
+
+        // Remove the trailing '&' if it exists
+        if (url.endsWith('&')) {
+            url = url.slice(0, -1);
+        }
+
+        // Show a SweetAlert confirmation dialog with a loader animation
+		Swal.fire({
+			title: 'Generate Content?',
+			text: 'Please confirm',
+			icon: 'question',
+			showCancelButton: false,
+			showLoaderOnConfirm: true, // Display loader when confirm button is clicked
+			allowOutsideClick: false,
+			allowEscapeKey: false,
+			preConfirm: () => {
+				return $.ajax({
+					type: 'GET',
+                    url: url,
+					success: function (response) {
+						document.getElementById('title').value = response['header'];
+                        CKEDITOR.instances.content.setData(response['body']);
+
+						// Handle success or display a success message
+						Swal.fire({
+							title: 'Success!',
+							text: 'Generate Success.',
+							icon: 'success'
+						});
+
+					},
+					error: function (error) {
+						// Display an error message
+						Swal.fire({
+							title: 'Error!',
+							text: 'An error occurred while generating a content',
+							icon: 'error'
+						});
+					}
+				});
+			}
+		});
+    }
+
 
 
 	function addPageFormAndRefreshTable() {
@@ -196,28 +299,35 @@
         CKEDITOR.replace('content');
 
         $('#actions').select2({
-            tags: true, // Allow creating new tags
             tokenSeparators: [',', ' '], // Define separators for multiple tags
             placeholder: 'Select action for the Slug Generator', // Placeholder text,
+            allowClear: true
+        });
+
+
+        $('#list_urls').select2({
+            tags: true, // Allow creating new tags
+            tokenSeparators: [',', ' '], // Define separators for multiple tags
+            placeholder: 'Add Urls', // Placeholder text,
             allowClear: true
         });
 
         $('#tags').select2({
             tags: true, // Allow creating new tags
             tokenSeparators: [',', ' '], // Define separators for multiple tags
-            placeholder: 'Select or type tags', // Placeholder text
+            placeholder: 'Add tags', // Placeholder text
         });
 
         $('#categories').select2({
             tags: true, // Allow creating new tags
             tokenSeparators: [',', ' '], // Define separators for multiple tags
-            placeholder: 'Select or type categories', // Placeholder text
+            placeholder: 'Add categories', // Placeholder text
         });
 
         $('#keywords').select2({
             tags: true, // Allow creating new tags
             tokenSeparators: [',', ' '], // Define separators for multiple tags
-            placeholder: 'Select or type keywords', // Placeholder text
+            placeholder: 'Add keywords', // Placeholder text
         });
     });
 </script>

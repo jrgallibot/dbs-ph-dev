@@ -1,3 +1,35 @@
+<style>
+    .select2-selection__rendered {
+        line-height: 37px !important;
+    }
+    .select2-container .select2-selection--single {
+        height: 42px !important;
+    }
+
+    .select2-container .select2-selection--multiple {
+        height: 42px !important;
+    }
+
+    .select2-search__field {
+        height: 42px !important;
+    }
+
+    .select2-selection__choice {
+        height: 28px !important;
+    }
+
+    .select2-select2-selection__rendered{
+        height: 10px !important;
+    }
+
+    .select2-selection__arrow {
+        height: 42px !important;
+    }
+
+    .select2-selection__clear {
+        height: 43px !important;
+    }
+</style>
 {% load tags %}
 <form action="/hugo-client-v2/update-page/{{ website_id }}/" id="updatePageForm">
     {% if messages %}
@@ -19,13 +51,17 @@
             <label>Directory <span class="text-danger">*</span> <small class="text-warning">(Ex: /about/)</small></label>
             <input type="text" name="page" class="form-control p-2" value="{{ page }}" required>
             <input type="hidden" name="page_id" id="route-slug" value="{{ id }}" class="form-control p-2">
-            <!--
-            <input type="text" id="page_field" name="page_field" class="form-control p-2" oninput="generateSlug()" required>
-            <input type="hidden" id="page" name="page" class="form-control p-2" required readonly>
-            -->
         </div>
         <div class="form-group col-lg-6 mb-3">
-            <label>Tags <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+            <label>Child Page <small class="text-warning">(Note: Leave Empty if it's a directory or Parent Page.)</small></label>
+            <input type="text" name="slug" id="slug" value="{% if slug != 'None' or slug is not None or slug != ' None ' %} {{ slug }} {% endif %}" class="form-control p-2">
+        </div>
+        <div class="form-group col-lg-12 mb-3">
+            <label>Title <span class="text-danger">*</span></label>
+            <input type="text" class="form-control p-2" name="title" value="{{ title }}" id="title" required>
+        </div>
+        <div class="form-group col-lg-6 mb-3">
+            <label>Tags <small class="text-warning"></small></label>
             <select name="tags[]" id="tags" class="form-control p-2" multiple>
                 {% if tags %}
                     {% for tag in tags %}
@@ -35,7 +71,7 @@
             </select>    
         </div>
         <div class="form-group col-lg-6 mb-3">
-            <label>Categories <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+            <label>Categories <small class="text-warning"></small></label>
             <select name="categories[]" id="categories" class="form-control p-2" multiple>
                 {% if categories %}
                     {% for category in categories %}
@@ -44,8 +80,8 @@
                 {% endif %}
             </select>        
         </div>
-        <div class="form-group col-lg-6 mb-3">
-            <label>Keywords <small class="text-warning">(Warning: Separate with ',' or comma.)</small></label>
+        <div class="form-group col-lg-12 mb-3">
+            <label>Keywords <small class="text-warning"></small></label>
             <select name="keywords[]" id="keywords" class="form-control p-2" multiple>
                 {% if keywords %}
                     {% for keyword in keywords %}
@@ -53,14 +89,6 @@
                     {% endfor %}
                 {% endif %}
             </select>        
-        </div>
-        <div class="form-group col-lg-6 mb-3">
-            <label>Title <span class="text-danger">*</span></label>
-            <input type="text" class="form-control p-2" name="title" value="{{ title }}" id="title" required>
-        </div>
-        <div class="form-group col-lg-6 mb-3">
-            <label>Child Page <small class="text-warning">(Note: Leave Empty if it's a directory or Parent Page.)</small></label>
-            <input type="text" name="slug" id="slug" value="{% if slug != 'None' or slug is not None or slug != ' None ' %} {{ slug }} {% endif %}" class="form-control p-2">
         </div>
         <div class="form-group col-lg-12 mb-3">
             <label>Content <span class="text-danger">*</span></label>
@@ -96,32 +124,6 @@
 		updatePageFormAndRefreshTable();
 	});
 
-    // Function to slugify a string
-	function slugify(text) {
-		return text.toString().toLowerCase()
-			.replace(/\s+/g, '-')        // Replace spaces with -
-			.replace(/[^\w-]+/g, '')     // Remove all non-word characters
-			.replace(/--+/g, '-')        // Replace multiple - with single -
-			.replace(/^-+/, '')          // Remove leading -
-			.replace(/-+$/, '');         // Remove trailing -
-	}
-
-	// Get references to the input fields
-	var originalInput = document.getElementById('title');
-	var slugInput = document.getElementById('slug');
-
-	// Add a keyup event listener to the original input field
-	originalInput.addEventListener('keyup', function () {
-		// Get the value from the original input field
-		var originalText = originalInput.value;
-
-		// Slugify the text
-		var slugifiedText = slugify(originalText);
-
-		// Update the value of the slug input field
-		slugInput.value = slugifiedText;
-	});
-    
     function updatePageFormAndRefreshTable() {
 		// Serialize form data
 		$('#content').val(CKEDITOR.instances.content.getData())
@@ -194,19 +196,19 @@
         $('#tags').select2({
             tags: true, // Allow creating new tags
             tokenSeparators: [',', ' '], // Define separators for multiple tags
-            placeholder: 'Select or type tags', // Placeholder text
+            placeholder: 'Add tags', // Placeholder text
         });
 
         $('#categories').select2({
             tags: true, // Allow creating new tags
             tokenSeparators: [',', ' '], // Define separators for multiple tags
-            placeholder: 'Select or type categories', // Placeholder text
+            placeholder: 'Add categories', // Placeholder text
         });
 
         $('#keywords').select2({
             tags: true, // Allow creating new tags
             tokenSeparators: [',', ' '], // Define separators for multiple tags
-            placeholder: 'Select or type keywords', // Placeholder text
+            placeholder: 'Add keywords', // Placeholder text
         });
     });
 </script>
