@@ -69,5 +69,4 @@ def modify_article(article, content_links):
         insert_paragraphs(existing_paragraphs, end_paragraphs, end_positions)
     
     header = soup.find('h1').get_text()
-    soup.find('h1').decompose()
     return {'header': header, 'body': soup.prettify()}
