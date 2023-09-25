@@ -137,7 +137,7 @@
 
         switch (action) {
             case 'add_to_directory':
-            directory.val(slug_text);
+            directory.val(`/${slug_text}/`);
             slug.val('');
             break;
             case 'add_to_child_page':
@@ -146,7 +146,7 @@
             break;
             case 'add_to_both':
             slug.val(slug_text);
-            directory.val(slug_text);
+            directory.val(`/${slug_text}/`);
             break;
             default:
             slug.val('');
