@@ -11,6 +11,7 @@ from datetime import datetime, date
 from django.views.decorators.csrf import csrf_exempt
 from io import TextIOWrapper
 from . utils import make_domainsfast_api_request
+import time
 import re
 import requests
 import csv
@@ -203,7 +204,6 @@ def update_page(request, wid):
                 'in_navbar': request.POST.get('in_navbar') == "on",
                 'date_published': request.POST.get('date_published')
             }
-            print(data)
             req = requests.post(
                 f"http://127.0.0.1:7000/api/update-page-v2/{str(wid)}/{request.POST.get('page_id')}/",
                 headers={'Authorization': f'Bearer {token}'},
@@ -263,9 +263,16 @@ def delete_page(request, wid, pk):
 @login_required()
 def generate_content(request):
     try:
+        start_time = time.time()
         keywords = request.GET.get('keywords')
         list_urls = request.GET.get('list_urls')
         data = make_domainsfast_api_request(keywords, list_urls)
+        end_time = time.time()
+
+        # Calculate the duration in seconds
+        duration_seconds = end_time - start_time
+
+        print(f"Time duration in seconds: {duration_seconds}")
         return JsonResponse(data, status=200)
     except Exception as e:
         print(e)

@@ -1,33 +1,51 @@
 from bs4 import BeautifulSoup
+import concurrent.futures
 import requests
 import json
 
 
+base_url = "https://domainsfast.applikuapp.com"
+username, password = ('fastdatabasedseo', '@Fastdatabasedseo123')
+
+headers = {"accept": "application/json", "Content-Type": "application/json"}
+auth = (username, password)
+
+
 def make_domainsfast_api_request(keyword, list_urls=None):
-    base_url = "https://domainsfast.applikuapp.com"
-    username, password = ('fastdatabasedseo', '@Fastdatabasedseo123')
-
-    headers = {"accept": "application/json", "Content-Type": "application/json"}
-    auth = (username, password)
-
+    
     try:
-        topics = requests.post(f"{base_url}/topics", headers=headers, json={"keyword": keyword}, auth=auth).json()
-        content_links = requests.post(f"{base_url}/generate_content_links", headers=headers, json={"keyword": keyword, "list_urls": list_urls}, auth=auth).json()
-        article = return_article(topics)
-        modified_article = modify_article(article, content_links)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # Submit the functions for execution
+            topics_future = executor.submit(get_topics, keyword, list_urls)
+            content_links_future = executor.submit(generate_content_links, keyword, list_urls)
+
+            # Wait for both requests to complete
+            concurrent.futures.wait([topics_future, content_links_future])
+
+        # Get the results from the futures
+        topics_result = topics_future.result()
+        content_links_result = content_links_future.result()
+        article = return_article(topics_result)  
+        modified_article = modify_article(article, content_links_result)
         return modified_article
         
     except requests.RequestException as e:
         print(f"Request exception: {e}")
 
 
-def return_article(data):
-    base_url = "https://domainsfast.applikuapp.com"
-    username, password = ('fastdatabasedseo', '@Fastdatabasedseo123')
+def get_topics(keyword, list_urls):
+    response = requests.post(f"{base_url}/topics", headers=headers, json={"keyword": keyword}, auth=auth)
+    return response.json()
 
-    headers = {"accept": "application/json", "Content-Type": "application/json"}
-    auth = (username, password)
-    dataJson = {"data": json.dumps(data)}
+
+def generate_content_links(keyword, list_urls):
+    response = requests.post(f"{base_url}/generate_content_links", headers=headers, json={"keyword": keyword, "list_urls": list_urls}, auth=auth)
+    return response.json()
+
+
+def return_article(data):
+    print(isinstance(data, dict))
+    dataJson = {"data": json.dumps(data)} if isinstance(data, dict) else {"data": json.dumps(data, safe=False)}
     article = requests.post(f"{base_url}/return_article", headers=headers, json=dataJson, auth=auth).json()
     return article
 
