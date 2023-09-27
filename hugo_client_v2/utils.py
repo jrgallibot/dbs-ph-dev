@@ -28,7 +28,6 @@ def make_domainsfast_api_request(keyword, list_urls=None):
         article = return_article(topics_result)  
         modified_article = modify_article(article, content_links_result)
         return modified_article
-        
     except requests.RequestException as e:
         print(f"Request exception: {e}")
 
