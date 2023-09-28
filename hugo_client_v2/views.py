@@ -317,7 +317,7 @@ def page_comments(request, pk):
 
 
 @login_required
-def pbn_log_history(request):
+def pbn_logs(request):
     try:
         context = {
             'logs': ClientPBNLogs.objects.filter(user_id=request.user.id).all()
