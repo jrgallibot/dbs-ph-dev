@@ -3,7 +3,8 @@ from django.db.models import Q
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from client.models import ClientSettings, CloudflareWebsites, MaintenanceStatus, ClientComments, ClientPostSched, ClientPbnGroup, ClientWebsitePbnGroup
+from client.models import ClientSettings, CloudflareWebsites, MaintenanceStatus, ClientComments, ClientPostSched, ClientPbnGroup, ClientWebsitePbnGroup, \
+    ClientPBNLogs
 from indexer.models import IndexApi
 from Cloudflare.models import CloudflareModel
 from django.views.decorators.http import require_POST
@@ -15,7 +16,7 @@ import time
 import re
 import requests
 import csv
-
+from indexer.user_side.views import pbn_log_history
 
 """def maintenance_mode_enabled():
     data = MaintenanceStatus.objects.filter(Q(id = 1) & Q(name = 'pbn')).first()
@@ -46,12 +47,13 @@ def index_page(request):
         token = get_token(request)
         group_pbn = ClientPbnGroup.objects.filter(status=1, user_id=request.user.id).all()
         context = {'title': 'Hugo Client', 'module_name': 'Hugo', 'group_pbn': group_pbn,
-                   'data': requests.get("http://127.0.0.1:7000/api/home-page-v2/",
+                   'data': requests.get("http://95.217.184.122/api/home-page-v2/",
                                         headers={'Authorization': f'Bearer {token}'}).json(), 'active_tab': 'hugo_v2'}
 
         return render(request, 'hugo_v2/index.html', context)
     except Exception as e:
         print(e)
+        pbn_log_history(request, request.user.id, 'error index page: {}.'.format(str(e)))
 
 
 @login_required
@@ -67,21 +69,23 @@ def add_website_page(request):
             'description': request.POST.get('description'),
             'page_name': request.POST.get('page_name')
         }
-        req = requests.post("http://127.0.0.1:7000/api/website-v2/", headers={'Authorization': f'Bearer {token}'}, json=data)
+        req = requests.post("http://95.217.184.122/api/website-v2/", headers={'Authorization': f'Bearer {token}'}, json=data)
+        pbn_log_history(request, request.user.id, 'add website {}.'.format(request.POST.get('title')))
         if req.status_code == 200 or req.status_code == 201:
             return redirect('/hugo-client-v2/')
     except Exception as e:
         print(e)
+        pbn_log_history(request, request.user.id, 'error add website: {}.'.format(str(e)))
 
 
 @login_required
 def website_page(request, pk):
     try:
         token = get_token(request)
-        data = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
+        data = requests.get(f"http://95.217.184.122/api/site-page-v2/{pk}/",
                                                    headers={'Authorization': f'Bearer {token}'}).json()
 
-        request.session[str(pk)] = requests.get(f"http://127.0.0.1:7000/api/site-page-v2/{pk}/",
+        request.session[str(pk)] = requests.get(f"http://95.217.184.122/api/site-page-v2/{pk}/",
                                                 headers={'Authorization': f'Bearer {token}'}).json()
         request.session.save()
         context = {
@@ -117,7 +121,7 @@ def add_page(request, pk):
             'keywords': request.POST.get('keywords'),
             'in_navbar': True if request.POST.get('in_navbar') == "on" else False,
         }
-        req = requests.post(f"http://127.0.0.1:7000/api/add-page-v2/",
+        req = requests.post(f"http://95.217.184.122/api/add-page-v2/",
                             headers={'Authorization': f'Bearer {token}'}, json=data)
         
         temp_sites = None
@@ -130,12 +134,14 @@ def add_page(request, pk):
         request.session[str(pk)]['website']['pages'] = temp_sites
         request.session.save()
 
-
+        pbn_log_history(request, request.user.id, 'add page {} - message: {}.'.format(request.POST.get('title'), req.text))
         if req.status_code == 200 or req.status_code == 201:
             return JsonResponse({'data': req.text, 'website_id': str(pk)}, status=200)
         else:
+            pbn_log_history(request, request.user.id, 'error add page: {}.'.format(req.text))
             return JsonResponse({'statusMsg': req.text}, status=404)
     except Exception as e:
+        pbn_log_history(request, request.user.id, 'error add page: {}.'.format(e))
         print(e) 
 
 
@@ -154,10 +160,11 @@ def publish_website_page(request, wid):
         }
 
         req = requests.post(
-            f"http://127.0.0.1:7000/api/publish-website-v2/{wid}/",
+            f"http://95.217.184.122/api/publish-website-v2/{wid}/",
             headers={'Authorization': f'Bearer {token}'}, data=data)
     
         context = {}
+        pbn_log_history(request, request.user.id, 'publish website: {}.'.format(request.POST.get('domain')))
         if req.status_code == 200 or req.status_code == 201:
             cfw = CloudflareWebsites.objects.filter(website_id=wid).first()
             if cfw:
@@ -180,6 +187,7 @@ def publish_website_page(request, wid):
             return render(request, 'hugo_v2/partials/site-cloudflare-details-card.html', context)
     except Exception as e:
         print(e)
+        pbn_log_history(request, request.user.id, 'error publish website: {}.'.format(str(e)))
         return JsonResponse({'statusMsg': str(e)}, status=404)
 
 
@@ -205,7 +213,7 @@ def update_page(request, wid):
                 'date_published': request.POST.get('date_published')
             }
             req = requests.post(
-                f"http://127.0.0.1:7000/api/update-page-v2/{str(wid)}/{request.POST.get('page_id')}/",
+                f"http://95.217.184.122/api/update-page-v2/{str(wid)}/{request.POST.get('page_id')}/",
                 headers={'Authorization': f'Bearer {token}'},
                 json=data
             )
@@ -229,8 +237,10 @@ def update_page(request, wid):
                         })
                         request.session.modified = True
                         break
+                pbn_log_history(request, request.user.id, 'update page: {} - message: {}.'.format(request.POST.get('title'), req.text))
                 return JsonResponse({'data': req.text, 'website_id': str(wid)}, status=200)
         except Exception as e:
+            pbn_log_history(request, request.user.id, 'error update page: {}.'.format(e))
             print(e)
 
     data = None
@@ -253,10 +263,12 @@ def cancel_page(request, pk):
 def delete_page(request, wid, pk):
     try:
         token = get_token(request)
-        req = requests.post(f"http://127.0.0.1:7000/api/delete-page-v2/{wid}/{pk}/", headers={'Authorization': f'Bearer {token}'})
+        req = requests.post(f"http://95.217.184.122/api/delete-page-v2/{wid}/{pk}/", headers={'Authorization': f'Bearer {token}'})
         if req.status_code == 200 or req.status_code == 201:
+            pbn_log_history(request, request.user.id, 'deleted page id: {}.'.format(wid))
             return render(request, 'hugo_v2/partials/site-add-page-form.html', {'website_id': str(wid)})
     except Exception as e:
+        pbn_log_history(request, request.user.id, 'error delete page: {}.'.format(e))
         print(e)
 
 
@@ -273,10 +285,14 @@ def generate_content(request):
         duration_seconds = end_time - start_time
 
         print(f"Time duration in seconds: {duration_seconds}")
+        pbn_log_history(request, request.user.id, 'generate content keywords {} and list of urls {}.'.format(request.GET.get('keywords'),
+                                                        request.GET.get('list_urls')))
         return JsonResponse(data, status=200)
     except Exception as e:
         print(e)
+        pbn_log_history(request, request.user.id, 'error generate content: {}.'.format(e))
         return JsonResponse({'statusMsg': str(e)}, status=404)
+
 
 @require_POST
 def page_comments(request, pk):
@@ -292,6 +308,21 @@ def page_comments(request, pk):
             comments.save()
             messages.success(request, 'You have successfully saved the comments.')
             context['cl_comments'] = ClientComments.objects.filter(user_id=request.user.id, web_id=pk).all()
+            pbn_log_history(request, request.user.id, 'page comments {} in client site {}.'.format(request.POST.get('notes'),
+                                                request.POST.get('client_site')))
             return render(request, 'hugo_v2/partials/site-page-comments.html', context)
         except Exception as e:
+            pbn_log_history(request, request.user.id, 'error generate content: {}.'.format(e))
             print(e)
+
+
+@login_required
+def pbn_log_history(request):
+    try:
+        context = {
+            'logs': ClientPBNLogs.objects.filter(user_id=request.user.id).all()
+        }
+        return render(request, 'hugo_v2/pbn_logs.html', context)
+    except Exception as e:
+        print(e)
+        pbn_log_history(request, request.user.id, 'error pbn logs: {}.'.format(str(e)))

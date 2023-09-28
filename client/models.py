@@ -25,6 +25,19 @@ class ClientComments(models.Model):
 		db_table = 'client_comments'
 
 
+class ClientPBNLogs(models.Model):
+	ipaddress = models.TextField(null = True, blank = True)
+	descriptions = models.TextField(null = True, blank = True)
+	user = models.ForeignKey(settings.AUTH_USER_MODEL, models.RESTRICT)
+	datetime = models.DateTimeField(auto_now_add=True)
+	visitors_data = models.TextField(null = True, blank = True)
+	timeprocess = models.TextField(null = True, blank = True)
+
+	class Meta:
+		managed = False
+		db_table = 'client_pbn_logs'
+
+		
 class MaintenanceStatus(models.Model):
 	status = models.IntegerField(blank=True, null=True)
 

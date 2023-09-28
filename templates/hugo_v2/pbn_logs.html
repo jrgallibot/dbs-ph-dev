@@ -1,0 +1,58 @@
+{% extends "pegasus/examples/examples_base.html" %}
+{% load staticfiles %}
+{% load tags %}
+{% block app %}
+<style type="text/css">
+	.display-none{
+		display: none;
+	}
+	.zoom:hover {
+		z-index: inherit;
+		transform: scale(3.5);
+	}
+</style>
+<div class="row mt-5 align-items-center justify-content-between">
+    <div class="col-auto">
+        <h3 class="app-page-title mb-0"><i class="fas fas-info-circle text-success me-2" style="zoom:0.85"></i> PBN LOG HISTORY</h3>
+    </div>
+</div>
+<br><br>
+<section class="app-card">
+    <div class="app-card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="logs_list" width="100%">
+                <thead>
+                    <tr>
+                        <th class="cell">User</th>
+                        <th class="cell">Description</th>
+                        <th class="cell text-center">Processing Time</th>
+                        <th class="cell text-center">IP Address</th>
+						<th class="cell">Visitors Data</th>
+                        <th class="cell">Date Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in logs %}
+                    <tr>
+                        <td class="cursor-pointer">{{row.user.get_display_name}}</td>
+                        <td class="cursor-pointer" style="white-space: break-spaces;">{{row.descriptions}}</td>
+                        <td class="cursor-pointer text-center">{{row.timeprocess|convert_seconds}}</td>
+                        <td class="cursor-pointer text-center">{{row.ipaddress}}</td>
+                        <td class="cursor-pointer" style="white-space: break-spaces;">{{row.visitors_data}}</td>
+                        <td class="cursor-pointer">{{row.datetime}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function () {
+        $('#logs_list').DataTable();
+    });
+</script>
+{% endblock %}

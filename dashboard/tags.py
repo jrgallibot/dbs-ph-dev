@@ -95,3 +95,19 @@ def get_color_group(web):
 	if web:
 		group = ClientWebsitePbnGroup.objects.filter(web_id=web).first()
 		return group if group else ''
+	
+
+@register.filter
+def convert_seconds(value):
+    value = float(value)
+    if value < 60:
+        return f"{value:.2f} seconds"
+    elif value < 3600:
+        minutes = value / 60
+        return f"{minutes:.2f} minutes"
+    elif value < 86400:
+        hours = value / 3600
+        return f"{hours:.2f} hours"
+    else:
+        days = value / 86400
+        return f"{days:.2f} days"
