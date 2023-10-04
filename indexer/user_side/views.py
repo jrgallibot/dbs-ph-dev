@@ -12,7 +12,7 @@ import pandas as pd
 from indexer.models import *
 from mobile_friendly.models import *
 from apps.users.models import *
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils.html import strip_tags
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -26,7 +26,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from celery import current_app
-from indexer import tasks
+from indexer.tasks import *
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 import httpx
@@ -37,19 +37,73 @@ import os
 from indexer.tasks import checking_the_mobile_friendly
 from Home.celery import app
 from django.contrib.auth.hashers import make_password
-from client.models import ClientSettings
+from client.models import ClientSettings, ClientPbnGroup, MaintenanceStatus, ClientPBNLogs
 from googleapiclient.errors import HttpError
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth import login
+import socket
+from openpyxl import Workbook
+from openpyxl.styles import Font
+from openpyxl.writer.excel import save_virtual_workbook
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
 
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 start_time = time.time()
 
+def maintenance_mode_enabled():
+    data = MaintenanceStatus.objects.filter(Q(id = 2) & Q(name = 'indexer_sitemap')).first()
+    return True if data.status == 0 else False
 
-def log_history(user, descriptions):
+
+def maintenance_mode(original_function):
+    def wrapper(*args, **kwargs):
+        # Check if maintenance mode is enabled
+        if maintenance_mode_enabled():
+            # Handle maintenance mode logic
+            print("Service is currently under maintenance. Please try again later.")
+            return HttpResponse("Service is currently under maintenance. Please try again later.")
+        else:
+            # Execute the original function
+            return original_function(*args, **kwargs)
+    
+    return wrapper
+
+def get_ip_address():
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+    return ip_address
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+def pbn_log_history(request, user, descriptions):
+	date = datetime.now().strftime("%b-%d-%Y %H:%M:%S")
+	userdata = f"{request.META['HTTP_USER_AGENT']} , {get_client_ip(request)} , {date}"
+	logs = ClientPBNLogs(
+		user_id=user,
+		descriptions=descriptions,
+		ipaddress = get_ip_address(),
+		visitors_data = f" \n {userdata}",
+		timeprocess = time.time() - start_time
+	)
+	logs.save()
+
+def log_history(request, user, descriptions):
+	date = datetime.now().strftime("%b-%d-%Y %H:%M:%S")
+	userdata = f"{request.META['HTTP_USER_AGENT']} , {get_client_ip(request)} , {date}"
 	logs = Loghistory(
 		user_id=user,
-		descriptions=descriptions
+		descriptions=descriptions,
+		ipaddress = get_ip_address(),
+		visitors_data = f" \n {userdata}"
 	)
 	logs.save()
 

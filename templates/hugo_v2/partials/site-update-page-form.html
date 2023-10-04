@@ -60,6 +60,18 @@
             <label>Title <span class="text-danger">*</span></label>
             <input type="text" class="form-control p-2" name="title" value="{{ title }}" id="title" required>
         </div>
+        <h6><b>Generate Slug</b></h6>
+        <div class="form-group col-lg-12 mb-3">
+            <select class="form-control" id="actions">
+                <option value="" disabled selected hidden>Select Action for the Slug Generator</option>
+                <option value="add_to_directory">Add to Directory</option>
+                <option value="add_to_child_page">Add to Child Page</option>
+                <option value="add_to_both">Add Both</option>
+            </select>
+        </div>
+        <div class="form-group col-lg-12 mb-3">
+            <button class="btn btn-sm btn-success" onclick="save_action_changes()" type="button">Generate Slug</button>
+        </div>
         <div class="form-group col-lg-6 mb-3">
             <label>Tags <small class="text-warning"></small></label>
             <select name="tags[]" id="tags" class="form-control p-2" multiple>
@@ -81,10 +93,6 @@
             </select>        
         </div>
         <div class="form-group col-lg-12 mb-3">
-            <label>Keywords <small class="text-warning"></small></label>
-            <textarea class="form-control p-2" name="keywords" id="keywords" rows="3">{{ keywords }}</textarea>
-        </div>
-        <div class="form-group col-lg-12 mb-3">
             <label>Content <span class="text-danger">*</span></label>
             <textarea name="content" id="content" class="form-control p-2">{{ content }}</textarea>
         </div>
@@ -99,6 +107,18 @@
         <div class="form-group col-lg-4 mb-3">
             <label>In Navbar</label>
             <input type="checkbox" name="in_navbar" {% if in_navbar %} checked {% endif %}>
+        </div>
+        <h6><b>Generate AI Content</b></h6>
+        <div class="form-group col-lg-12 mb-3">
+            <label>Keywords <small class="text-warning"></small></label>
+            <textarea class="form-control p-2" name="keywords" id="keywords" rows="3"></textarea>
+        </div>
+        <div class="form-group col-lg-12 mb-3">
+            <label>List Urls <small class="text-warning"></small></label>
+            <textarea class="form-control p-2" name="list_urls" id="list_urls" rows="3"></textarea>
+        </div>
+        <div class="form-group col-lg-6 mb-3">
+            <button class="btn btn-sm btn-success" onclick="generate_content()" type="button">Generate Content</button>
         </div>
     </div>
     <div class="d-flex justify-content-end">
@@ -117,6 +137,42 @@
 		event.preventDefault();
 		updatePageFormAndRefreshTable();
 	});
+
+    function slugify(text) {
+		return text.toString().toLowerCase()
+			.replace(/\s+/g, '-')        // Replace spaces with -
+			.replace(/[^\w-]+/g, '')     // Remove all non-word characters
+			.replace(/--+/g, '-')        // Replace multiple - with single -
+			.replace(/^-+/, '')          // Remove leading -
+			.replace(/-+$/, '');         // Remove trailing -
+	}
+
+    function save_action_changes() {
+        const action = $('#actions').val();
+        const originalInput = $('#title').val();
+        const slug_text = slugify(originalInput);
+        const directory = $('#page');
+        const slug = $('#slug');
+
+        switch (action) {
+            case 'add_to_directory':
+            directory.val(`/${slug_text}/`);
+            slug.val('');
+            break;
+            case 'add_to_child_page':
+            slug.val(slug_text);
+            directory.val('');
+            break;
+            case 'add_to_both':
+            slug.val(slug_text);
+            directory.val(`/${slug_text}/`);
+            break;
+            default:
+            slug.val('');
+            directory.val('');
+            break;
+        }
+    }
 
     function updatePageFormAndRefreshTable() {
 		// Serialize form data
@@ -183,10 +239,64 @@
 			}
 		});
 	}
+
+    function generate_content() {
+        var keywordsTextarea = document.getElementById('keywords');
+        var listUrlsTextarea = document.getElementById('list_urls');
+        var formData = new FormData();
+        
+        // Add data from the keywords textarea to the FormData
+        formData.append('keywords', keywordsTextarea.value);
+
+        // Add data from the list_urls textarea to the FormData
+        formData.append('list_urls', listUrlsTextarea.value);
+
+        // Convert FormData to query parameters
+        var queryParams = new URLSearchParams(formData).toString();
+
+        // Build the URL with the query parameters
+        var url = '/hugo-client-v2/generate-content/?' + queryParams;
+
+        // Show a SweetAlert confirmation dialog with a loader animation
+        Swal.fire({
+            title: 'Generate Content?',
+            text: 'Please confirm',
+            icon: 'question',
+            showCancelButton: false,
+            showLoaderOnConfirm: true, // Display loader when confirm button is clicked
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            preConfirm: () => {
+                return $.ajax({
+                    type: 'GET', // Use GET
+                    url: url, // Use the URL with query parameters
+                    success: function (response) {
+                        document.getElementById('title').value = response['header'];
+                        CKEDITOR.instances.content.setData(response['body']);
+
+                        // Handle success or display a success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Generating Content Success.',
+                            icon: 'success'
+                        });
+                    },
+                    error: function (error) {
+                        // Display an error message
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while generating content',
+                            icon: 'error'
+                        });
+                    }
+                });
+            }
+        });
+    }
     
     $(document).ready(function () {
         CKEDITOR.replace('content');
-        
+
         $('#tags').select2({
             tags: true, // Allow creating new tags
             tokenSeparators: [',', ' '], // Define separators for multiple tags

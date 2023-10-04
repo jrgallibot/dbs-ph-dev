@@ -34,19 +34,24 @@ def make_domainsfast_api_request(keyword, list_urls=None):
 
 def get_topics(keyword, list_urls):
     response = requests.post(f"{base_url}/topics", headers=headers, json={"keyword": keyword}, auth=auth)
+    print(f"This is topics results: {response.text}")
     return response.json()
 
 
 def generate_content_links(keyword, list_urls):
     response = requests.post(f"{base_url}/generate_content_links", headers=headers, json={"keyword": keyword, "list_urls": list_urls}, auth=auth)
+    print(f"This is content results: {response.text}")
     return response.json()
 
 
 def return_article(data):
-    print(isinstance(data, dict))
-    dataJson = {"data": json.dumps(data)} if isinstance(data, dict) else {"data": json.dumps(data, safe=False)}
-    article = requests.post(f"{base_url}/return_article", headers=headers, json=dataJson, auth=auth).json()
-    return article
+    try:
+        dataJson = {"data": json.dumps(data)} if isinstance(data, dict) else {"data": json.dumps(data, safe=False)}
+        response = requests.post(f"{base_url}/return_article", headers=headers, json=dataJson, auth=auth)
+        print(f"This is topics results: {response.text}")
+        return response.json()
+    except Exception as e:
+        print(e)
 
 
 def modify_article(article, content_links):

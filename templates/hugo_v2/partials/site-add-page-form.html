@@ -61,7 +61,7 @@
         <h6><b>Generate Slug</b></h6>
         <div class="form-group col-lg-12 mb-3">
             <select class="form-control" id="actions">
-                <option></option>
+                <option value="" disabled selected hidden>Select Action for the Slug Generator</option>
                 <option value="add_to_directory">Add to Directory</option>
                 <option value="add_to_child_page">Add to Child Page</option>
                 <option value="add_to_both">Add Both</option>
@@ -284,12 +284,6 @@
 	}
     $(document).ready(function () {
         CKEDITOR.replace('content');
-
-        $('#actions').select2({
-            tokenSeparators: [',', ' '], // Define separators for multiple tags
-            placeholder: 'Select action for the Slug Generator', // Placeholder text,
-            allowClear: true
-        });
 
         $('#tags').select2({
             tags: true, // Allow creating new tags
